@@ -1,28 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sentinel — Agentic DeFi Vault</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --bg:        #080b12;
-      --surface:   #0e1420;
-      --card:      #131a28;
-      --border:    rgba(139,92,246,.18);
-      --purple:    #8b5cf6;
-      --cyan:      #06b6d4;
-      --green:     #10b981;
-      --yellow:    #f59e0b;
-      --red:       #ef4444;
-      --text:      #e2e8f0;
-      --muted:     #64748b;
-      --radius:    16px;
+      --bg: #080b12;
+      --surface: #0e1420;
+      --card: #131a28;
+      --border: rgba(139, 92, 246, .18);
+      --purple: #8b5cf6;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --radius: 16px;
     }
 
     body {
@@ -34,7 +42,8 @@
     }
 
     /* ── Glow blobs ── */
-    body::before, body::after {
+    body::before,
+    body::after {
       content: '';
       position: fixed;
       border-radius: 50%;
@@ -43,57 +52,122 @@
       pointer-events: none;
       z-index: 0;
     }
-    body::before { width: 600px; height: 600px; background: var(--purple); top: -200px; left: -200px; }
-    body::after  { width: 500px; height: 500px; background: var(--cyan);   bottom: -200px; right: -200px; }
+
+    body::before {
+      width: 600px;
+      height: 600px;
+      background: var(--purple);
+      top: -200px;
+      left: -200px;
+    }
+
+    body::after {
+      width: 500px;
+      height: 500px;
+      background: var(--cyan);
+      bottom: -200px;
+      right: -200px;
+    }
 
     /* ── Nav ── */
     nav {
-      position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 16px 40px;
-      background: rgba(8,11,18,.8);
+      background: rgba(8, 11, 18, .8);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
     }
-    .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+
     .logo-icon {
-      width: 36px; height: 36px; border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       background: linear-gradient(135deg, var(--purple), var(--cyan));
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1rem;
     }
+
     .nav-badge {
-      font-size: .72rem; font-weight: 600;
-      padding: 3px 10px; border-radius: 20px;
-      background: rgba(139,92,246,.15);
-      border: 1px solid rgba(139,92,246,.3);
+      font-size: .72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(139, 92, 246, .15);
+      border: 1px solid rgba(139, 92, 246, .3);
       color: var(--purple);
     }
+
     #connectBtn {
-      padding: 10px 22px; border-radius: 12px; border: none; cursor: pointer;
-      font-family: inherit; font-weight: 600; font-size: .9rem;
+      padding: 10px 22px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: .9rem;
       background: linear-gradient(135deg, var(--purple), #6d28d9);
       color: #fff;
-      box-shadow: 0 0 20px rgba(139,92,246,.4);
+      box-shadow: 0 0 20px rgba(139, 92, 246, .4);
       transition: all .2s;
     }
-    #connectBtn:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(139,92,246,.6); }
+
+    #connectBtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 30px rgba(139, 92, 246, .6);
+    }
+
     .wallet-address {
-      font-size: .82rem; font-family: monospace;
-      padding: 8px 16px; border-radius: 10px;
-      background: rgba(139,92,246,.1); border: 1px solid var(--border);
+      font-size: .82rem;
+      font-family: monospace;
+      padding: 8px 16px;
+      border-radius: 10px;
+      background: rgba(139, 92, 246, .1);
+      border: 1px solid var(--border);
       color: var(--purple);
     }
 
     /* ── Main layout ── */
-    main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
 
-    h1.hero { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: .5rem; }
+    h1.hero {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: .5rem;
+    }
+
     h1.hero span {
       background: linear-gradient(135deg, var(--purple), var(--cyan));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .hero-sub { color: var(--muted); font-size: 1rem; margin-bottom: 40px; }
+
+    .hero-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 40px;
+    }
 
     /* ── Cards ── */
     .card {
@@ -102,525 +176,1018 @@
       border-radius: var(--radius);
       padding: 24px;
     }
-    .card-label { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
-    .card-value { font-size: 1.7rem; font-weight: 700; }
-    .card-sub    { font-size: .8rem; color: var(--muted); margin-top: 4px; }
+
+    .card-label {
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 1.7rem;
+      font-weight: 700;
+    }
+
+    .card-sub {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
 
     /* ── Grid ── */
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
 
     @media(max-width: 700px) {
-      .grid-3 { grid-template-columns: 1fr 1fr; }
-      .grid-2 { grid-template-columns: 1fr; }
-    }
+      .grid-3 {
+        grid-template-columns: 1fr 1fr;
+      }
 
-    /* ── Health factor ── */
-    .hf-card { grid-column: 1 / -1; display: flex; align-items: center; gap: 32px; }
-    @media(max-width: 700px) { .hf-card { flex-direction: column; align-items: flex-start; gap: 16px; } }
-
-    .hf-gauge { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
-    .hf-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-    .hf-gauge circle { fill: none; stroke-width: 10; stroke-linecap: round; }
-    .hf-track  { stroke: rgba(255,255,255,.07); }
-    .hf-fill   { stroke: var(--green); stroke-dasharray: 283; stroke-dashoffset: 283; transition: all 1s ease; }
-    .hf-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .hf-pct    { font-size: 1.3rem; font-weight: 800; }
-    .hf-lbl    { font-size: .62rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-
-    .hf-info { flex: 1; }
-    .hf-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
-    .hf-desc  { font-size: .85rem; color: var(--muted); line-height: 1.5; }
-
-    .risk-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 12px; border-radius: 20px;
-      font-size: .78rem; font-weight: 600; margin-top: 10px;
-    }
-    .risk-safe        { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
-    .risk-warning     { background: rgba(245,158,11,.15); color: var(--yellow); border: 1px solid rgba(245,158,11,.3); }
-    .risk-danger      { background: rgba(239,68,68,.15);  color: var(--red);    border: 1px solid rgba(239,68,68,.3); }
-    .risk-nodebt      { background: rgba(100,116,139,.15); color: var(--muted);  border: 1px solid rgba(100,116,139,.3); }
-
-    /* ── Live price ticker ── */
-    .price-ticker {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 20px; border-radius: 12px;
-      background: rgba(6,182,212,.06); border: 1px solid rgba(6,182,212,.2);
-      margin-bottom: 32px; width: fit-content;
-    }
-    .ticker-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); animation: pulse 2s infinite; }
-    .ticker-text { font-size: .85rem; color: var(--muted); }
-    .ticker-price { font-weight: 700; color: var(--cyan); }
-    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
-
-    /* ── Section headers ── */
-    .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    /* ── Action panel ── */
-    .action-card { display: flex; flex-direction: column; gap: 20px; }
-
-    .input-group label { font-size: .8rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 8px; }
-    .input-row { display: flex; gap: 8px; }
-    .input-row input {
-      flex: 1; padding: 12px 16px; border-radius: 12px;
-      background: rgba(255,255,255,.04); border: 1px solid var(--border);
-      color: var(--text); font-family: inherit; font-size: .95rem;
-      outline: none; transition: border-color .2s;
-    }
-    .input-row input:focus { border-color: var(--purple); }
-    .input-row input::placeholder { color: var(--muted); }
-
-    .btn {
-      padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer;
-      font-family: inherit; font-weight: 700; font-size: .9rem;
-      transition: all .2s; white-space: nowrap;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--purple), #6d28d9);
-      color: #fff; box-shadow: 0 0 16px rgba(139,92,246,.3);
-    }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 24px rgba(139,92,246,.5); }
-    .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
-
-    .btn-secondary {
-      background: rgba(6,182,212,.1); color: var(--cyan);
-      border: 1px solid rgba(6,182,212,.3);
-    }
-    .btn-secondary:hover { background: rgba(6,182,212,.2); }
-    .btn-secondary:disabled { opacity: .4; cursor: not-allowed; }
-
-    .btn-danger {
-      background: rgba(239,68,68,.1); color: var(--red);
-      border: 1px solid rgba(239,68,68,.3);
-    }
-    .btn-danger:hover { background: rgba(239,68,68,.2); }
-
-    .hint-text { font-size: .76rem; color: var(--muted); margin-top: 6px; }
-    .max-link  { font-size: .75rem; color: var(--purple); cursor: pointer; text-decoration: underline; }
-
-    /* ── Toast ── */
-    #toast {
-      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-      padding: 14px 20px; border-radius: 14px;
-      background: var(--card); border: 1px solid var(--border);
-      font-size: .88rem; max-width: 340px;
-      transform: translateY(80px); opacity: 0;
-      transition: all .3s cubic-bezier(.34,1.56,.64,1);
-      display: flex; align-items: flex-start; gap: 10px;
-    }
-    #toast.show { transform: translateY(0); opacity: 1; }
-    .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
-    .toast-link { color: var(--cyan); font-size: .78rem; display: block; margin-top: 4px; word-break: break-all; }
-
-    /* ── Wallet prompt ── */
-    #walletPrompt {
-      text-align: center; padding: 80px 24px;
-    }
-    .prompt-icon { font-size: 4rem; margin-bottom: 20px; }
-    #walletPrompt h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; }
-    #walletPrompt p  { color: var(--muted); margin-bottom: 28px; }
-
-    /* ── Network info ── */
-    .network-info {
-      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px;
-    }
-    .net-tag {
-      font-size: .75rem; padding: 4px 12px; border-radius: 20px;
-      background: rgba(255,255,255,.04); border: 1px solid var(--border);
-      color: var(--muted); display: flex; align-items: center; gap: 6px;
-    }
-    .net-tag b { color: var(--text); }
-
-    /* ── Spinner ── */
-    .spinner {
-      display: inline-block; width: 14px; height: 14px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,.2); border-top-color: #fff;
-      animation: spin .6s linear infinite; vertical-align: middle;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    #dashboard { display: none; }
-  </style>
-</head>
-<body>
-
-<!-- ── NAV ── -->
-<nav>
-  <div class="logo">
-    <div class="logo-icon">🛡️</div>
-    <span>Sentinel</span>
-    <span class="nav-badge">Polkadot Hub Testnet</span>
-  </div>
-  <div id="navRight">
-    <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
-  </div>
-</nav>
-
-<!-- ── TOAST ── -->
-<div id="toast">
-  <span class="toast-icon" id="toastIcon">✅</span>
-  <div>
-    <span id="toastMsg"></span>
-    <a id="toastLink" href="#" target="_blank" class="toast-link" style="display:none"></a>
-  </div>
-</div>
-
-<!-- ── MAIN ── -->
-<main>
-
-  <!-- Wallet prompt -->
-  <div id="walletPrompt">
-    <div class="prompt-icon">🛡️</div>
-    <h2>Sentinel Agentic Vault</h2>
-    <p>Connect your wallet to deposit DOT collateral, mint sUSD, and let the Sentinel AI bot guard your position 24/7.</p>
-    <button class="btn btn-primary" style="font-size:1rem;padding:14px 32px;" onclick="connectWallet()">
-      Connect Wallet
-    </button>
-    <div style="margin-top:24px;" class="network-info" style="justify-content:center;">
-      <div class="net-tag">⛓️ Chain ID: <b>420420417</b></div>
-      <div class="net-tag">🏦 Vault: <b>0xb57a5D...3579</b></div>
-      <div class="net-tag">💵 sUSD: <b>0x9Cc3ef...3A0</b></div>
-    </div>
-  </div>
-
-  <!-- Dashboard (shown after connect) -->
-  <div id="dashboard">
-    <h1 class="hero">Your <span>Vault Position</span></h1>
-    <p class="hero-sub">Deposit DOT as collateral and mint sUSD. Sentinel monitors your health factor 24/7.</p>
-
-    <!-- Live DOT price -->
-    <div class="price-ticker">
-      <div class="ticker-dot"></div>
-      <span class="ticker-text">DOT/USD</span>
-      <span class="ticker-price" id="dotPrice">Loading…</span>
-      <span class="ticker-text" style="margin-left:8px;">via Pyth Network</span>
-    </div>
-
-    <!-- Stats row -->
-    <div class="grid-3" style="margin-bottom:24px;">
-
-      <!-- Health Factor big card -->
-      <div class="card hf-card" id="hfCard">
-        <div class="hf-gauge">
-          <svg viewBox="0 0 100 100">
-            <circle class="hf-track" cx="50" cy="50" r="45"/>
-            <circle class="hf-fill" id="hfCircle" cx="50" cy="50" r="45"/>
-          </svg>
-          <div class="hf-center">
-            <span class="hf-pct" id="hfPct">—</span>
-            <span class="hf-lbl">HF</span>
-          </div>
-        </div>
-        <div class="hf-info">
-          <div class="hf-title">Health Factor</div>
-          <div class="hf-desc" id="hfDesc">Connect your wallet to see your position health.</div>
-          <div id="riskBadge" class="risk-badge risk-nodebt">● No Position</div>
-        </div>
-      </div>
-
-      <!-- Collateral -->
-      <div class="card">
-        <div class="card-label">Collateral</div>
-        <div class="card-value" id="collateralVal">— DOT</div>
-        <div class="card-sub" id="collateralUSD">≈ $—</div>
-      </div>
-
-      <!-- Minted sUSD -->
-      <div class="card">
-        <div class="card-label">Minted Debt</div>
-        <div class="card-value" id="mintedVal">— sUSD</div>
-        <div class="card-sub" id="maxMint">Max mintable: —</div>
-      </div>
-
-    </div>
-
-    <!-- Actions -->
-    <p class="section-title">Actions</p>
-
-    <div class="grid-2">
-
-      <!-- Deposit -->
-      <div class="card action-card">
-        <div>
-          <div class="card-label" style="margin-bottom:12px;">💎 Deposit DOT Collateral</div>
-          <div class="input-group">
-            <label>Amount <span class="max-link" onclick="setMaxDot()">Use max</span></label>
-            <div class="input-row">
-              <input id="depositAmt" type="number" min="0" step="0.1" placeholder="e.g. 100" />
-              <button class="btn btn-primary" id="depositBtn" onclick="depositDOT()">Deposit</button>
-            </div>
-          </div>
-          <div class="hint-text">Wallet balance: <span id="walletBal">—</span> DOT</div>
-        </div>
-      </div>
-
-      <!-- Mint -->
-      <div class="card action-card">
-        <div>
-          <div class="card-label" style="margin-bottom:12px;">🪙 Mint sUSD Stablecoin</div>
-          <div class="input-group">
-            <label>Amount <span class="max-link" onclick="setMaxMint()">Use max safe</span></label>
-            <div class="input-row">
-              <input id="mintAmt" type="number" min="0" step="1" placeholder="e.g. 60" />
-              <button class="btn btn-secondary" id="mintBtn" onclick="mintSUSD()">Mint</button>
-            </div>
-          </div>
-          <div class="hint-text">Minting locks your DOT at 150% collateral ratio minimum.</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Network info -->
-    <div class="network-info" style="margin-top:28px;">
-      <div class="net-tag">⛓️ Chain: <b>Polkadot Hub Testnet (420420417)</b></div>
-      <div class="net-tag">🏦 Vault: <b>0xb57a5D2621Ba0D149c0F1076009D42f107d33579</b></div>
-      <div class="net-tag">💵 sUSD: <b>0x9Cc3efD0e03AfE50A04Cc5643bE7509023b193A0</b></div>
-      <div class="net-tag">📡 Oracle: <b>MockPriceOracle</b></div>
-    </div>
-
-  </div><!-- /dashboard -->
-</main>
-
-<script>
-// ─────────────────────────────────────────────────────────────
-//  CONFIG
-// ─────────────────────────────────────────────────────────────
-const CHAIN_ID    = 420420417n;
-const CHAIN_HEX   = '0x' + (420420417).toString(16);
-const RPC_URL     = 'https://services.polkadothub-rpc.com/testnet';
-const VAULT_ADDR  = '0xb57a5D2621Ba0D149c0F1076009D42f107d33579';
-const SUSD_ADDR   = '0x9Cc3efD0e03AfE50A04Cc5643bE7509023b193A0';
-const PYTH_URL    = 'https://hermes.pyth.network/v2/updates/price/latest?ids[]=0xca3eed9b267293f6595901c734c7525ce8ef49adafe8284606ceb307afa2ca5b';
-const EXPLORER    = 'https://polkadot-hub-testnet.blockscout.com';
-
-const VAULT_ABI = [
-  'function depositCollateral() external payable',
-  'function mintStablecoin(uint256 amountSUSD) external',
-  'function getPosition(address user) external view returns (uint256 collateralDOT, uint256 mintedSUSD, uint256 collateralUSD, uint256 healthFactor, bool paused)',
-  'function getAllUsers() external view returns (address[])',
-  'function COLLATERAL_RATIO() external view returns (uint256)',
-];
-
-const SUSD_ABI  = ['function balanceOf(address) external view returns (uint256)'];
-
-// ─────────────────────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────────────────────
-let provider, signer, userAddr;
-let dotPrice = 0;
-
-// ─────────────────────────────────────────────────────────────
-//  WALLET
-// ─────────────────────────────────────────────────────────────
-async function connectWallet() {
-  if (!window.ethereum) {
-    showToast('⚠️', 'No wallet detected. Install Talisman or MetaMask.'); return;
-  }
-  try {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-    // Switch to Polkadot Hub Testnet
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: CHAIN_HEX }],
-      });
-    } catch (sw) {
-      if (sw.code === 4902) {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: CHAIN_HEX,
-            chainName: 'Polkadot Hub Testnet',
-            nativeCurrency: { name: 'WND', symbol: 'WND', decimals: 18 },
-            rpcUrls: [RPC_URL],
-            blockExplorerUrls: [EXPLORER],
-          }],
-        });
+      .grid-2 {
+        grid-template-columns: 1fr;
       }
     }
 
-    provider = new ethers.BrowserProvider(window.ethereum);
-    signer   = await provider.getSigner();
-    userAddr = await signer.getAddress();
+    /* ── Health factor ── */
+    .hf-card {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
 
-    document.getElementById('walletPrompt').style.display = 'none';
-    document.getElementById('dashboard').style.display   = 'block';
-    document.getElementById('navRight').innerHTML =
-      `<div class="wallet-address">${shortAddr(userAddr)}</div>`;
+    @media(max-width: 700px) {
+      .hf-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+    }
 
-    await refresh();
-    setInterval(refresh, 30000);
-    fetchDotPrice();
-    setInterval(fetchDotPrice, 30000);
+    .hf-gauge {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+    }
 
-    showToast('✅', 'Wallet connected!');
-  } catch (e) {
-    showToast('❌', e.message || 'Connection failed');
-  }
-}
+    .hf-gauge svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
 
-// ─────────────────────────────────────────────────────────────
-//  DATA REFRESH
-// ─────────────────────────────────────────────────────────────
-async function refresh() {
-  if (!provider || !userAddr) return;
-  try {
-    const vault   = new ethers.Contract(VAULT_ADDR, VAULT_ABI, provider);
-    const pos     = await vault.getPosition(userAddr);
-    const balance = await provider.getBalance(userAddr);
+    .hf-gauge circle {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+    }
 
-    const collDOT  = parseFloat(ethers.formatEther(pos[0]));
-    const minted   = parseFloat(ethers.formatEther(pos[1]));
-    const collUSD  = parseFloat(ethers.formatEther(pos[2]));
-    const hf       = parseFloat(ethers.formatEther(pos[3])) * 100;
-    const walBal   = parseFloat(ethers.formatEther(balance));
+    .hf-track {
+      stroke: rgba(255, 255, 255, .07);
+    }
 
-    document.getElementById('collateralVal').textContent = collDOT.toFixed(2) + ' DOT';
-    document.getElementById('collateralUSD').textContent = '≈ $' + collUSD.toFixed(2);
-    document.getElementById('mintedVal').textContent     = minted.toFixed(2) + ' sUSD';
-    document.getElementById('walletBal').textContent     = walBal.toFixed(3);
+    .hf-fill {
+      stroke: var(--green);
+      stroke-dasharray: 283;
+      stroke-dashoffset: 283;
+      transition: all 1s ease;
+    }
 
-    // Max mintable at 150% CR
-    const maxMintable = collUSD > 0 ? (collUSD * 100 / 150 - minted) : 0;
-    document.getElementById('maxMint').textContent = 'Max mintable: ' +
-      (maxMintable > 0 ? maxMintable.toFixed(2) + ' sUSD' : '0 (fully utilized)');
+    .hf-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
 
-    document.getElementById('mintAmt').dataset.max = Math.max(0, maxMintable).toFixed(4);
-    document.getElementById('depositAmt').dataset.max = walBal.toFixed(4);
+    .hf-pct {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
 
-    updateHFDisplay(hf, collDOT, minted);
-  } catch (e) {
-    console.error('refresh error:', e);
-  }
-}
+    .hf-lbl {
+      font-size: .62rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
 
-async function fetchDotPrice() {
-  try {
-    const r = await fetch(PYTH_URL);
-    const d = await r.json();
-    const p = d.parsed[0].price;
-    dotPrice = parseFloat(p.price) * Math.pow(10, p.expo);
-    document.getElementById('dotPrice').textContent = '$' + dotPrice.toFixed(4);
-  } catch { document.getElementById('dotPrice').textContent = 'Unavailable'; }
-}
+    .hf-info {
+      flex: 1;
+    }
 
-// ─────────────────────────────────────────────────────────────
-//  HEALTH FACTOR UI
-// ─────────────────────────────────────────────────────────────
-function updateHFDisplay(hf, collDOT, minted) {
-  const pct = document.getElementById('hfPct');
-  const cir = document.getElementById('hfCircle');
-  const desc = document.getElementById('hfDesc');
-  const badge = document.getElementById('riskBadge');
+    .hf-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
 
-  if (minted === 0) {
-    pct.textContent = '∞';
-    cir.style.stroke = 'var(--green)';
-    cir.style.strokeDashoffset = '0';
-    badge.className = 'risk-badge risk-nodebt';
-    badge.textContent = '● No Debt — Fully Safe';
-    desc.textContent = 'You have no sUSD debt. Mint sUSD to start earning.';
-    return;
-  }
+    .hf-desc {
+      font-size: .85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
 
-  pct.textContent = hf.toFixed(1) + '%';
-  const circum = 2 * Math.PI * 45;
-  const fraction = Math.min(hf / 200, 1);
-  cir.style.strokeDashoffset = circum * (1 - fraction);
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: .78rem;
+      font-weight: 600;
+      margin-top: 10px;
+    }
 
-  let color, cls, label, descText;
-  if (hf >= 150) {
-    color='var(--green)'; cls='risk-safe'; label='● SAFE'; descText='Your position is healthy. Sentinel is watching.';
-  } else if (hf >= 130) {
-    color='var(--yellow)'; cls='risk-warning'; label='⚠️ WARNING'; descText='Health factor is declining. Sentinel has sent you an alert.';
-  } else if (hf >= 120) {
-    color='var(--red)'; cls='risk-danger'; label='🚨 DANGER'; descText='Position paused by Sentinel. Repay debt to restore.';
-  } else {
-    color='var(--red)'; cls='risk-danger'; label='💀 CRITICAL'; descText='Emergency rebalance triggered! Check Telegram for TX.';
-  }
-  cir.style.stroke = color;
-  badge.className  = 'risk-badge ' + cls;
-  badge.textContent = label;
-  desc.textContent  = descText;
-}
+    .risk-safe {
+      background: rgba(16, 185, 129, .15);
+      color: var(--green);
+      border: 1px solid rgba(16, 185, 129, .3);
+    }
 
-// ─────────────────────────────────────────────────────────────
-//  ACTIONS
-// ─────────────────────────────────────────────────────────────
-async function depositDOT() {
-  const amt = parseFloat(document.getElementById('depositAmt').value);
-  if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid DOT amount'); return; }
+    .risk-warning {
+      background: rgba(245, 158, 11, .15);
+      color: var(--yellow);
+      border: 1px solid rgba(245, 158, 11, .3);
+    }
 
-  const btn = document.getElementById('depositBtn');
-  btn.innerHTML = '<span class="spinner"></span> Sending…';
-  btn.disabled = true;
+    .risk-danger {
+      background: rgba(239, 68, 68, .15);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, .3);
+    }
 
-  try {
-    const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
-    const tx    = await vault.depositCollateral({ value: ethers.parseEther(String(amt)) });
-    showToast('⏳', 'Transaction sent! Waiting for confirmation…', tx.hash);
-    await tx.wait();
-    showToast('✅', `Deposited ${amt} DOT successfully!`, tx.hash);
-    document.getElementById('depositAmt').value = '';
-    await refresh();
-  } catch (e) {
-    showToast('❌', e.reason || e.message || 'Deposit failed');
-  } finally {
-    btn.innerHTML = 'Deposit';
-    btn.disabled = false;
-  }
-}
+    .risk-nodebt {
+      background: rgba(100, 116, 139, .15);
+      color: var(--muted);
+      border: 1px solid rgba(100, 116, 139, .3);
+    }
 
-async function mintSUSD() {
-  const amt = parseFloat(document.getElementById('mintAmt').value);
-  if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid sUSD amount'); return; }
+    /* ── Live price ticker ── */
+    .price-ticker {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      background: rgba(6, 182, 212, .06);
+      border: 1px solid rgba(6, 182, 212, .2);
+      margin-bottom: 32px;
+      width: fit-content;
+    }
 
-  const btn = document.getElementById('mintBtn');
-  btn.innerHTML = '<span class="spinner"></span> Minting…';
-  btn.disabled = true;
+    .ticker-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulse 2s infinite;
+    }
 
-  try {
-    const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
-    const tx    = await vault.mintStablecoin(ethers.parseEther(String(amt)));
-    showToast('⏳', 'Transaction sent! Waiting for confirmation…', tx.hash);
-    await tx.wait();
-    showToast('✅', `Minted ${amt} sUSD!`, tx.hash);
-    document.getElementById('mintAmt').value = '';
-    await refresh();
-  } catch (e) {
-    showToast('❌', e.reason || e.message || 'Mint failed');
-  } finally {
-    btn.innerHTML = 'Mint';
-    btn.disabled = false;
-  }
-}
+    .ticker-text {
+      font-size: .85rem;
+      color: var(--muted);
+    }
 
-// ─────────────────────────────────────────────────────────────
-//  HELPERS
-// ─────────────────────────────────────────────────────────────
-function setMaxDot()  { document.getElementById('depositAmt').value = document.getElementById('depositAmt').dataset.max || ''; }
-function setMaxMint() { document.getElementById('mintAmt').value   = document.getElementById('mintAmt').dataset.max    || ''; }
-function shortAddr(a) { return a.slice(0,6) + '...' + a.slice(-4); }
+    .ticker-price {
+      font-weight: 700;
+      color: var(--cyan);
+    }
 
-let toastTimer;
-function showToast(icon, msg, txHash) {
-  const t    = document.getElementById('toast');
-  const link = document.getElementById('toastLink');
-  document.getElementById('toastIcon').textContent = icon;
-  document.getElementById('toastMsg').textContent  = msg;
-  if (txHash) {
-    link.href = `${EXPLORER}/tx/${txHash}`;
-    link.textContent = 'View on Blockscout →';
-    link.style.display = 'block';
-  } else { link.style.display = 'none'; }
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 6000);
-}
-</script>
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .3;
+      }
+    }
+
+    /* ── Section headers ── */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Action panel ── */
+    .action-card {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-group label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .input-row input:focus {
+      border-color: var(--purple);
+    }
+
+    .input-row input::placeholder {
+      color: var(--muted);
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: .9rem;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), #6d28d9);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(139, 92, 246, .3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 24px rgba(139, 92, 246, .5);
+    }
+
+    .btn-primary:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: rgba(6, 182, 212, .1);
+      color: var(--cyan);
+      border: 1px solid rgba(6, 182, 212, .3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(6, 182, 212, .2);
+    }
+
+    .btn-secondary:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, .1);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, .3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, .2);
+    }
+
+    .hint-text {
+      font-size: .76rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .max-link {
+      font-size: .75rem;
+      color: var(--purple);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      padding: 14px 20px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      font-size: .88rem;
+      max-width: 340px;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .toast-link {
+      color: var(--cyan);
+      font-size: .78rem;
+      display: block;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    /* ── Wallet prompt ── */
+    #walletPrompt {
+      text-align: center;
+      padding: 80px 24px;
+    }
+
+    .prompt-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    #walletPrompt h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    #walletPrompt p {
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── Network info ── */
+    .network-info {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .net-tag {
+      font-size: .75rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .net-tag b {
+      color: var(--text);
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, .2);
+      border-top-color: #fff;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #dashboard {
+      display: none;
+    }
+
+    /* ── Wallet picker modal ── */
+    #walletModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(8px);
+    }
+
+    #walletModal.open {
+      display: flex;
+    }
+
+    .wm-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      min-width: 320px;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .wm-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .wm-sub {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .wm-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .wm-opt {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .03);
+      transition: all .15s;
+    }
+
+    .wm-opt:hover {
+      border-color: var(--purple);
+      background: rgba(139, 92, 246, .08);
+    }
+
+    .wm-opt.unavailable {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .wm-opt img,
+    .wm-opt .wm-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+    }
+
+    .wm-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      background: rgba(255, 255, 255, .06);
+    }
+
+    .wm-name {
+      font-weight: 600;
+      font-size: .95rem;
+    }
+
+    .wm-badge {
+      font-size: .7rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-top: 2px;
+      background: rgba(16, 185, 129, .15);
+      color: var(--green);
+      display: inline-block;
+    }
+
+    .wm-badge.unavail {
+      background: rgba(100, 116, 139, .15);
+      color: var(--muted);
+    }
+
+    .wm-close {
+      width: 100%;
+      margin-top: 16px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: background .15s;
+    }
+
+    .wm-close:hover {
+      background: rgba(255, 255, 255, .05);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span>Sentinel</span>
+      <span class="nav-badge">Polkadot Hub Testnet</span>
+    </div>
+    <div id="navRight">
+      <button id="connectBtn" onclick="showWalletPicker()">Connect Wallet</button>
+    </div>
+  </nav>
+
+  <!-- ── TOAST ── -->
+  <div id="toast">
+    <span class="toast-icon" id="toastIcon">✅</span>
+    <div>
+      <span id="toastMsg"></span>
+      <a id="toastLink" href="#" target="_blank" class="toast-link" style="display:none"></a>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- Wallet picker modal -->
+    <div id="walletModal">
+      <div class="wm-box">
+        <div class="wm-title">Connect a Wallet</div>
+        <div class="wm-sub">Choose your wallet to connect to Sentinel</div>
+        <div class="wm-list" id="walletList"></div>
+        <button class="wm-close" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Wallet prompt -->
+    <div id="walletPrompt">
+      <div class="prompt-icon">🛡️</div>
+      <h2>Sentinel Agentic Vault</h2>
+      <p>Connect your wallet to deposit DOT collateral, mint sUSD, and let the Sentinel AI bot guard your position 24/7.
+      </p>
+      <button class="btn btn-primary" style="font-size:1rem;padding:14px 32px;" onclick="showWalletPicker()">
+        Connect Wallet
+      </button>
+      <div style="margin-top:24px;" class="network-info" style="justify-content:center;">
+        <div class="net-tag">⛓️ Chain ID: <b>420420417</b></div>
+        <div class="net-tag">🏦 Vault: <b>0xb57a5D...3579</b></div>
+        <div class="net-tag">💵 sUSD: <b>0x9Cc3ef...3A0</b></div>
+      </div>
+    </div>
+
+    <!-- Dashboard (shown after connect) -->
+    <div id="dashboard">
+      <h1 class="hero">Your <span>Vault Position</span></h1>
+      <p class="hero-sub">Deposit DOT as collateral and mint sUSD. Sentinel monitors your health factor 24/7.</p>
+
+      <!-- Live DOT price -->
+      <div class="price-ticker">
+        <div class="ticker-dot"></div>
+        <span class="ticker-text">DOT/USD</span>
+        <span class="ticker-price" id="dotPrice">Loading…</span>
+        <span class="ticker-text" style="margin-left:8px;">via Pyth Network</span>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid-3" style="margin-bottom:24px;">
+
+        <!-- Health Factor big card -->
+        <div class="card hf-card" id="hfCard">
+          <div class="hf-gauge">
+            <svg viewBox="0 0 100 100">
+              <circle class="hf-track" cx="50" cy="50" r="45" />
+              <circle class="hf-fill" id="hfCircle" cx="50" cy="50" r="45" />
+            </svg>
+            <div class="hf-center">
+              <span class="hf-pct" id="hfPct">—</span>
+              <span class="hf-lbl">HF</span>
+            </div>
+          </div>
+          <div class="hf-info">
+            <div class="hf-title">Health Factor</div>
+            <div class="hf-desc" id="hfDesc">Connect your wallet to see your position health.</div>
+            <div id="riskBadge" class="risk-badge risk-nodebt">● No Position</div>
+          </div>
+        </div>
+
+        <!-- Collateral -->
+        <div class="card">
+          <div class="card-label">Collateral</div>
+          <div class="card-value" id="collateralVal">— DOT</div>
+          <div class="card-sub" id="collateralUSD">≈ $—</div>
+        </div>
+
+        <!-- Minted sUSD -->
+        <div class="card">
+          <div class="card-label">Minted Debt</div>
+          <div class="card-value" id="mintedVal">— sUSD</div>
+          <div class="card-sub" id="maxMint">Max mintable: —</div>
+        </div>
+
+      </div>
+
+      <!-- Actions -->
+      <p class="section-title">Actions</p>
+
+      <div class="grid-2">
+
+        <!-- Deposit -->
+        <div class="card action-card">
+          <div>
+            <div class="card-label" style="margin-bottom:12px;">💎 Deposit DOT Collateral</div>
+            <div class="input-group">
+              <label>Amount <span class="max-link" onclick="setMaxDot()">Use max</span></label>
+              <div class="input-row">
+                <input id="depositAmt" type="number" min="0" step="0.1" placeholder="e.g. 100" />
+                <button class="btn btn-primary" id="depositBtn" onclick="depositDOT()">Deposit</button>
+              </div>
+            </div>
+            <div class="hint-text">Wallet balance: <span id="walletBal">—</span> DOT</div>
+          </div>
+        </div>
+
+        <!-- Mint -->
+        <div class="card action-card">
+          <div>
+            <div class="card-label" style="margin-bottom:12px;">🪙 Mint sUSD Stablecoin</div>
+            <div class="input-group">
+              <label>Amount <span class="max-link" onclick="setMaxMint()">Use max safe</span></label>
+              <div class="input-row">
+                <input id="mintAmt" type="number" min="0" step="1" placeholder="e.g. 60" />
+                <button class="btn btn-secondary" id="mintBtn" onclick="mintSUSD()">Mint</button>
+              </div>
+            </div>
+            <div class="hint-text">Minting locks your DOT at 150% collateral ratio minimum.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Network info -->
+      <div class="network-info" style="margin-top:28px;">
+        <div class="net-tag">⛓️ Chain: <b>Polkadot Hub Testnet (420420417)</b></div>
+        <div class="net-tag">🏦 Vault: <b>0xb57a5D2621Ba0D149c0F1076009D42f107d33579</b></div>
+        <div class="net-tag">💵 sUSD: <b>0x9Cc3efD0e03AfE50A04Cc5643bE7509023b193A0</b></div>
+        <div class="net-tag">📡 Oracle: <b>MockPriceOracle</b></div>
+      </div>
+
+    </div><!-- /dashboard -->
+  </main>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────
+    //  CONFIG
+    // ─────────────────────────────────────────────────────────────
+    const CHAIN_ID = 420420417n;
+    const CHAIN_HEX = '0x' + (420420417).toString(16);
+    const RPC_URL = 'https://services.polkadothub-rpc.com/testnet';
+    const VAULT_ADDR = '0xb57a5D2621Ba0D149c0F1076009D42f107d33579';
+    const SUSD_ADDR = '0x9Cc3efD0e03AfE50A04Cc5643bE7509023b193A0';
+    const PYTH_URL = 'https://hermes.pyth.network/v2/updates/price/latest?ids[]=0xca3eed9b267293f6595901c734c7525ce8ef49adafe8284606ceb307afa2ca5b';
+    const EXPLORER = 'https://polkadot-hub-testnet.blockscout.com';
+
+    const VAULT_ABI = [
+      'function depositCollateral() external payable',
+      'function mintStablecoin(uint256 amountSUSD) external',
+      'function getPosition(address user) external view returns (uint256 collateralDOT, uint256 mintedSUSD, uint256 collateralUSD, uint256 healthFactor, bool paused)',
+      'function getAllUsers() external view returns (address[])',
+      'function COLLATERAL_RATIO() external view returns (uint256)',
+    ];
+
+    const SUSD_ABI = ['function balanceOf(address) external view returns (uint256)'];
+
+    // ─────────────────────────────────────────────────────────────
+    //  STATE
+    // ─────────────────────────────────────────────────────────────
+    let provider, signer, userAddr;
+    let dotPrice = 0;
+
+    // ─────────────────────────────────────────────────────────────
+    //  WALLET PICKER
+    // ─────────────────────────────────────────────────────────────
+
+    // Wallets Sentinel knows about, in priority order
+    const KNOWN_WALLETS = [
+      {
+        id: 'talisman',
+        name: 'Talisman',
+        icon: '🌈',
+        // Talisman injects window.talismanEth as its dedicated EVM provider
+        // It also sets window.ethereum but MetaMask often overrides it
+        getProvider: () => window.talismanEth || (window.ethereum?.isTalisman ? window.ethereum : null),
+      },
+      {
+        id: 'metamask',
+        name: 'MetaMask',
+        icon: '🦊',
+        getProvider: () => {
+          // In environments with multiple wallets, MetaMask exposes itself via window.ethereum.providers[]
+          if (window.ethereum?.providers) {
+            return window.ethereum.providers.find(p => p.isMetaMask && !p.isTalisman) || null;
+          }
+          return window.ethereum?.isMetaMask && !window.ethereum?.isTalisman ? window.ethereum : null;
+        },
+      },
+      {
+        id: 'other',
+        name: 'Browser Wallet',
+        icon: '🔑',
+        getProvider: () => window.ethereum || null,
+      },
+    ];
+
+    function showWalletPicker() {
+      const list = document.getElementById('walletList');
+      list.innerHTML = '';
+
+      KNOWN_WALLETS.forEach(w => {
+        const prov = w.getProvider();
+        const available = !!prov;
+
+        const el = document.createElement('div');
+        el.className = 'wm-opt' + (available ? '' : ' unavailable');
+        el.innerHTML = `
+      <div class="wm-icon">${w.icon}</div>
+      <div>
+        <div class="wm-name">${w.name}</div>
+        <span class="wm-badge${available ? '' : ' unavail'}">${available ? 'Detected' : 'Not installed'}</span>
+      </div>
+    `;
+        if (available) el.onclick = () => connectWallet(w.id, prov);
+        list.appendChild(el);
+      });
+
+      document.getElementById('walletModal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('walletModal').classList.remove('open');
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('walletModal')?.addEventListener('click', e => {
+      if (e.target === document.getElementById('walletModal')) closeModal();
+    });
+
+    async function connectWallet(walletId, rawProvider) {
+      closeModal();
+      if (!rawProvider) {
+        showToast('⚠️', 'No wallet detected. Install Talisman or MetaMask.'); return;
+      }
+      try {
+        await rawProvider.request({ method: 'eth_requestAccounts' });
+
+        // Switch / add Polkadot Hub Testnet
+        try {
+          await rawProvider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: CHAIN_HEX }],
+          });
+        } catch (sw) {
+          if (sw.code === 4902 || sw.code === -32603) {
+            await rawProvider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: CHAIN_HEX,
+                chainName: 'Polkadot Hub Testnet',
+                nativeCurrency: { name: 'WND', symbol: 'WND', decimals: 18 },
+                rpcUrls: [RPC_URL],
+                blockExplorerUrls: [EXPLORER],
+              }],
+            });
+          }
+        }
+
+        provider = new ethers.BrowserProvider(rawProvider);
+        signer = await provider.getSigner();
+        userAddr = await signer.getAddress();
+
+        document.getElementById('walletPrompt').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('navRight').innerHTML =
+          `<div class="wallet-address">${shortAddr(userAddr)}</div>`;
+
+        await refresh();
+        setInterval(refresh, 30000);
+        fetchDotPrice();
+        setInterval(fetchDotPrice, 30000);
+
+        showToast('✅', `${walletId ? walletId.charAt(0).toUpperCase() + walletId.slice(1) : 'Wallet'} connected!`);
+      } catch (e) {
+        showToast('❌', e.message || 'Connection failed');
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  DATA REFRESH
+    // ─────────────────────────────────────────────────────────────
+    async function refresh() {
+      if (!provider || !userAddr) return;
+      try {
+        const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, provider);
+        const pos = await vault.getPosition(userAddr);
+        const balance = await provider.getBalance(userAddr);
+
+        const collDOT = parseFloat(ethers.formatEther(pos[0]));
+        const minted = parseFloat(ethers.formatEther(pos[1]));
+        const collUSD = parseFloat(ethers.formatEther(pos[2]));
+        const hf = parseFloat(ethers.formatEther(pos[3])) * 100;
+        const walBal = parseFloat(ethers.formatEther(balance));
+
+        document.getElementById('collateralVal').textContent = collDOT.toFixed(2) + ' DOT';
+        document.getElementById('collateralUSD').textContent = '≈ $' + collUSD.toFixed(2);
+        document.getElementById('mintedVal').textContent = minted.toFixed(2) + ' sUSD';
+        document.getElementById('walletBal').textContent = walBal.toFixed(3);
+
+        // Max mintable at 150% CR
+        const maxMintable = collUSD > 0 ? (collUSD * 100 / 150 - minted) : 0;
+        document.getElementById('maxMint').textContent = 'Max mintable: ' +
+          (maxMintable > 0 ? maxMintable.toFixed(2) + ' sUSD' : '0 (fully utilized)');
+
+        document.getElementById('mintAmt').dataset.max = Math.max(0, maxMintable).toFixed(4);
+        document.getElementById('depositAmt').dataset.max = walBal.toFixed(4);
+
+        updateHFDisplay(hf, collDOT, minted);
+      } catch (e) {
+        console.error('refresh error:', e);
+      }
+    }
+
+    async function fetchDotPrice() {
+      try {
+        const r = await fetch(PYTH_URL);
+        const d = await r.json();
+        const p = d.parsed[0].price;
+        dotPrice = parseFloat(p.price) * Math.pow(10, p.expo);
+        document.getElementById('dotPrice').textContent = '$' + dotPrice.toFixed(4);
+      } catch { document.getElementById('dotPrice').textContent = 'Unavailable'; }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  HEALTH FACTOR UI
+    // ─────────────────────────────────────────────────────────────
+    function updateHFDisplay(hf, collDOT, minted) {
+      const pct = document.getElementById('hfPct');
+      const cir = document.getElementById('hfCircle');
+      const desc = document.getElementById('hfDesc');
+      const badge = document.getElementById('riskBadge');
+
+      if (minted === 0) {
+        pct.textContent = '∞';
+        cir.style.stroke = 'var(--green)';
+        cir.style.strokeDashoffset = '0';
+        badge.className = 'risk-badge risk-nodebt';
+        badge.textContent = '● No Debt — Fully Safe';
+        desc.textContent = 'You have no sUSD debt. Mint sUSD to start earning.';
+        return;
+      }
+
+      pct.textContent = hf.toFixed(1) + '%';
+      const circum = 2 * Math.PI * 45;
+      const fraction = Math.min(hf / 200, 1);
+      cir.style.strokeDashoffset = circum * (1 - fraction);
+
+      let color, cls, label, descText;
+      if (hf >= 150) {
+        color = 'var(--green)'; cls = 'risk-safe'; label = '● SAFE'; descText = 'Your position is healthy. Sentinel is watching.';
+      } else if (hf >= 130) {
+        color = 'var(--yellow)'; cls = 'risk-warning'; label = '⚠️ WARNING'; descText = 'Health factor is declining. Sentinel has sent you an alert.';
+      } else if (hf >= 120) {
+        color = 'var(--red)'; cls = 'risk-danger'; label = '🚨 DANGER'; descText = 'Position paused by Sentinel. Repay debt to restore.';
+      } else {
+        color = 'var(--red)'; cls = 'risk-danger'; label = '💀 CRITICAL'; descText = 'Emergency rebalance triggered! Check Telegram for TX.';
+      }
+      cir.style.stroke = color;
+      badge.className = 'risk-badge ' + cls;
+      badge.textContent = label;
+      desc.textContent = descText;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  ACTIONS
+    // ─────────────────────────────────────────────────────────────
+    async function depositDOT() {
+      const amt = parseFloat(document.getElementById('depositAmt').value);
+      if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid DOT amount'); return; }
+
+      const btn = document.getElementById('depositBtn');
+      btn.innerHTML = '<span class="spinner"></span> Sending…';
+      btn.disabled = true;
+
+      try {
+        const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
+        const tx = await vault.depositCollateral({ value: ethers.parseEther(String(amt)) });
+        showToast('⏳', 'Transaction sent! Waiting for confirmation…', tx.hash);
+        await tx.wait();
+        showToast('✅', `Deposited ${amt} DOT successfully!`, tx.hash);
+        document.getElementById('depositAmt').value = '';
+        await refresh();
+      } catch (e) {
+        showToast('❌', e.reason || e.message || 'Deposit failed');
+      } finally {
+        btn.innerHTML = 'Deposit';
+        btn.disabled = false;
+      }
+    }
+
+    async function mintSUSD() {
+      const amt = parseFloat(document.getElementById('mintAmt').value);
+      if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid sUSD amount'); return; }
+
+      const btn = document.getElementById('mintBtn');
+      btn.innerHTML = '<span class="spinner"></span> Minting…';
+      btn.disabled = true;
+
+      try {
+        const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
+        const tx = await vault.mintStablecoin(ethers.parseEther(String(amt)));
+        showToast('⏳', 'Transaction sent! Waiting for confirmation…', tx.hash);
+        await tx.wait();
+        showToast('✅', `Minted ${amt} sUSD!`, tx.hash);
+        document.getElementById('mintAmt').value = '';
+        await refresh();
+      } catch (e) {
+        showToast('❌', e.reason || e.message || 'Mint failed');
+      } finally {
+        btn.innerHTML = 'Mint';
+        btn.disabled = false;
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  HELPERS
+    // ─────────────────────────────────────────────────────────────
+    function setMaxDot() { document.getElementById('depositAmt').value = document.getElementById('depositAmt').dataset.max || ''; }
+    function setMaxMint() { document.getElementById('mintAmt').value = document.getElementById('mintAmt').dataset.max || ''; }
+    function shortAddr(a) { return a.slice(0, 6) + '...' + a.slice(-4); }
+
+    let toastTimer;
+    function showToast(icon, msg, txHash) {
+      const t = document.getElementById('toast');
+      const link = document.getElementById('toastLink');
+      document.getElementById('toastIcon').textContent = icon;
+      document.getElementById('toastMsg').textContent = msg;
+      if (txHash) {
+        link.href = `${EXPLORER}/tx/${txHash}`;
+        link.textContent = 'View on Blockscout →';
+        link.style.display = 'block';
+      } else { link.style.display = 'none'; }
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 6000);
+    }
+  </script>
 </body>
+
 </html>
