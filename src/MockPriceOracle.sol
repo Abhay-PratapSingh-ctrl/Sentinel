@@ -66,12 +66,12 @@ contract MockPriceOracle {
      * @param newPrice  New price in 8-decimal format (e.g. 450_000_000 = $4.50)
      *
      * DEMO CHEAT SHEET:
-     *   $8.00 → setPrice(800_000_000)   // bullish
-     *   $7.00 → setPrice(700_000_000)   // safe baseline
-     *   $5.25 → setPrice(525_000_000)   // HF warning zone (~128%)
-     *   $4.85 → setPrice(485_000_000)   // HF danger zone (~124%)
-     *   $4.60 → setPrice(460_000_000)   // HF critical — bot triggers rebalance
-     *   $4.00 → setPrice(400_000_000)   // liquidatable
+     *   $1.50 → setPrice(150_000_000)   // bullish
+     *   $1.00 → setPrice(100_000_000)   // safe baseline (~150% HF)
+     *   $0.75 → setPrice(75_000_000)    // HF warning zone (~112%)
+     *   $0.70 → setPrice(70_000_000)    // HF danger zone (~105%)
+     *   $0.65 → setPrice(65_000_000)    // HF critical - bot triggers rebalance
+     *   $0.55 → setPrice(55_000_000)    // liquidatable
      */
     function setPrice(int256 newPrice) external onlyOwner {
         require(newPrice > 0, "MockOracle: price must be positive");

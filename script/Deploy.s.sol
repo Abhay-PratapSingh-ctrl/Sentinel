@@ -85,7 +85,7 @@ contract DeployScript is Script {
         // Deploy our test oracle that returns a configurable DOT price.
         // For testnet demos, we can manually set the price to simulate drops.
         MockPriceOracle oracle = new MockPriceOracle(
-            700_000_000 // Initial DOT price = $7.00 (8 decimals: 7.00 * 1e8)
+            100_000_000 // Initial DOT price = $1.00 (8 decimals: 1.00 * 1e8)
         );
         console.log("MockPriceOracle deployed:", address(oracle));
 
