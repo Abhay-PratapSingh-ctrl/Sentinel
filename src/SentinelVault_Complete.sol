@@ -220,7 +220,7 @@ contract SentinelVault {
 
         // ✅ REPLACES TODO: pulls tokens in then destroys them
         bool pulled = sUSD.transferFrom(msg.sender, address(this), amountSUSD);
-        require(pulled, "Sentinel: transferFrom failed — did you approve vault?");
+        require(pulled, "Sentinel: transferFrom failed - did you approve vault?");
         sUSD.burnFrom(address(this), amountSUSD);
 
         emit StablecoinBurned(msg.sender, amountSUSD);
