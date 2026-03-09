@@ -39,6 +39,10 @@ public class SentinelConfig {
     // ── Scheduler ─────────────────────────────────────────────────
     private long monitorIntervalMs;
 
+    // ── Strategy ──────────────────────────────────────────────────
+    // "CONSERVATIVE" or "AGGRESSIVE"
+    private String strategyMode = "CONSERVATIVE"; 
+
     // ── Telegram ──────────────────────────────────────────────────
     private String telegramBotToken;
     private String telegramBotUsername;

@@ -350,7 +350,16 @@ public class VaultContractService {
 
         BigInteger hfWarn      = config.thresholdToScaled(config.getHfWarningThreshold());
         BigInteger hfPause     = config.thresholdToScaled(config.getHfPauseThreshold());
-        BigInteger hfRebalance = config.thresholdToScaled(config.getHfRebalanceThreshold());
+        
+        // Rebalance threshold depends on strategy
+        int rebalancePct = config.getHfRebalanceThreshold(); // Default 120
+        if ("CONSERVATIVE".equalsIgnoreCase(config.getStrategyMode())) {
+            rebalancePct = 145; // Strategy-based Conservative Rebalance
+        } else if ("AGGRESSIVE".equalsIgnoreCase(config.getStrategyMode())) {
+            rebalancePct = 115; // Strategy-based Aggressive Rebalance
+        }
+
+        BigInteger hfRebalance = config.thresholdToScaled(rebalancePct);
         BigInteger hfSafe      = config.thresholdToScaled(config.getHfSafeThreshold());
 
         if (healthFactor.compareTo(hfSafe) >= 0)      return VaultPosition.RiskLevel.SAFE;

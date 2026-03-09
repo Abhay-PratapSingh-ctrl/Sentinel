@@ -41,7 +41,7 @@ public class MonitoringService {
 
     private final Map<String, Long> lastAlertTime   = new ConcurrentHashMap<>();
     private final Set<String> rebalancedThisCycle   = ConcurrentHashMap.newKeySet();
-    private static final long ALERT_COOLDOWN_MS     = 10 * 60 * 1000; // 10 minutes
+    private static final long ALERT_COOLDOWN_MS     = 30 * 1000; // 30 seconds (demo mode)
 
     @Scheduled(fixedDelayString = "${sentinel.monitor-interval-ms}")
     public void monitorAllPositions() {

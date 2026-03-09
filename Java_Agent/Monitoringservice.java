@@ -53,6 +53,8 @@ public class MonitoringService {
     private final VaultContractService vaultService;
     private final TelegramAlertService telegramService;
     private final PythOracleService   oracleService;
+    private final VolatilityService   volatilityService;
+    private final LighthouseService   lighthouseService;
 
     // Track last alert time per wallet to avoid spamming (cooldown = 10 min)
     private final Map<String, Long> lastAlertTime = new ConcurrentHashMap<>();
@@ -83,7 +85,10 @@ public class MonitoringService {
         BigDecimal dotPrice;
         try {
             dotPrice = oracleService.getDOTPriceUSD();
-            log.info("DOT/USD price: ${}", dotPrice.toPlainString());
+            volatilityService.addPrice(dotPrice);
+            log.info("DOT/USD price: ${} (Volatility: {})", 
+                    dotPrice.toPlainString(), 
+                    volatilityService.calculateShortTermVolatility().toPlainString());
         } catch (Exception e) {
             log.error("Cannot fetch DOT price — skipping this monitoring cycle: {}", e.getMessage());
             return; // Don't act without price data — too risky
@@ -135,6 +140,18 @@ public class MonitoringService {
                         liquidatable++;
                         handleLiquidatable(position);
                     }
+                }
+
+                // AI PREDICTION LAYER
+                int riskPct = volatilityService.predictLiquidationRisk(
+                        position.getHealthFactorPercent().doubleValue() / 100.0, 
+                        dotPrice);
+                
+                if (riskPct > 50 && !isInCooldown(userAddress + "_predict")) {
+                    log.info("🤖 SENTINEL PREDICT: User {} has a {}% chance of liquidation within 30m.", 
+                            position.getShortAddress(), riskPct);
+                    // Add logic to notify via Telegram in the future
+                    updateAlertTime(userAddress + "_predict");
                 }
 
             } catch (Exception e) {
@@ -193,6 +210,15 @@ public class MonitoringService {
                 telegramService.sendPausedAlert(position, txHash);
             }
             updateAlertTime(position.getUserAddress());
+
+            // ── Lighthouse Transparency Log ───────────────────────────
+            lighthouseService.uploadTransparencyLog("POSITION_PAUSED", Map.of(
+                "user", position.getUserAddress(),
+                "healthFactor", position.getHealthFactorPercent(),
+                "reason", reason,
+                "txHash", txHash,
+                "strategy", config.getStrategyMode()
+            ));
 
         } catch (Exception e) {
             log.error("Failed to pause position {}: {}", position.getShortAddress(), e.getMessage());
@@ -289,11 +315,26 @@ public class MonitoringService {
             log.info("Emergency rebalance complete for {}. New HF: {}",
                     position.getShortAddress(), afterPosition.getHealthFactorPercent());
 
+            // ── Lighthouse Transparency Log ───────────────────────────
+            lighthouseService.uploadTransparencyLog("EMERGENCY_REBALANCE", Map.of(
+                "user", position.getUserAddress(),
+                "hfBefore", position.getHealthFactorPercent(),
+                "hfAfter", afterPosition.getHealthFactorPercent(),
+                "dotSold", dotToSellFormatted,
+                "txHash", txHash,
+                "strategy", config.getStrategyMode()
+            ));
+
         } catch (Exception e) {
             log.error("Emergency rebalance FAILED for {}: {}",
                     position.getShortAddress(), e.getMessage());
 
-            if (telegramService.isWalletLinked(position.getUserAddress())) {
+            if (e.getMessage().contains("User approval required")) {
+                if (telegramService.isWalletLinked(position.getUserAddress())) {
+                    telegramService.sendRebalanceFailedAlert(position, 
+                        "High-value rebalance needs your signature! Please approve on the Sentinel Dashboard.");
+                }
+            } else if (telegramService.isWalletLinked(position.getUserAddress())) {
                 telegramService.sendRebalanceFailedAlert(position, e.getMessage());
             }
         }
