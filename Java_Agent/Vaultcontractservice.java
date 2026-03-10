@@ -139,7 +139,24 @@ public class VaultContractService {
      * This is the core data the monitoring loop works with.
      */
     public VaultPosition getPosition(String userAddress) throws Exception {
-        Function function = new Function(
+        // ── Try new multi-collateral 6-tuple first ────────────────
+        // New contract: (collateralDOT, collateralUSDT, mintedSUSD, collateralUSD, healthFactor, paused)
+        Function function6 = new Function(
+                "getPosition",
+                Collections.singletonList(new Address(userAddress)),
+                Arrays.asList(
+                        new TypeReference<Uint256>() {},   // collateralDOT
+                        new TypeReference<Uint256>() {},   // collateralUSDT (6 decimals)
+                        new TypeReference<Uint256>() {},   // mintedSUSD
+                        new TypeReference<Uint256>() {},   // collateralUSD (total)
+                        new TypeReference<Uint256>() {},   // healthFactor
+                        new TypeReference<Bool>() {}       // paused
+                )
+        );
+
+        // ── Legacy 5-tuple fallback ───────────────────────────────
+        // Old contract: (collateralDOT, mintedSUSD, collateralUSD, healthFactor, paused)
+        Function function5 = new Function(
                 "getPosition",
                 Collections.singletonList(new Address(userAddress)),
                 Arrays.asList(
@@ -151,7 +168,7 @@ public class VaultContractService {
                 )
         );
 
-        String encodedFunction = FunctionEncoder.encode(function);
+        String encodedFunction = FunctionEncoder.encode(function6);
         EthCall response = web3j.ethCall(
                 Transaction.createEthCallTransaction(
                         guardianCredentials.getAddress(),
@@ -166,28 +183,57 @@ public class VaultContractService {
                     + ": " + response.getError().getMessage());
         }
 
-        List<Type> result = FunctionReturnDecoder.decode(
-                response.getValue(),
-                function.getOutputParameters()
-        );
+        String rawValue = response.getValue();
 
-        BigInteger collateralDOT = ((Uint256) result.get(0)).getValue();
-        BigInteger mintedSUSD    = ((Uint256) result.get(1)).getValue();
-        BigInteger collateralUSD = ((Uint256) result.get(2)).getValue();
-        BigInteger healthFactor  = ((Uint256) result.get(3)).getValue();
-        boolean    paused        = ((Bool)    result.get(4)).getValue();
+        // ABI 6-tuple = 6 * 32 bytes = 192 bytes = 384 hex chars + "0x" prefix = 386
+        // ABI 5-tuple = 5 * 32 bytes = 160 bytes = 320 hex chars + "0x" prefix = 322
+        boolean isNewContract = rawValue != null && rawValue.length() >= 386;
 
-        return VaultPosition.builder()
-                .userAddress(userAddress)
-                .collateralDOT(collateralDOT)
-                .mintedSUSD(mintedSUSD)
-                .collateralUSD(collateralUSD)
-                .healthFactor(healthFactor)
-                .paused(paused)
-                .fetchedAt(System.currentTimeMillis())
-                .riskLevel(computeRiskLevel(healthFactor, mintedSUSD))
-                .build();
+        if (isNewContract) {
+            // ── New multi-collateral contract ──────────────────────
+            List<Type> result = FunctionReturnDecoder.decode(rawValue, function6.getOutputParameters());
+            BigInteger collateralDOT  = ((Uint256) result.get(0)).getValue();
+            BigInteger collateralUSDT = ((Uint256) result.get(1)).getValue();
+            BigInteger mintedSUSD     = ((Uint256) result.get(2)).getValue();
+            BigInteger collateralUSD  = ((Uint256) result.get(3)).getValue();
+            BigInteger healthFactor   = ((Uint256) result.get(4)).getValue();
+            boolean    paused         = ((Bool)    result.get(5)).getValue();
+
+            return VaultPosition.builder()
+                    .userAddress(userAddress)
+                    .collateralDOT(collateralDOT)
+                    .collateralUSDT(collateralUSDT)
+                    .mintedSUSD(mintedSUSD)
+                    .collateralUSD(collateralUSD)
+                    .healthFactor(healthFactor)
+                    .paused(paused)
+                    .fetchedAt(System.currentTimeMillis())
+                    .riskLevel(computeRiskLevel(healthFactor, mintedSUSD))
+                    .build();
+        } else {
+            // ── Legacy contract (currently deployed on testnet) ────
+            List<Type> result = FunctionReturnDecoder.decode(rawValue, function5.getOutputParameters());
+            BigInteger collateralDOT = ((Uint256) result.get(0)).getValue();
+            BigInteger mintedSUSD    = ((Uint256) result.get(1)).getValue();
+            BigInteger collateralUSD = ((Uint256) result.get(2)).getValue();
+            BigInteger healthFactor  = ((Uint256) result.get(3)).getValue();
+            boolean    paused        = ((Bool)    result.get(4)).getValue();
+
+            return VaultPosition.builder()
+                    .userAddress(userAddress)
+                    .collateralDOT(collateralDOT)
+                    .collateralUSDT(BigInteger.ZERO)  // legacy contract has no USDT
+                    .mintedSUSD(mintedSUSD)
+                    .collateralUSD(collateralUSD)
+                    .healthFactor(healthFactor)
+                    .paused(paused)
+                    .fetchedAt(System.currentTimeMillis())
+                    .riskLevel(computeRiskLevel(healthFactor, mintedSUSD))
+                    .build();
+        }
     }
+
+
 
     // ═════════════════════════════════════════════
     //  WRITE FUNCTIONS — guardian wallet signs these
@@ -263,6 +309,26 @@ public class VaultContractService {
                         new Uint256(dotToSell),
                         new Uint256(minSUSDOut)
                 ),
+                Collections.emptyList()
+        );
+
+        return sendGuardianTransaction(function);
+    }
+
+    /**
+     * Calls setRebalanceTargetHfBps(uint256) on the vault.
+     * The Java bot calls this when Aegis activates/deactivates to keep the
+     * on-chain PVM target in sync with the off-chain Aegis threshold.
+     *
+     * @param targetHfBps target HF in basis points (15000 = 150%, 17000 = 170%)
+     */
+    public String setRebalanceTargetHfBps(int targetHfBps) throws Exception {
+        log.info("Guardian: setting on-chain rebalance target to {}bps ({} %)",
+                targetHfBps, targetHfBps / 100);
+
+        Function function = new Function(
+                "setRebalanceTargetHfBps",
+                Collections.singletonList(new Uint256(BigInteger.valueOf(targetHfBps))),
                 Collections.emptyList()
         );
 

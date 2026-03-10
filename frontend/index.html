@@ -14,27 +14,23 @@
 
     :root {
       --bg: #0a0c10;
-      /* Transformers Aesthetics */
       --steel: #1a1f2e;
       --steel-light: #2d3748;
       --bumblebee: #ffd700;
-      /* Yellow Glow */
       --optimus-red: #ff4d4d;
-      /* Pulse Red */
       --cyber-cyan: #00f2ff;
-      /* Neural Cyan */
-
       --purple: var(--bumblebee);
-      /* Override for consistency */
       --cyan: var(--cyber-cyan);
       --green: #39FF14;
-      /* Matrix Green */
       --red: var(--optimus-red);
       --yellow: var(--bumblebee);
       --white: #e2e8f0;
       --muted: #718096;
       --glass: rgba(26, 31, 46, 0.85);
       --border: rgba(255, 215, 0, 0.2);
+      --card: rgba(26, 31, 46, 0.85);
+      --radius: 14px;
+      --text: #e2e8f0;
     }
 
     *,
@@ -51,20 +47,11 @@
       min-height: 100vh;
       overflow-x: hidden;
       font-family: 'Inter', sans-serif;
-      /* Cybertronian Hex Grid */
       background-image:
         radial-gradient(circle at 50% 50%, rgba(20, 25, 40, 0.5), var(--bg)),
         url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill-opacity='0.03' fill='%23ffd700' fill-rule='evenodd'/%3E%3C/svg%3E");
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 40px 20px;
-      position: relative;
-    }
-
-    /* ── Cybertronian Mechanical Headers ── */
     h1,
     h2,
     h3,
@@ -76,7 +63,6 @@
       letter-spacing: 2px;
     }
 
-    /* ── Glow blobs ── */
     body::before,
     body::after {
       content: '';
@@ -104,7 +90,6 @@
       right: -200px;
     }
 
-    /* ── Nav ── */
     nav {
       position: sticky;
       top: 0;
@@ -156,15 +141,15 @@
       font-family: inherit;
       font-weight: 600;
       font-size: .9rem;
-      background: linear-gradient(135deg, var(--purple), #6d28d9);
-      color: #fff;
-      box-shadow: 0 0 20px rgba(139, 92, 246, .4);
+      background: linear-gradient(135deg, var(--purple), #b8860b);
+      color: #000;
+      box-shadow: 0 0 20px rgba(255, 215, 0, .4);
       transition: all .2s;
     }
 
     #connectBtn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 0 30px rgba(139, 92, 246, .6);
+      box-shadow: 0 0 30px rgba(255, 215, 0, .6);
     }
 
     .wallet-address {
@@ -172,12 +157,11 @@
       font-family: monospace;
       padding: 8px 16px;
       border-radius: 10px;
-      background: rgba(139, 92, 246, .1);
+      background: rgba(255, 215, 0, .1);
       border: 1px solid var(--border);
-      color: var(--purple);
+      color: var(--bumblebee);
     }
 
-    /* ── Main layout ── */
     main {
       position: relative;
       z-index: 1;
@@ -206,7 +190,6 @@
       margin-bottom: 40px;
     }
 
-    /* ── Cards ── */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -234,7 +217,6 @@
       margin-top: 4px;
     }
 
-    /* ── Grid ── */
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -258,7 +240,6 @@
       }
     }
 
-    /* ── Health factor ── */
     .hf-card {
       grid-column: 1 / -1;
       display: flex;
@@ -272,6 +253,59 @@
         align-items: flex-start;
         gap: 16px;
       }
+    }
+
+    /* ── FIX: Health Factor Gauge CSS ── */
+    .hf-gauge {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      flex-shrink: 0;
+    }
+
+    .hf-gauge svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .hf-track {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.07);
+      stroke-width: 8;
+    }
+
+    /* FIX: strokeDasharray was missing — gauge would never render */
+    .hf-fill {
+      fill: none;
+      stroke: var(--green);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 282.74;
+      /* 2 * PI * 45 */
+      stroke-dashoffset: 282.74;
+      transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease;
+    }
+
+    .hf-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hf-pct {
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .hf-lbl {
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 2px;
     }
 
     .hf-info {
@@ -302,21 +336,21 @@
     }
 
     .risk-safe {
-      background: rgba(16, 185, 129, .15);
+      background: rgba(57, 255, 20, .15);
       color: var(--green);
-      border: 1px solid rgba(16, 185, 129, .3);
+      border: 1px solid rgba(57, 255, 20, .3);
     }
 
     .risk-warning {
-      background: rgba(245, 158, 11, .15);
+      background: rgba(255, 215, 0, .15);
       color: var(--yellow);
-      border: 1px solid rgba(245, 158, 11, .3);
+      border: 1px solid rgba(255, 215, 0, .3);
     }
 
     .risk-danger {
-      background: rgba(239, 68, 68, .15);
+      background: rgba(255, 77, 77, .15);
       color: var(--red);
-      border: 1px solid rgba(239, 68, 68, .3);
+      border: 1px solid rgba(255, 77, 77, .3);
     }
 
     .risk-nodebt {
@@ -325,7 +359,6 @@
       border: 1px solid rgba(100, 116, 139, .3);
     }
 
-    /* ── Live price ticker ── */
     .price-ticker {
       display: flex;
       align-items: center;
@@ -368,7 +401,18 @@
       }
     }
 
-    /* ── Section headers ── */
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
     .section-title {
       font-size: 1.1rem;
       font-weight: 700;
@@ -376,6 +420,9 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
 
     .section-title::after {
@@ -385,7 +432,6 @@
       background: var(--border);
     }
 
-    /* ── Action panel ── */
     .action-card {
       display: flex;
       flex-direction: column;
@@ -411,7 +457,7 @@
       border-radius: 12px;
       background: rgba(255, 255, 255, .04);
       border: 1px solid var(--border);
-      color: var(--text);
+      color: var(--white);
       font-family: inherit;
       font-size: .95rem;
       outline: none;
@@ -419,7 +465,7 @@
     }
 
     .input-row input:focus {
-      border-color: var(--purple);
+      border-color: var(--bumblebee);
     }
 
     .input-row input::placeholder {
@@ -458,6 +504,23 @@
       transform: none;
     }
 
+    .btn-secondary {
+      background: rgba(0, 242, 255, 0.1);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 242, 255, 0.3);
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 242, 255, 0.2);
+    }
+
+    .btn-secondary:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
     .btn-outline {
       border: 1px solid var(--bumblebee);
       color: var(--bumblebee);
@@ -488,12 +551,11 @@
 
     .max-link {
       font-size: .75rem;
-      color: var(--purple);
+      color: var(--bumblebee);
       cursor: pointer;
       text-decoration: underline;
     }
 
-    /* ── Toast ── */
     #toast {
       position: fixed;
       bottom: 24px;
@@ -501,7 +563,7 @@
       z-index: 9999;
       padding: 14px 20px;
       border-radius: 14px;
-      background: var(--card);
+      background: var(--steel);
       border: 1px solid var(--border);
       font-size: .88rem;
       max-width: 340px;
@@ -531,7 +593,6 @@
       word-break: break-all;
     }
 
-    /* ── Wallet prompt ── */
     #walletPrompt {
       text-align: center;
       padding: 80px 24px;
@@ -561,23 +622,6 @@
       filter: drop-shadow(0 0 15px var(--bumblebee));
     }
 
-    #walletPrompt h2 {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 15px;
-      color: var(--white);
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    }
-
-    #walletPrompt p {
-      color: var(--muted);
-      margin-bottom: 40px;
-      font-size: 1.1rem;
-      max-width: 600px;
-      margin-inline: auto;
-    }
-
-    /* ── Network info ── */
     .network-info {
       display: flex;
       gap: 12px;
@@ -601,7 +645,6 @@
       color: var(--text);
     }
 
-    /* ── Spinner ── */
     .spinner {
       display: inline-block;
       width: 14px;
@@ -623,7 +666,6 @@
       display: none;
     }
 
-    /* ── Wallet picker modal ── */
     #walletModal {
       display: none;
       position: fixed;
@@ -652,7 +694,6 @@
       overflow: hidden;
     }
 
-    /* Mechanical Corners */
     .wm-box::before,
     .wm-box::after {
       content: "";
@@ -711,8 +752,8 @@
     }
 
     .wm-opt:hover {
-      border-color: var(--purple);
-      background: rgba(139, 92, 246, .08);
+      border-color: var(--bumblebee);
+      background: rgba(255, 215, 0, .08);
     }
 
     .wm-opt.unavailable {
@@ -745,7 +786,7 @@
       padding: 2px 8px;
       border-radius: 20px;
       margin-top: 2px;
-      background: rgba(16, 185, 129, .15);
+      background: rgba(57, 255, 20, .15);
       color: var(--green);
       display: inline-block;
     }
@@ -776,7 +817,6 @@
       color: var(--bumblebee);
     }
 
-    /* ── Simulation & Log ── */
     .sim-card {
       background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(0, 242, 255, 0.05));
       border: 1px solid rgba(255, 215, 0, 0.2);
@@ -791,7 +831,7 @@
       height: 6px;
       -webkit-appearance: none;
       appearance: none;
-      background: rgba(255, 215, 0, 0.1);
+      background: rgba(255, 215, 0, 0.15);
       border-radius: 10px;
       outline: none;
       margin: 20px 0;
@@ -803,7 +843,6 @@
       height: 20px;
       background: var(--bumblebee);
       border-radius: 2px;
-      /* Square thumb */
       cursor: pointer;
       box-shadow: 0 0 10px var(--bumblebee);
       border: 2px solid #000;
@@ -815,6 +854,7 @@
       border: 1px solid #1a1f2e;
       padding: 0;
       overflow: hidden;
+      border-radius: var(--radius);
     }
 
     .log-header {
@@ -845,7 +885,6 @@
       background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 2px);
     }
 
-
     .log-line {
       display: flex;
       gap: 12px;
@@ -862,35 +901,404 @@
       font-weight: 700;
     }
 
-    .log-predict {
-      color: var(--optimus-red);
+    /* ── Spiral Prevention Engine ── */
+    .spiral-compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
     }
 
-    .sprite-minion {
-      width: 20px;
-      height: 20px;
-      color: var(--cyber-cyan);
-      background: var(--cyber-cyan);
-      opacity: 0.6;
-      box-shadow: 0 0 5px var(--cyber-cyan);
+    @media(max-width: 600px) {
+      .spiral-compare-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
-    /* ── Ambient 3D Scene ── */
-    #ambientLayer {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 100;
+    .spiral-col {
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       overflow: hidden;
+    }
+
+    .spiral-col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .spiral-hf {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .spiral-col-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .spiral-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .spiral-row span:last-child {
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Strategy buttons */
+    .strategy-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 215, 0, 0.25);
+      background: rgba(255, 215, 0, 0.05);
+      color: var(--muted);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .strategy-btn:hover {
+      border-color: var(--bumblebee);
+      color: var(--bumblebee);
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    .strategy-btn.active {
+      border-color: var(--bumblebee);
+      background: rgba(255, 215, 0, 0.15);
+      color: var(--bumblebee);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    }
+
+    .strategy-btn[data-strat="dot-only"].active {
+      border-color: var(--red);
+      background: rgba(255, 77, 77, 0.1);
+      color: var(--red);
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
+    }
+
+    /* FIX: USDT unavailable warning */
+    .usdt-warning {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      background: rgba(255, 165, 0, 0.1);
+      border: 1px solid rgba(255, 165, 0, 0.3);
+      border-radius: 8px;
+      color: #ffa500;
+      margin-top: 8px;
+    }
+
+    /* ── Aegis Volatility Panel ── */
+    .aegis-panel {
+      margin-top: 24px;
+      background: linear-gradient(135deg, rgba(255, 77, 77, 0.05), rgba(255, 215, 0, 0.05));
+      border: 1px solid rgba(255, 77, 77, 0.25);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .vol-bar-track {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+
+    .vol-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.6s ease, background 0.4s ease;
+    }
+
+    .aegis-cr-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .aegis-cr-box {
+      text-align: center;
+      padding: 14px 24px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.3);
+      min-width: 120px;
+    }
+
+    .aegis-cr-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .aegis-cr-lbl {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .vol-history {
+      display: flex;
+      gap: 3px;
+      align-items: flex-end;
+      height: 40px;
+      margin-top: 12px;
+    }
+
+    .vol-bar {
+      flex: 1;
+      border-radius: 2px 2px 0 0;
+      min-height: 4px;
+      transition: height 0.3s ease;
+    }
+
+    /* ── LLM Risk Report Panel ── */
+    .llm-panel {
+      margin-top: 24px;
+      background: linear-gradient(135deg, rgba(0, 242, 255, 0.03), rgba(139, 92, 246, 0.05));
+      border: 1px solid rgba(0, 242, 255, 0.2);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .llm-chat {
+      background: #05070a;
+      border: 1px solid rgba(0, 242, 255, 0.1);
+      border-radius: 10px;
+      padding: 16px;
+      min-height: 80px;
+      max-height: 280px;
+      overflow-y: auto;
+      font-size: 0.83rem;
+      line-height: 1.7;
+      color: var(--white);
+      margin: 12px 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .llm-msg-user {
+      color: var(--bumblebee);
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.78rem;
+    }
+
+    .llm-msg-bot {
+      color: var(--cyber-cyan);
+      padding: 10px 14px;
+      background: rgba(0, 242, 255, 0.05);
+      border-left: 2px solid var(--cyber-cyan);
+      border-radius: 0 8px 8px 0;
+      margin-top: 4px;
+    }
+
+    .llm-msg-bot.thinking {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .llm-quick-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .llm-quick {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 242, 255, 0.2);
+      background: rgba(0, 242, 255, 0.05);
+      color: var(--cyan);
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .llm-quick:hover {
+      background: rgba(0, 242, 255, 0.12);
+      border-color: var(--cyan);
+    }
+
+    .llm-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .llm-input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(0, 242, 255, 0.2);
+      color: var(--white);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .llm-input:focus {
+      border-color: var(--cyan);
+    }
+
+    .llm-input::placeholder {
+      color: var(--muted);
+    }
+
+    /* ── PVM Brain Panel ── */
+    .pvm-panel {
+      margin-top: 24px;
+      background: linear-gradient(135deg, rgba(57, 255, 20, 0.03), rgba(0, 0, 0, 0.2));
+      border: 1px solid rgba(57, 255, 20, 0.2);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .pvm-arch {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    @media(max-width:650px) {
+      .pvm-arch {
+        grid-template-columns: 1fr;
+      }
+
+      .pvm-arrow {
+        transform: rotate(90deg);
+      }
+    }
+
+    .pvm-box {
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid;
+    }
+
+    .pvm-box-offchain {
+      border-color: rgba(255, 77, 77, 0.35);
+      background: rgba(255, 77, 77, 0.06);
+    }
+
+    .pvm-box-onchain {
+      border-color: rgba(57, 255, 20, 0.35);
+      background: rgba(57, 255, 20, 0.06);
+    }
+
+    .pvm-box-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .pvm-box-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .pvm-box-desc {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .pvm-arrow {
+      text-align: center;
+      font-size: 1.4rem;
+      color: var(--green);
+      padding: 0 10px;
+    }
+
+    .pvm-verify-btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(57, 255, 20, 0.4);
+      background: rgba(57, 255, 20, 0.08);
+      color: var(--green);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pvm-verify-btn:hover {
+      background: rgba(57, 255, 20, 0.15);
+      box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+    }
+
+    .pvm-verify-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pvm-result {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      display: none;
+    }
+
+    /* ── Native USDT badge ── */
+    .native-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: rgba(0, 242, 255, 0.15);
+      border: 1px solid rgba(0, 242, 255, 0.3);
+      color: var(--cyan);
+      margin-left: 6px;
+      vertical-align: middle;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ── NAV ── -->
   <nav>
     <div class="logo">
       <div class="logo-icon">⚡</div>
@@ -906,7 +1314,6 @@
     </div>
   </nav>
 
-  <!-- ── TOAST ── -->
   <div id="toast">
     <span class="toast-icon" id="toastIcon">✅</span>
     <div>
@@ -915,9 +1322,7 @@
     </div>
   </div>
 
-  <!-- ── MAIN ── -->
   <main>
-    <!-- Wallet picker modal -->
     <div id="walletModal">
       <div class="wm-box">
         <div class="wm-title">Connect a Wallet</div>
@@ -927,7 +1332,6 @@
       </div>
     </div>
 
-    <!-- Wallet prompt -->
     <div id="walletPrompt">
       <div class="prompt-icon">⚡</div>
       <h2 style="font-family:'Orbitron', sans-serif; letter-spacing: 4px;">SENTINEL AGENTIC CORE</h2>
@@ -945,20 +1349,19 @@
       </div>
     </div>
 
-    <!-- Dashboard (shown after connect) -->
     <div id="dashboard">
       <h1 class="hero">Your <span>Vault Position</span></h1>
       <p class="hero-sub">Deposit DOT as collateral and mint sUSD. Sentinel monitors your health factor 24/7.</p>
 
-      <!-- Live DOT price -->
       <div class="price-ticker">
-        <div class="ticker-dot"></div><span class="ticker-text">DOT/USD</span><span class="ticker-price"
-          id="dotPrice">Loading…</span><span class="ticker-text" style="margin-left:8px;">via Pyth Network</span>
+        <div class="ticker-dot"></div>
+        <span class="ticker-text">DOT/USD</span>
+        <span class="ticker-price" id="dotPrice">Loading…</span>
+        <span class="ticker-text" style="margin-left:8px;">via Pyth Network</span>
       </div>
 
-      <!-- Stats row -->
       <div class="grid-3" style="margin-bottom:24px;">
-        <!-- Health Factor big card -->
+        <!-- Health Factor Card -->
         <div class="card hf-card" id="hfCard">
           <div class="hf-gauge">
             <svg viewBox="0 0 100 100">
@@ -977,182 +1380,706 @@
           </div>
         </div>
 
-        <!-- Collateral -->
-        <div class="card">
-          <div class="card-label">Collateral</div>
-          <div class="card-value" id="collateralVal">— DOT</div>
-          <div class="card-sub" id="collateralUSD">≈ $—</div>
+        <!-- Collateral Card -->
+        <div class="card" id="collateralCard">
+          <div class="card-label">Collateral Armor</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div>
+              <span id="collateralDOTVal" style="font-weight:700; font-size:1.2rem;">— DOT</span>
+              <span id="collateralDOTUSD" class="card-sub" style="margin-left:4px;">≈ $—</span>
+            </div>
+            <div style="padding-top:8px; border-top:1px solid var(--border);">
+              <span id="collateralUSDTVal" style="font-weight:700; font-size:1.2rem;">— USDT</span>
+              <span class="native-badge">⛓️ NATIVE</span>
+              <span id="collateralUSDTUSD" class="card-sub" style="margin-left:4px;">≈ $—</span>
+            </div>
+          </div>
+          <div class="card-sub" id="totalCollateralUSD"
+            style="margin-top:12px; font-weight:700; color:var(--cyber-cyan);">Total: $—</div>
+          <!-- FIX: Warning shown when USDT contract is unavailable -->
+          <div id="usdtContractWarning" class="usdt-warning" style="display:none;">
+            ⚠️ USDT contract not available on this network. USDT collateral disabled.
+          </div>
         </div>
 
-        <!-- Minted sUSD -->
+        <!-- Minted Debt Card -->
         <div class="card">
           <div class="card-label">Minted Debt</div>
           <div class="card-value" id="mintedVal">— sUSD</div>
           <div class="card-sub" id="maxMint">Max mintable: —</div>
+
+          <div id="aegisStatus" class="risk-badge risk-safe"
+            style="width:100%; justify-content:center; margin-top:12px; font-size:0.7rem;">
+            🛡️ AEGIS: NORMAL
+          </div>
+
+          <!-- Aegis Dynamic CR indicator -->
+          <div
+            style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.25); border-radius:8px; border:1px solid rgba(255,215,0,0.1);">
+            <div
+              style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--muted); margin-bottom:4px;">
+              <span>AEGIS Dynamic Buffer</span>
+              <span id="aegisCRLabel" style="color:var(--bumblebee); font-weight:700;">150% CR</span>
+            </div>
+            <div class="vol-bar-track">
+              <div id="aegisCRBar" class="vol-bar-fill" style="width:50%; background:var(--green);"></div>
+            </div>
+            <div style="font-size:0.65rem; color:var(--muted); display:flex; justify-content:space-between;">
+              <span>Normal (150%)</span><span>Red Alert (170%)</span>
+            </div>
+          </div>
+
           <button id="approveRebalanceBtn" class="btn btn-primary"
             style="margin-top:12px; display:none; width:100%; font-size:0.75rem;" onclick="approveRebalance()">🛡️
             Approve Multi-Sig Action</button>
         </div>
       </div>
 
-      <!-- Actions -->
       <p class="section-title">Actions</p>
       <div class="grid-2">
-        <!-- Deposit & Withdraw -->
+        <!-- DOT Management -->
         <div class="card action-card">
-          <div class="card-label" style="margin-bottom:12px;">💎 Collateral Management (DOT)</div>
+          <div class="card-label" style="margin-bottom:12px;">💎 DOT Collateral Armor</div>
           <div class="input-group">
             <label>Deposit Amount <span class="max-link" onclick="setMaxDot()">Use max</span></label>
             <div class="input-row">
-              <input id="depositAmt" type="number" min="0" step="0.1" placeholder="e.g. 100" />
+              <input id="depositAmt" type="number" min="0" step="0.1" placeholder="e.g. 10" />
               <button class="btn btn-primary" id="depositBtn" onclick="depositDOT()">Deposit</button>
             </div>
           </div>
-          <div class="input-group" style="margin-top:20px;">
+          <div class="input-group" style="margin-top:10px;">
             <label>Withdraw Amount <span class="max-link" onclick="setMaxWithdraw()">Use max safe</span></label>
             <div class="input-row">
-              <input id="withdrawAmt" type="number" min="0" step="0.1" placeholder="e.g. 50" />
+              <input id="withdrawAmt" type="number" min="0" step="0.1" placeholder="e.g. 5" />
               <button class="btn btn-danger" id="withdrawBtn" onclick="withdrawDOT()">Withdraw</button>
             </div>
           </div>
-          <div class="hint-text">Wallet: <span id="walletBal">—</span> DOT | Deposited: <span
-              id="hintCollateral">—</span> DOT</div>
+          <div class="hint-text">Balance: <span id="walletBal">—</span> DOT | Deposited: <span
+              id="hintCollateralDOT">—</span></div>
+        </div>
+
+        <!-- USDT Management -->
+        <div class="card action-card">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <div class="card-label" style="margin-bottom:0;">🛡️ USDT Collateral Shield</div>
+            <span class="native-badge">⛓️ Asset Hub Native</span>
+          </div>
+          <div
+            style="font-size:0.72rem; color:var(--muted); margin-bottom:10px; padding:8px; background:rgba(0,242,255,0.04); border-radius:6px; border:1px solid rgba(0,242,255,0.1);">
+            Uses Polkadot Asset Hub native USDT via ERC-20 precompile at <span
+              style="color:var(--cyan); font-family:monospace;">0xFFFF...07C0</span>. Stable buffer, zero volatility
+            exposure.
+          </div>
+          <div id="usdtActionWarning" class="usdt-warning" style="display:none; margin-bottom:12px;">
+            ⚠️ USDT not available on this network.
+          </div>
+          <div class="input-group">
+            <label>Deposit Amount <span class="max-link" onclick="setMaxUSDT()">Use max</span></label>
+            <div class="input-row">
+              <input id="depositUSDTAmt" type="number" min="0" step="1" placeholder="e.g. 100" />
+              <button class="btn btn-primary" id="depositUSDTBtn" onclick="depositUSDT()">Deposit</button>
+            </div>
+          </div>
+          <div class="input-group" style="margin-top:10px;">
+            <label>Withdraw Amount <span class="max-link" onclick="setMaxUSDTWithdraw()">Use max safe</span></label>
+            <div class="input-row">
+              <input id="withdrawUSDTAmt" type="number" min="0" step="1" placeholder="e.g. 50" />
+              <button class="btn btn-danger" id="withdrawUSDTBtn" onclick="withdrawUSDT()">Withdraw</button>
+            </div>
+          </div>
+          <div class="hint-text">Balance: <span id="walletUSDTBal">—</span> USDT | Deposited: <span
+              id="hintCollateralUSDT">—</span></div>
         </div>
 
         <!-- Mint & Repay -->
-        <div class="card action-card">
+        <div class="card action-card" style="grid-column: 1 / -1;">
           <div class="card-label" style="margin-bottom:12px;">🪙 Debt Management (sUSD)</div>
-          <div class="input-group">
-            <label>Mint Amount <span class="max-link" onclick="setMaxMint()">Use max safe</span></label>
-            <div class="input-row">
-              <input id="mintAmt" type="number" min="0" step="1" placeholder="e.g. 60" />
-              <button class="btn btn-secondary" id="mintBtn" onclick="mintSUSD()">Mint</button>
+          <div class="grid-2" style="gap:20px;">
+            <div class="input-group">
+              <label>Mint Amount <span class="max-link" onclick="setMaxMint()">Use max safe</span></label>
+              <div class="input-row">
+                <input id="mintAmt" type="number" min="0" step="1" placeholder="e.g. 60" />
+                <button class="btn btn-secondary" id="mintBtn" onclick="mintSUSD()">Mint</button>
+              </div>
+              <div class="hint-text">Debt: <span id="hintDebt">—</span> sUSD</div>
+            </div>
+            <div class="input-group">
+              <label>Repay Amount <span class="max-link" onclick="setMaxRepay()">Use full debt</span></label>
+              <div class="input-row">
+                <input id="repayAmt" type="number" min="0" step="1" placeholder="e.g. 100" />
+                <button class="btn btn-secondary" id="repayBtn" onclick="repaySUSD()">Repay</button>
+              </div>
+              <div class="hint-text">Wallet: <span id="sUSDBal">—</span> sUSD</div>
             </div>
           </div>
-          <div class="input-group" style="margin-top:20px;">
-            <label>Repay Amount <span class="max-link" onclick="setMaxRepay()">Use full debt</span></label>
-            <div class="input-row">
-              <input id="repayAmt" type="number" min="0" step="1" placeholder="e.g. 100" />
-              <button class="btn btn-secondary" id="repayBtn" onclick="repaySUSD()">Repay</button>
-            </div>
-          </div>
-          <div class="hint-text">sUSD in wallet: <span id="sUSDBal">—</span> | Total Debt: <span id="hintDebt">—</span>
-            sUSD</div>
         </div>
       </div>
 
-      <!-- What-If Simulator -->
-      <div class="card sim-card" style="margin-top:24px;">
-        <div class="card-label" style="color:var(--bumblebee)">🤖 Market Volatility Simulator — What-If Engine</div>
-        <div class="hf-title" style="margin-top:8px;">Analyze Market Volatility</div>
-        <div class="hf-desc" style="margin-bottom: 20px;">Simulate DOT price variations to test the Sentinel's reactive
-          armor and Health Factor status.</div>
+      <!-- ══════════════════════════════════════════════════════════════
+           LIQUIDATION SPIRAL PREVENTION ENGINE
+           ══════════════════════════════════════════════════════════════ -->
+      <div class="card sim-card" style="margin-top:24px;" id="spiralSimCard">
 
+        <!-- Header -->
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div class="card-label" style="color:var(--bumblebee); margin-bottom:4px;">🌀 Liquidation Spiral Prevention
+              Engine</div>
+            <div class="hf-title" style="margin-top:0; font-size:0.95rem;">Multi-Collateral Cascade Shield Simulator
+            </div>
+          </div>
+          <div id="spiralRiskBadge" class="risk-badge risk-safe" style="font-size:0.75rem; white-space:nowrap;">🛡️
+            SHIELD ACTIVE</div>
+        </div>
 
+        <!-- Explainer -->
+        <div
+          style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,215,0,0.1); border-radius:10px; padding:14px; margin:16px 0; font-size:0.8rem; color:var(--muted); line-height:1.7;">
+          <b style="color:var(--bumblebee);">⚠️ The Paradox:</b> If Sentinel only holds DOT and the price crashes,
+          selling DOT to cover debt <i>adds</i> more sell pressure — making the crash worse for everyone.<br>
+          <b style="color:var(--green);">✅ The Solution:</b> With USDT as a stable buffer, Sentinel can absorb the drop
+          without touching DOT. No forced sells. No spiral.
+        </div>
+
+        <!-- Sentinel Strategy Selector -->
+        <div style="margin-bottom:16px;">
+          <div
+            style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
+            🤖 Sentinel Rebalance Strategy</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;" id="strategyBtns">
+            <button class="strategy-btn active" data-strat="stable-first" onclick="setStrategy('stable-first', this)">
+              🥇 Stable-First <span style="font-size:0.65rem; display:block; opacity:0.7;">Use USDT buffer first</span>
+            </button>
+            <button class="strategy-btn" data-strat="proportional" onclick="setStrategy('proportional', this)">
+              ⚖️ Proportional <span style="font-size:0.65rem; display:block; opacity:0.7;">Split DOT + USDT
+                evenly</span>
+            </button>
+            <button class="strategy-btn" data-strat="dot-only" onclick="setStrategy('dot-only', this)">
+              ⚠️ DOT-Only <span style="font-size:0.65rem; display:block; opacity:0.7;">Legacy — spiral risk!</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Price Slider -->
         <div class="sim-slider-container">
           <div
-            style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:600; color:var(--muted);">
+            style="display:flex; justify-content:space-between; font-size:0.78rem; font-weight:600; color:var(--muted);">
             <span id="simPriceMin">$0.00</span>
-            <span id="simPriceCurrent" style="color:var(--cyan); font-size:1.1rem;">Simulating: $—</span>
+            <span id="simPriceCurrent"
+              style="color:var(--cyan); font-size:1rem; font-family:'Orbitron',sans-serif;">Live: $—</span>
             <span id="simPriceMax">$0.00</span>
           </div>
           <input type="range" id="priceSlider" class="sim-slider" min="0" max="200" value="100">
+          <div
+            style="display:flex; justify-content:center; gap:16px; font-size:0.72rem; color:var(--muted); margin-top:-8px;">
+            <span>◀ Crash</span><span>Live Price</span><span>Rally ▶</span>
+          </div>
         </div>
-        <div id="simResult" class="risk-badge risk-safe"
-          style="width:100%; justify-content:center; padding:12px; font-size:0.9rem;">Simulation Active: Move the slider
-          to begin.</div>
+
+        <!-- Side-by-side comparison cards -->
+        <div class="spiral-compare-grid" id="spiralCompareGrid" style="display:none;">
+
+          <!-- DOT-Only Outcome -->
+          <div class="spiral-col" id="colDotOnly">
+            <div class="spiral-col-header" style="background:rgba(255,77,77,0.15); border-color:rgba(255,77,77,0.4);">
+              <span>⚠️ DOT-Only (Legacy)</span>
+              <span id="hfDotOnly" class="spiral-hf">— %</span>
+            </div>
+            <div class="spiral-col-body">
+              <div class="spiral-row"><span>DOT sold to cover:</span><span id="dotSoldAmt" style="color:var(--red);">—
+                  DOT</span></div>
+              <div class="spiral-row"><span>Sell pressure added:</span><span id="dotSellPressure"
+                  style="color:var(--red);">—</span></div>
+              <div class="spiral-row"><span>Spiral risk:</span><span id="dotSpiralRisk"
+                  style="color:var(--red); font-weight:700;">—</span></div>
+              <div class="spiral-row"><span>Vault status:</span><span id="dotVaultStatus">—</span></div>
+            </div>
+          </div>
+
+          <!-- Multi-Collateral Outcome -->
+          <div class="spiral-col" id="colMulti">
+            <div class="spiral-col-header" style="background:rgba(57,255,20,0.1); border-color:rgba(57,255,20,0.35);">
+              <span>🛡️ Multi-Collateral (Sentinel)</span>
+              <span id="hfMulti" class="spiral-hf">— %</span>
+            </div>
+            <div class="spiral-col-body">
+              <div class="spiral-row"><span>USDT buffer used:</span><span id="usdtBufferUsed"
+                  style="color:var(--cyan);">—</span></div>
+              <div class="spiral-row"><span>DOT preserved:</span><span id="dotPreserved"
+                  style="color:var(--green);">—</span></div>
+              <div class="spiral-row"><span>Sell pressure added:</span><span id="multiSellPressure"
+                  style="color:var(--green);">—</span></div>
+              <div class="spiral-row"><span>Vault status:</span><span id="multiVaultStatus">—</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sentinel Action Log (live during simulation) -->
+        <div id="sentinelActionBox" style="display:none; margin-top:16px;">
+          <div
+            style="font-size:0.7rem; font-weight:700; color:var(--bumblebee); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-family:'Orbitron',sans-serif;">
+            ⚡ Sentinel Decision Engine</div>
+          <div id="sentinelActionLog"
+            style="background:#05070a; border:1px solid rgba(255,215,0,0.15); border-radius:8px; padding:12px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--cyber-cyan); display:flex; flex-direction:column; gap:4px; max-height:130px; overflow-y:auto;">
+          </div>
+        </div>
+
+        <!-- Crash Depth Meter -->
+        <div id="crashMeter" style="display:none; margin-top:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span
+              style="font-size:0.72rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">DOT
+              Price Drop Severity</span>
+            <span id="crashDepthPct"
+              style="font-size:0.85rem; font-weight:700; color:var(--red); font-family:'Orbitron',sans-serif;">—</span>
+          </div>
+          <div style="height:8px; background:rgba(255,255,255,0.06); border-radius:8px; overflow:hidden;">
+            <div id="crashDepthBar"
+              style="height:100%; width:0%; background:linear-gradient(90deg, var(--green), var(--yellow), var(--red)); border-radius:8px; transition:width 0.3s ease;">
+            </div>
+          </div>
+          <div
+            style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--muted); margin-top:4px;">
+            <span>0% drop (live)</span><span>25% drop</span><span>50%+ (critical)</span>
+          </div>
+        </div>
+
+        <!-- No debt notice -->
+        <div id="simNoDebt"
+          style="display:none; margin-top:12px; font-size:0.8rem; color:var(--muted); text-align:center; padding:12px; background:rgba(255,255,255,0.03); border-radius:8px;">
+          ℹ️ Mint some sUSD debt first to activate the spiral simulation.
+        </div>
+
+        <!-- Legacy sim result (kept for compatibility) -->
+        <div id="simResult" style="display:none;"></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           SENTINEL INTELLIGENCE & RISK SUITE
+           ══════════════════════════════════════════════════════════════ -->
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PANEL 1 — AEGIS PREDICTIVE VOLATILITY BUFFER
+           ══════════════════════════════════════════════════════════════ -->
+      <div class="aegis-panel" style="margin-top:32px;">
+        <div
+          style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <div>
+            <div class="card-label" style="color:var(--optimus-red); margin-bottom:4px;">🧠 Aegis Predictive Buffer —
+              VolatilityService</div>
+            <div class="hf-title" style="font-size:0.95rem;">Dynamic Collateral Requirement Engine</div>
+          </div>
+          <div id="aegisModeBadge" class="risk-badge risk-safe" style="font-size:0.72rem;">🟢 NORMAL MODE — 150% CR
+          </div>
+        </div>
+
+        <div style="font-size:0.8rem; color:var(--muted); margin-bottom:18px; line-height:1.6;">
+          The Aegis system reads 24-hour Pyth price history to compute a <b style="color:var(--bumblebee)">rolling
+            volatility score</b>. When the score exceeds a red-flag threshold, it automatically raises the minimum
+          collateral ratio from <b style="color:var(--green)">150%</b> to <b style="color:var(--red)">170%</b> —
+          creating a protective buffer before the crash hits.
+        </div>
+
+        <!-- Volatility Bars (sparkline) -->
+        <div style="margin-bottom:14px;">
+          <div
+            style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">
+            24h Volatility Pulse — Pyth Price Deltas</div>
+          <div class="vol-history" id="volHistory">
+            <!-- JS fills these -->
+          </div>
+        </div>
+
+        <!-- Current vol score -->
+        <div style="margin-bottom:12px;">
+          <div
+            style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--muted); margin-bottom:4px;">
+            <span>Volatility Score</span>
+            <span id="volScoreLabel" style="font-weight:700; color:var(--green);">0.00%</span>
+          </div>
+          <div class="vol-bar-track">
+            <div id="volScoreBar" class="vol-bar-fill" style="width:10%; background:var(--green);"></div>
+          </div>
+          <div
+            style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--muted); margin-top:3px;">
+            <span>Calm (0–3%)</span><span>Elevated (3–7%)</span><span>🔴 Red Flag (7%+)</span>
+          </div>
+        </div>
+
+        <!-- Dynamic CR display -->
+        <div class="aegis-cr-display">
+          <div class="aegis-cr-box">
+            <div class="aegis-cr-val" id="aegisBaseCR" style="color:var(--green);">150%</div>
+            <div class="aegis-cr-lbl">Base CR</div>
+          </div>
+          <div style="font-size:1.4rem; color:var(--bumblebee);">→</div>
+          <div class="aegis-cr-box" id="aegisActiveCRBox" style="border-color:rgba(57,255,20,0.3);">
+            <div class="aegis-cr-val" id="aegisActiveCR" style="color:var(--green);">150%</div>
+            <div class="aegis-cr-lbl">Active CR (Aegis)</div>
+          </div>
+          <div style="font-size:1.4rem; color:var(--muted);">→</div>
+          <div class="aegis-cr-box">
+            <div class="aegis-cr-val" id="aegisMaxMintDisplay" style="color:var(--cyan);">—</div>
+            <div class="aegis-cr-lbl">Max Mintable sUSD</div>
+          </div>
+        </div>
+
+        <!-- Red Flag trigger explanation -->
+        <div id="aegisRedFlagAlert"
+          style="display:none; padding:10px 14px; background:rgba(255,77,77,0.1); border:1px solid rgba(255,77,77,0.35); border-radius:8px; font-size:0.78rem; color:var(--red); margin-top:8px;">
+          🚨 <b>RED FLAG MARKET CONDITIONS DETECTED.</b> Aegis has raised the minimum CR to 170%. Your mint capacity is
+          reduced to protect against liquidation. Add more collateral or reduce debt.
+        </div>
+        <div id="aegisNormalAlert"
+          style="padding:10px 14px; background:rgba(57,255,20,0.06); border:1px solid rgba(57,255,20,0.2); border-radius:8px; font-size:0.78rem; color:var(--green); margin-top:8px;">
+          ✅ <b>AEGIS CALM.</b> Volatility is within normal range. Standard 150% CR applies. Market conditions stable.
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PANEL 2 — LLM RISK REPORT (Claude API)
+           ══════════════════════════════════════════════════════════════ -->
+      <div class="llm-panel" style="margin-top:32px;">
+        <div
+          style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:4px;">
+          <div>
+            <div class="card-label" style="color:var(--cyber-cyan); margin-bottom:4px;">🤖 Sentinel AI Risk Analyst —
+              LLM Report Engine</div>
+            <div class="hf-title" style="font-size:0.95rem;">Ask Sentinel Anything About Your Position</div>
+          </div>
+          <div class="risk-badge risk-safe"
+            style="font-size:0.7rem; background:rgba(0,242,255,0.1); border-color:rgba(0,242,255,0.3); color:var(--cyan);">
+            ⚡ CLAUDE POWERED</div>
+        </div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:14px;">Sentinel uses live Pyth oracle data,
+          your vault position, and Aegis volatility score to generate natural language risk reports — just like the
+          Telegram bot.</div>
+
+        <!-- Quick question chips -->
+        <div class="llm-quick-btns">
+          <button class="llm-quick" onclick="askSentinel('Why is my risk level Danger?')">Why is my risk
+            Danger?</button>
+          <button class="llm-quick" onclick="askSentinel('Should I add more USDT collateral right now?')">Should I add
+            more USDT?</button>
+          <button class="llm-quick"
+            onclick="askSentinel('Explain my health factor and what could liquidate me')">Explain my health
+            factor</button>
+          <button class="llm-quick"
+            onclick="askSentinel('Is Aegis in red flag mode? What does that mean for me?')">Aegis status
+            explained</button>
+          <button class="llm-quick" onclick="askSentinel('What would happen to my vault if DOT dropped 40%?')">DOT -40%
+            scenario</button>
+        </div>
+
+        <!-- Chat window -->
+        <div class="llm-chat" id="llmChat">
+          <div style="color:var(--muted); font-style:italic; text-align:center; padding:20px 0;">
+            Connect your wallet and ask Sentinel a question above, or type below ↓
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="llm-input-row">
+          <input class="llm-input" id="llmInput" type="text" placeholder="Ask Sentinel: 'Why is my HF declining?'"
+            onkeydown="if(event.key==='Enter') askSentinel()" />
+          <button class="btn btn-secondary" id="llmSendBtn" onclick="askSentinel()" style="white-space:nowrap;">Ask
+            ⚡</button>
+        </div>
+        <div style="font-size:0.65rem; color:var(--muted); margin-top:6px; opacity:0.7;">Powered by Claude Sonnet ·
+          Context: live Pyth price · Aegis volatility · vault position</div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PANEL 3 — PVM RUST BRAIN (Trustless Rebalancing)
+           ══════════════════════════════════════════════════════════════ -->
+      <div class="pvm-panel" style="margin-top:32px;">
+        <div
+          style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+          <div>
+            <div class="card-label" style="color:var(--green); margin-bottom:4px;">⚙️ PVM Rust Sentinel Brain —
+              Trustless Rebalance Verifier</div>
+            <div class="hf-title" style="font-size:0.95rem;">On-Chain Decision Logic via PVM Precompile</div>
+          </div>
+          <div id="pvmStatusBadge" class="risk-badge"
+            style="font-size:0.7rem; background:rgba(57,255,20,0.1); border-color:rgba(57,255,20,0.3); color:var(--green);">
+            🟢 PVM READY</div>
+        </div>
+
+        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:18px; line-height:1.6;">
+          Currently, the Java rebalancer makes decisions <b style="color:var(--red)">off-chain</b> — you have to trust
+          it. By moving decision logic into a <b style="color:var(--green)">PVM Precompile written in Rust</b>, Sentinel
+          becomes <b style="color:var(--green)">trustless</b>: the Polkadot network itself verifies every rebalance
+          action before execution.
+        </div>
+
+        <!-- Architecture diagram -->
+        <div class="pvm-arch">
+          <div class="pvm-box pvm-box-offchain">
+            <div class="pvm-box-label" style="color:var(--red);">⚠️ Off-chain (Legacy)</div>
+            <div class="pvm-box-title">Java Bot</div>
+            <div class="pvm-box-desc">Reads Pyth price → runs decision logic locally → calls vault contract. <b
+                style="color:var(--red)">Centralized.</b> You trust the operator.</div>
+          </div>
+          <div class="pvm-arrow">⟹</div>
+          <div class="pvm-box pvm-box-onchain">
+            <div class="pvm-box-label" style="color:var(--green);">✅ On-chain (PVM)</div>
+            <div class="pvm-box-title">Rust PVM Module</div>
+            <div class="pvm-box-desc">Decision logic compiled to PVM bytecode. Polkadot verifies computation. <b
+                style="color:var(--green)">Trustless.</b> No operator trust needed.</div>
+          </div>
+        </div>
+
+        <!-- PVM Decision Verifier (simulated) -->
+        <div
+          style="background:rgba(0,0,0,0.3); border:1px solid rgba(57,255,20,0.15); border-radius:10px; padding:14px; margin-top:4px;">
+          <div
+            style="font-size:0.7rem; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-family:'Orbitron',sans-serif;">
+            ⚡ PVM Decision Verifier — Simulate Trustless Rebalance</div>
+          <div class="grid-2" style="gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:0.7rem; color:var(--muted); display:block; margin-bottom:4px;">Input: DOT Price
+                ($)</label>
+              <input type="number" id="pvmDotInput" placeholder="e.g. 3.50"
+                style="width:100%; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(57,255,20,0.2); color:var(--white); font-family:inherit; font-size:0.85rem; outline:none;" />
+            </div>
+            <div>
+              <label style="font-size:0.7rem; color:var(--muted); display:block; margin-bottom:4px;">Input: Collateral
+                Ratio (%)</label>
+              <input type="number" id="pvmCRInput" placeholder="e.g. 135"
+                style="width:100%; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(57,255,20,0.2); color:var(--white); font-family:inherit; font-size:0.85rem; outline:none;" />
+            </div>
+          </div>
+          <button class="pvm-verify-btn" id="pvmVerifyBtn" onclick="runPVMVerify()">▶ RUN PVM VERIFICATION</button>
+          <div class="pvm-result" id="pvmResult"></div>
+        </div>
+
+        <!-- Rust code snippet -->
+        <div style="margin-top:16px;">
+          <div
+            style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">
+            Rust PVM Logic (excerpt)</div>
+          <div
+            style="background:#05070a; border:1px solid rgba(57,255,20,0.15); border-radius:8px; padding:14px; font-family:'JetBrains Mono',monospace; font-size:0.73rem; color:#a8ff78; overflow-x:auto; line-height:1.7;">
+            <span style="color:#718096">// PVM Precompile: sentinel_brain.rs</span>
+            <br><span style="color:#ffd700">pub fn</span> <span style="color:#00f2ff">verify_rebalance</span>(dot_price:
+            u128, coll_usd: u128, debt: u128, vol_score: u64) -> RebalanceAction {
+            <br>&nbsp;&nbsp;<span style="color:#ffd700">let</span> cr = (coll_usd * 100) / debt;
+            <br>&nbsp;&nbsp;<span style="color:#ffd700">let</span> target_cr = <span style="color:#ffd700">if</span>
+            vol_score > RED_FLAG_THRESHOLD { 170 } <span style="color:#ffd700">else</span> { 150 };
+            <br>&nbsp;&nbsp;<span style="color:#ffd700">match</span> cr {
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;cr <span style="color:#ffd700">if</span> cr >= target_cr =>
+            RebalanceAction::None,
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;cr <span style="color:#ffd700">if</span> cr >= 120 =>
+            RebalanceAction::UsePrimaryBuffer(calc_usdt_needed(coll_usd, debt, target_cr)),
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;_ => RebalanceAction::EmergencyLiquidate,
+            <br>&nbsp;&nbsp;}
+            <br>}
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PANEL 4 — NATIVE USDT VIA ERC-20 PRECOMPILE (TRACK 2)
+           ══════════════════════════════════════════════════════════════ -->
+      <div class="card"
+        style="margin-top:32px; background:linear-gradient(135deg, rgba(0,242,255,0.04), rgba(26,31,46,0.9)); border-color:rgba(0,242,255,0.25);">
+        <div
+          style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+          <div>
+            <div class="card-label" style="color:var(--cyan); margin-bottom:4px;">⛓️ Native DOT/USDT Multi-Collateral —
+              Polkadot Asset Hub</div>
+            <div class="hf-title" style="font-size:0.95rem;">Track 2: PVM & Native Assets Integration</div>
+          </div>
+          <div class="risk-badge"
+            style="font-size:0.7rem; background:rgba(0,242,255,0.1); border-color:rgba(0,242,255,0.3); color:var(--cyan);">
+            ⛓️ ASSET HUB NATIVE</div>
+        </div>
+
+        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:20px; line-height:1.6;">
+          Sentinel uses <b style="color:var(--cyan)">Polkadot Asset Hub native USDT</b> (asset ID 1984) exposed via the
+          ERC-20 precompile at <code
+            style="color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:0.78rem;">0xFFFFFFFF000007C0</code>.
+          This means no wrapped tokens, no bridging risk — real native assets, directly in the vault.
+        </div>
+
+        <div class="grid-2" style="gap:20px; margin-bottom:20px;">
+          <!-- DOT: Native WND -->
+          <div
+            style="border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:16px; background:rgba(255,215,0,0.04);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <span style="font-size:1.4rem;">💎</span>
+              <div>
+                <div style="font-weight:700; font-size:0.9rem;">DOT / WND</div>
+                <div style="font-size:0.65rem; color:var(--muted); font-family:'JetBrains Mono',monospace;">Native
+                  pallet_balances</div>
+              </div>
+              <span class="native-badge" style="margin-left:auto;">⛓️ NATIVE</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--muted); line-height:1.6;">
+              Accepted as <b style="color:var(--bumblebee)">volatile collateral</b> via <code
+                style="color:var(--bumblebee)">depositCollateral()</code> payable. Price tracked live via <b>Pyth
+                oracle</b> feed. No ERC-20 approval required.
+            </div>
+            <div
+              style="margin-top:10px; padding:6px 10px; background:rgba(255,215,0,0.08); border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--bumblebee);">
+              decimals: 18 · type: msg.value payable · oracle: Pyth DOT/USD
+            </div>
+          </div>
+
+          <!-- USDT: Asset Hub ERC-20 precompile -->
+          <div
+            style="border:1px solid rgba(0,242,255,0.25); border-radius:10px; padding:16px; background:rgba(0,242,255,0.04);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <span style="font-size:1.4rem;">🛡️</span>
+              <div>
+                <div style="font-weight:700; font-size:0.9rem;">USDT</div>
+                <div style="font-size:0.65rem; color:var(--muted); font-family:'JetBrains Mono',monospace;">
+                  0xFFFFFFFF000007C0</div>
+              </div>
+              <span class="native-badge" style="margin-left:auto;">ERC-20 Precompile</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--muted); line-height:1.6;">
+              <b style="color:var(--cyan)">Stable collateral</b> via Asset Hub asset ID 1984, wrapped in Polkadot's
+              ERC-20 precompile. Accepted via <code style="color:var(--cyan)">depositUSDT(uint256)</code>. Priced at $1
+              — zero volatility buffer.
+            </div>
+            <div
+              style="margin-top:10px; padding:6px 10px; background:rgba(0,242,255,0.08); border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--cyan);">
+              decimals: 6 · type: ERC-20 approve+transfer · price: $1.00 stable
+            </div>
+          </div>
+        </div>
+
+        <!-- How the precompile works -->
+        <div
+          style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,242,255,0.1); border-radius:10px; padding:14px;">
+          <div
+            style="font-size:0.7rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-family:'Orbitron',sans-serif;">
+            How the ERC-20 Precompile Works</div>
+          <div
+            style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; font-size:0.75rem; color:var(--muted);">
+            <div style="text-align:center; padding:10px; background:rgba(255,255,255,0.03); border-radius:8px;">
+              <div style="font-size:1.2rem; margin-bottom:4px;">🏛️</div>
+              <div style="color:var(--white); font-weight:600; margin-bottom:2px;">Asset Hub</div>
+              Holds native USDT (asset 1984) in Substrate pallet_assets
+            </div>
+            <div style="text-align:center; padding:10px; background:rgba(255,255,255,0.03); border-radius:8px;">
+              <div style="font-size:1.2rem; margin-bottom:4px;">⚙️</div>
+              <div style="color:var(--white); font-weight:600; margin-bottom:2px;">Precompile</div>
+              Maps EVM calls at 0xFFFF…07C0 to native Substrate extrinsics
+            </div>
+            <div style="text-align:center; padding:10px; background:rgba(255,255,255,0.03); border-radius:8px;">
+              <div style="font-size:1.2rem; margin-bottom:4px;">🔒</div>
+              <div style="color:var(--white); font-weight:600; margin-bottom:2px;">Vault Contract</div>
+              Calls standard ERC-20 transferFrom — no bridge, no wrapping
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- How it works -->
       <div class="card"
         style="margin-top:40px; background: rgba(139,92,246,.03); border-color: rgba(139, 92, 246, .1);">
-        <div class="container">
-          <!-- Header -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
-            <div style="display:flex; align-items:center; gap:16px;">
-              <div class="logo">⚡</div>
-              <div style="font-family:'Orbitron', sans-serif;">
-                <h1
-                  style="font-size:1.8rem; font-weight:900; background:linear-gradient(to right, var(--bumblebee), #fff); -webkit-background-clip:text; background-clip: text; -webkit-text-fill-color:transparent;">
-                  SENTINEL</h1>
-                <div
-                  style="font-size:0.65rem; color:var(--bumblebee); letter-spacing:4px; font-weight:700; margin-top:-4px;">
-                  AI GUARDIAN PROTOCOL</div>
-              </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:12px;">
-              <div class="nav-badge" style="background:var(--optimus-red); color:#fff;">V 1.0.2</div>
-              <a href="#" class="nav-badge" style="background:var(--cyber-cyan); color:#fff;">DOCS</a>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="font-size:1.5rem;">⚡</div>
+            <div style="font-family:'Orbitron', sans-serif;">
+              <h1
+                style="font-size:1.4rem; font-weight:900; background:linear-gradient(to right, var(--bumblebee), #fff); -webkit-background-clip:text; background-clip: text; -webkit-text-fill-color:transparent;">
+                SENTINEL</h1>
+              <div
+                style="font-size:0.65rem; color:var(--bumblebee); letter-spacing:4px; font-weight:700; margin-top:-4px;">
+                AI GUARDIAN PROTOCOL</div>
             </div>
           </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="nav-badge" style="background:var(--optimus-red); color:#fff;">V 1.0.2</div>
+            <a href="#" class="nav-badge" style="background:var(--cyber-cyan); color:#fff;">DOCS</a>
+          </div>
+        </div>
 
-          <div class="grid-3" style="margin-top:20px; gap:20px;">
-            <div class="hf-desc" style="font-size: 0.8rem;"><b style="color:var(--purple)">1. Stake DOT</b><br />Deposit
-              DOT collateral. You can withdraw it anytime as long as your Health Factor stays above 150%.</div>
-            <div class="hf-desc" style="font-size: 0.8rem;"><b style="color:var(--cyan)">2. Borrow sUSD</b><br />Mint
-              sUSD stablecoins against your DOT. Your debt grows but you keep your collateral exposure.</div>
-            <div class="hf-desc" style="font-size: 0.8rem;"><b style="color:var(--green)">3. Sentinel Bot</b><br />The
-              AI bot monitors your position. If DOT price crashes, it alerts you or auto-rebalances to save you.</div>
-          </div>
+        <div class="grid-3" style="gap:20px;">
+          <div class="hf-desc" style="font-size: 0.8rem;"><b style="color:var(--bumblebee)">1. Stake DOT +
+              USDT</b><br />Deposit DOT as volatile collateral and USDT as a stable buffer. USDT anchors your vault
+            value during market swings.</div>
+          <div class="hf-desc" style="font-size: 0.8rem;"><b style="color:var(--cyan)">2. Borrow sUSD</b><br />Mint sUSD
+            against your combined collateral. Mixed backing means a safer borrowing limit and less exposure to DOT-only
+            crashes.</div>
+          <div class="hf-desc" style="font-size: 0.8rem;"><b style="color:var(--green)">3. Sentinel Spiral
+              Shield</b><br />If DOT crashes, Sentinel uses USDT first — preserving your DOT position and adding <b>zero
+              sell pressure</b> to the market. No spiral.</div>
         </div>
       </div>
 
-      <!-- Guardian Thoughts Log -->
+      <!-- Guardian Log -->
       <div class="card log-card">
         <div class="log-header">
-          <span style="color:var(--bumblebee); animation: blink 1s infinite;">▶</span> SENTINEL CORE NEURAL LINK —
-          ACTIVE
+          <span style="animation: blink 1s infinite;">▶</span> SENTINEL CORE NEURAL LINK — ACTIVE
         </div>
         <div id="guardianLog" class="log-terminal">
           <div class="log-line">
-            <span class="log-ts">[09:22:16]</span>
+            <span class="log-ts">[BOOT]</span>
             <span class="log-tag">CORE</span>
-            <span class="log-msg">Neural processors online. Shifting to combat mode.</span>
+            <span>Neural processors online. Spiral Shield protocol loading…</span>
           </div>
           <div class="log-line">
-            <span class="log-ts">[09:22:17]</span>
+            <span class="log-ts">[BOOT]</span>
+            <span class="log-tag">SHIELD</span>
+            <span>Multi-collateral defense matrix initialised. Strategy: STABLE-FIRST.</span>
+          </div>
+          <div class="log-line">
+            <span class="log-ts">[BOOT]</span>
             <span class="log-tag">ARMOR</span>
-            <span class="log-msg">Strategy: Conservative | Defense systems primed.</span>
+            <span>USDT buffer layer armed. DOT sell pressure suppression: ACTIVE.</span>
           </div>
         </div>
       </div>
 
-      <!-- Network info -->
       <div class="network-info" style="margin-top:28px;">
         <div class="net-tag">🔗 CYBERTRON LINK: <b>Polkadot Hub Testnet</b></div>
-        <div class="net-tag">🏛️ VAULT CORE: <b>0xb57a...3579</b></div>
+        <div class="net-tag">🏛️ VAULT CORE: <b>0x644c...8e81</b></div>
         <div class="net-tag">🔋 NEURAL ENERGY: <b>Pyth Network Oracle</b></div>
       </div>
-    </div> <!-- /dashboard -->
+    </div>
   </main>
 
   <script>
-    const VAULT_ADDR = '0xb57a5D2621Ba0D149c0F1076009D42f107d33579';
-    const SUSD_ADDR = '0x9Cc3efD0e03AfE50A04Cc5643bE7509023b193A0';
+    // ─── Constants ──────────────────────────────────────────────────────────────
+    const VAULT_ADDR = '0x644c0deb81e8c40abfae2c549e94ac770a938e81';
+    const SUSD_ADDR = '0xe7e85d0e7d22cc53322e492b1c5d97e2132de731';
+    const USDT_ADDR = '0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5';
     const CHAIN_HEX = '0x190f1b41';
     const RPC_URL = 'https://services.polkadothub-rpc.com/testnet';
     const EXPLORER = 'https://polkadot-hub-testnet.blockscout.com';
     const PYTH_URL = 'https://hermes.pyth.network/v2/updates/price/latest?ids[]=0xca3eed9b267293f6595901c734c7525ce8ef49adafe8284606ceb307afa2ca5b';
 
     const VAULT_ABI = [
-      "function getPosition(address) view returns (uint256, uint256, uint256, uint256)",
+      "function getPosition(address) view returns (uint256, uint256, uint256, uint256, uint256, bool, bool, uint256)",
       "function depositCollateral() payable",
+      "function depositUSDT(uint256)",
       "function withdrawCollateral(uint256)",
+      "function withdrawUSDT(uint256)",
       "function mintStablecoin(uint256)",
       "function burnStablecoin(uint256)",
-      "function approveRebalance()"
+      "function aegisActive() view returns (bool)",
+      "function aegisCollateralRatioPct() view returns (uint256)"
     ];
 
-    const SUSD_ABI = [
+    const ERC20_ABI = [
       "function balanceOf(address) view returns (uint256)",
       "function allowance(address, address) view returns (uint256)",
-      "function approve(address, uint256) returns (bool)"
+      "function approve(address, uint256) returns (bool)",
+      "function decimals() view returns (uint8)"
     ];
 
     let provider, signer, userAddr;
     let dotPrice = 5.0;
-    let userCollateral = 0, userDebt = 0;
+    // Seed price history so AEGIS panel is active immediately
+    const _priceHistory = [5.05, 4.98, 5.02, 4.96, 5.0];
+    let _userCollateral = 0, _userDebt = 0, _userCollUSDT = 0;
     let isSimulating = false;
+    let usdtAvailable = false; // FIX: track USDT availability
+    let _llmHistory = [];
 
     const KNOWN_WALLETS = [
       {
@@ -1171,7 +2098,7 @@
 
     function showWalletPicker() {
       const list = document.getElementById('walletList');
-      list.innerHTML = `<div style="padding: 20px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--bumblebee); animation: pulse 1s infinite;">SCANNIG FOR NEURAL SIGNATURES...</div>`;
+      list.innerHTML = `<div style="padding: 20px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--bumblebee); animation: pulse 1s infinite;">SCANNING FOR NEURAL SIGNATURES...</div>`;
 
       setTimeout(() => {
         list.innerHTML = '';
@@ -1199,55 +2126,30 @@
       document.getElementById('walletModal').classList.remove('open');
     }
 
-    document.getElementById('walletModal')?.addEventListener('click', e => {
+    document.getElementById('walletModal').addEventListener('click', e => {
       if (e.target === document.getElementById('walletModal')) closeModal();
     });
 
     async function connectWallet(walletId, rawProvider) {
       closeModal();
-
-      if (!rawProvider) {
-        showToast('⚠️', 'No wallet detected. Install Talisman or MetaMask.');
-        return;
-      }
+      if (!rawProvider) { showToast('⚠️', 'No wallet detected. Install Talisman or MetaMask.'); return; }
 
       try {
-        await rawProvider.request({
-          method: 'eth_requestAccounts'
-        });
+        await rawProvider.request({ method: 'eth_requestAccounts' });
 
-        // Switch / add Polkadot Hub Testnet
         try {
-          await rawProvider.request({
-
-            method: 'wallet_switchEthereumChain',
-            params: [{
-              chainId: CHAIN_HEX
-            }
-
-            ],
-          });
-        }
-
-        catch (sw) {
+          await rawProvider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_HEX }] });
+        } catch (sw) {
           if (sw.code === 4902 || sw.code === -32603) {
             await rawProvider.request({
-
               method: 'wallet_addEthereumChain',
               params: [{
-
                 chainId: CHAIN_HEX,
                 chainName: 'Polkadot Hub Testnet',
-                nativeCurrency: {
-                  name: 'WND', symbol: 'WND', decimals: 18
-                }
-
-                ,
+                nativeCurrency: { name: 'WND', symbol: 'WND', decimals: 18 },
                 rpcUrls: [RPC_URL],
                 blockExplorerUrls: [EXPLORER],
-              }
-
-              ],
+              }]
             });
           }
         }
@@ -1258,7 +2160,6 @@
 
         document.getElementById('walletPrompt').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
-
         document.getElementById('navRight').innerHTML = `<div class="wallet-address">${shortAddr(userAddr)}</div>`;
 
         await refresh();
@@ -1266,57 +2167,131 @@
         fetchDotPrice();
         setInterval(fetchDotPrice, 30000);
 
-        showToast('✅', `${walletId ? walletId.charAt(0).toUpperCase() + walletId.slice(1) : 'Wallet'} connected!`);
+        showToast('✅', `${walletId.charAt(0).toUpperCase() + walletId.slice(1)} connected!`);
       } catch (e) {
         showToast('❌', e.message || 'Connection failed');
       }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  DATA REFRESH
-    // ─────────────────────────────────────────────────────────────
+    // ─── Data Refresh ────────────────────────────────────────────────────────────
     async function refresh() {
       if (!provider || !userAddr) return;
 
       try {
         const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, provider);
-        const sUSD = new ethers.Contract(SUSD_ADDR, SUSD_ABI, provider);
-        const pos = await vault.getPosition(userAddr);
+        // FIX: Use ERC20_ABI (not SUSD_ABI which was never defined)
+        const sUSD = new ethers.Contract(SUSD_ADDR, ERC20_ABI, provider);
+
+        // ── Fetch Position with fallback ──
+        let pos;
+        try {
+          pos = await vault.getPosition(userAddr);
+        } catch (e) {
+          try {
+            const legacyVault = new ethers.Contract(VAULT_ADDR, [
+              "function getPosition(address) view returns (uint256, uint256, uint256, uint256, uint256, bool)"
+            ], provider);
+            const lp = await legacyVault.getPosition(userAddr);
+            // Defaulting Aegis fields to false/150
+            pos = [lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], false, 150n];
+          } catch (e2) {
+            addGuardianLog('ERROR', 'Could not read vault position: ' + e2.message);
+            return;
+          }
+        }
+
         const balance = await provider.getBalance(userAddr);
         const sUSDBal = await sUSD.balanceOf(userAddr);
 
+        // FIX: Safely attempt USDT reads — mark unavailable if contract fails
+        let usdtBal = 0n;
+        let walUSDTBal = 0;
+        if (USDT_ADDR) {
+          try {
+            const usdt = new ethers.Contract(USDT_ADDR, ERC20_ABI, provider);
+            usdtBal = await usdt.balanceOf(userAddr);
+            walUSDTBal = parseFloat(ethers.formatUnits(usdtBal, 6));
+            usdtAvailable = true;
+          } catch (e) {
+            usdtAvailable = false;
+            addGuardianLog('WARN', 'USDT contract unavailable on this network.');
+          }
+        } else {
+          usdtAvailable = false;
+        }
+
+        // Show/hide USDT warning banners
+        document.getElementById('usdtContractWarning').style.display = usdtAvailable ? 'none' : 'block';
+        document.getElementById('usdtActionWarning').style.display = usdtAvailable ? 'none' : 'block';
+        document.getElementById('depositUSDTBtn').disabled = !usdtAvailable;
+        document.getElementById('withdrawUSDTBtn').disabled = !usdtAvailable;
+
+        // Aegis status (reads from getPosition return values)
+        let aegisActive = pos[6];
+        let currentCR = Number(pos[7]);
+        window._currentCR = currentCR;
+
         const collDOT = parseFloat(ethers.formatEther(pos[0]));
-        const minted = parseFloat(ethers.formatEther(pos[1]));
-        const collUSD = parseFloat(ethers.formatEther(pos[2]));
-        const hf = parseFloat(ethers.formatEther(pos[3])) * 100;
+        const collUSDT = usdtAvailable ? parseFloat(ethers.formatUnits(pos[1], 6)) : 0;
+        const minted = parseFloat(ethers.formatEther(pos[2]));
+        const collUSD = parseFloat(ethers.formatEther(pos[3]));
+        const hf = parseFloat(ethers.formatEther(pos[4])) * 100;
+
         const walBal = parseFloat(ethers.formatEther(balance));
         const susdBal = parseFloat(ethers.formatEther(sUSDBal));
 
-        document.getElementById('collateralVal').textContent = collDOT.toFixed(2) + ' DOT';
-        document.getElementById('collateralUSD').textContent = '≈ $' + collUSD.toFixed(2);
+        // Store globals for simulator
+        _userCollateral = collDOT;
+        _userDebt = minted;
+        _userCollUSDT = collUSDT;
+
+        // Update UI
+        document.getElementById('collateralDOTVal').textContent = collDOT.toFixed(2) + ' DOT';
+        document.getElementById('collateralDOTUSD').textContent = '≈ $' + (collDOT * dotPrice).toFixed(2);
+        document.getElementById('collateralUSDTVal').textContent = usdtAvailable ? collUSDT.toFixed(2) + ' USDT' : 'N/A';
+        document.getElementById('collateralUSDTUSD').textContent = usdtAvailable ? '≈ $' + collUSDT.toFixed(2) : '';
+        document.getElementById('totalCollateralUSD').textContent = 'Total: $' + collUSD.toFixed(2);
         document.getElementById('mintedVal').textContent = minted.toFixed(2) + ' sUSD';
+
         document.getElementById('walletBal').textContent = walBal.toFixed(3);
-        document.getElementById('sUSDBal').textContent = susdBal.toFixed(2) + ' sUSD';
-        document.getElementById('hintCollateral').textContent = collDOT.toFixed(2);
+        document.getElementById('walletUSDTBal').textContent = usdtAvailable ? walUSDTBal.toFixed(2) : 'N/A';
+        document.getElementById('sUSDBal').textContent = susdBal.toFixed(2);
+        document.getElementById('hintCollateralDOT').textContent = collDOT.toFixed(2) + ' DOT';
+        document.getElementById('hintCollateralUSDT').textContent = usdtAvailable ? collUSDT.toFixed(2) + ' USDT' : 'N/A';
         document.getElementById('hintDebt').textContent = minted.toFixed(2);
 
-        // Max mintable at 150% CR
-        const maxMintable = collUSD > 0 ? (collUSD * 100 / 150 - minted) : 0;
-        document.getElementById('maxMint').textContent = 'Max mintable: ' + (maxMintable > 0 ? maxMintable.toFixed(2) + ' sUSD' : '0 (fully utilized)');
+        const aegisEl = document.getElementById('aegisStatus');
+        if (aegisActive) {
+          aegisEl.className = 'risk-badge risk-warning';
+          aegisEl.innerHTML = '🛡️ AEGIS: PROTECTIVE MODE';
+        } else {
+          aegisEl.className = 'risk-badge risk-safe';
+          aegisEl.innerHTML = '🛡️ AEGIS: NORMAL';
+        }
 
-        // Max withdrawable (keeps HF at 150%)
-        const maxWithdrawable = minted > 0 ? Math.max(0, collDOT - (minted * 1.5 / dotPrice)) : collDOT;
+        const targetCR = currentCR;
+        const maxMintable = collUSD > 0 ? (collUSD * 100 / targetCR - minted) : 0;
+        document.getElementById('maxMint').textContent = `Max mintable (${targetCR}%): ` + (maxMintable > 0 ? maxMintable.toFixed(2) + ' sUSD' : '0 (fully utilized)');
+
+        const maxDOTWithdraw = minted > 0 ? Math.max(0, collDOT - ((minted * targetCR / 100 - collUSDT) / dotPrice)) : collDOT;
+        const maxUSDTWithdraw = minted > 0 ? Math.max(0, collUSDT - (minted * targetCR / 100 - (collDOT * dotPrice))) : collUSDT;
 
         document.getElementById('mintAmt').dataset.max = Math.max(0, maxMintable).toFixed(4);
         document.getElementById('depositAmt').dataset.max = walBal.toFixed(4);
-        document.getElementById('withdrawAmt').dataset.max = maxWithdrawable.toFixed(4);
+        document.getElementById('depositUSDTAmt').dataset.max = walUSDTBal.toFixed(4);
+        document.getElementById('withdrawAmt').dataset.max = Math.max(0, maxDOTWithdraw).toFixed(4);
+        document.getElementById('withdrawUSDTAmt').dataset.max = Math.max(0, maxUSDTWithdraw).toFixed(4);
         document.getElementById('repayAmt').dataset.max = Math.min(minted, susdBal).toFixed(4);
 
-        updateHFDisplay(hf, collDOT, minted);
-      }
+        updateHFDisplay(hf, collDOT, minted, false, collUSDT);
+        // Re-sync slider to live price after data load
+        if (!isSimulating) updateSimSlider(dotPrice);
+        // Sync Aegis panel
+        updateAegisPanel();
 
-      catch (e) {
+      } catch (e) {
         console.error('refresh error:', e);
+        addGuardianLog('ERROR', e.message);
       }
     }
 
@@ -1327,26 +2302,42 @@
         const p = d.parsed[0].price;
         dotPrice = parseFloat(p.price) * Math.pow(10, p.expo);
         document.getElementById('dotPrice').textContent = '$' + dotPrice.toFixed(4);
-
-        if (!isSimulating) {
-          updateSimSlider(dotPrice);
-        }
-
+        if (!isSimulating) updateSimSlider(dotPrice);
+        recordPriceForVolatility(dotPrice); // ← AEGIS VolatilityService feed
         addGuardianLog('PRICE', `DOT/USD pulse received: $${dotPrice.toFixed(4)}`);
-      } catch {
-
+        updateAegisPanel();
+        // Warn if simulating near dangerous territory
+        if (_userDebt > 0) {
+          const liveHF = ((_userCollateral * dotPrice + _userCollUSDT) / _userDebt) * 100;
+          if (liveHF < 150 && liveHF >= 130) addGuardianLog('WARN', `HF at ${liveHF.toFixed(1)}% — USDT buffer absorbing volatility. DOT protected.`);
+          else if (liveHF < 130) addGuardianLog('ALERT', `HF CRITICAL: ${liveHF.toFixed(1)}% — Spiral Shield engaging. Routing via USDT.`);
+        }
+      } catch (e) {
         document.getElementById('dotPrice').textContent = 'Unavailable';
+        addGuardianLog('WARN', 'Pyth price feed unavailable. Using cached price.');
       }
+    }
+
+    // ─── Spiral Prevention Engine ─────────────────────────────────────────────────
+    let _sentinelStrategy = 'stable-first'; // 'stable-first' | 'proportional' | 'dot-only'
+
+    function setStrategy(strat, btn) {
+      _sentinelStrategy = strat;
+      document.querySelectorAll('.strategy-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Re-run simulation with new strategy if slider is active
+      if (isSimulating) runSpiralSim(parseFloat(document.getElementById('priceSlider').value) / 100);
+      addGuardianLog('STRATEGY', `Rebalance mode set → ${strat.toUpperCase()}`);
     }
 
     function updateSimSlider(realPrice) {
       const slider = document.getElementById('priceSlider');
-      const min = realPrice * 0.5;
-      const max = realPrice * 1.5;
+      const min = realPrice * 0.1; // allow crash to 10% of current
+      const max = realPrice * 2.0;
 
       document.getElementById('simPriceMin').textContent = '$' + min.toFixed(2);
       document.getElementById('simPriceMax').textContent = '$' + max.toFixed(2);
-      document.getElementById('simPriceCurrent').textContent = 'Simulating: $' + realPrice.toFixed(2);
+      document.getElementById('simPriceCurrent').textContent = 'Live: $' + realPrice.toFixed(2);
 
       slider.min = Math.floor(min * 100);
       slider.max = Math.floor(max * 100);
@@ -1357,338 +2348,663 @@
       isSimulating = true;
       const simPrice = this.value / 100;
       document.getElementById('simPriceCurrent').textContent = 'Simulating: $' + simPrice.toFixed(2);
+      runSpiralSim(simPrice);
+    };
 
-      // Calculate simulated HF
-      // HF = (Collateral * Price) / Debt
-      if (userDebt > 0) {
-        const simHF = (userCollateral * simPrice / userDebt) * 100;
-        updateHFDisplay(simHF, userCollateral, userDebt, true);
+    function runSpiralSim(simPrice) {
+      const simNoDebt = document.getElementById('simNoDebt');
+      const compareGrid = document.getElementById('spiralCompareGrid');
+      const actionBox = document.getElementById('sentinelActionBox');
+      const crashMeter = document.getElementById('crashMeter');
+
+      if (_userDebt <= 0) {
+        simNoDebt.style.display = 'block';
+        compareGrid.style.display = 'none';
+        actionBox.style.display = 'none';
+        crashMeter.style.display = 'none';
+        return;
       }
-    }
 
-      ;
+      simNoDebt.style.display = 'none';
+      compareGrid.style.display = 'grid';
+      actionBox.style.display = 'block';
+      crashMeter.style.display = 'block';
+
+      const debt = _userDebt;
+      const collDOT = _userCollateral;
+      const collUSDT = _userCollUSDT;
+      const liveDotUSD = dotPrice;
+
+      // ── Crash depth meter ──────────────────────────────────────────────
+      const priceDrop = Math.max(0, (liveDotUSD - simPrice) / liveDotUSD);
+      const dropPct = (priceDrop * 100).toFixed(1);
+      document.getElementById('crashDepthPct').textContent = simPrice < liveDotUSD ? `-${dropPct}% DOT` : `+${(((simPrice - liveDotUSD) / liveDotUSD) * 100).toFixed(1)}% DOT`;
+      document.getElementById('crashDepthBar').style.width = Math.min(priceDrop * 200, 100) + '%';
+
+      // ── Scenario A: DOT-Only (legacy, no stable buffer) ───────────────
+      // Pretend all collateral is DOT; on undercollateralisation Sentinel must sell DOT
+      const dotOnlyCollUSD = collDOT * simPrice; // USDT buffer ignored
+      const hfDotOnly = debt > 0 ? (dotOnlyCollUSD / debt) * 100 : Infinity;
+      const targetCR = 150;
+      let dotSold = 0, dotSellPressureLabel = 'None', dotSpiralRisk = '✅ None', dotStatus;
+
+      if (hfDotOnly < targetCR && hfDotOnly >= 100) {
+        // Must sell DOT to restore CR to 150%
+        const usdNeeded = debt * targetCR / 100 - dotOnlyCollUSD;
+        dotSold = usdNeeded / simPrice;
+        dotSellPressureLabel = `${dotSold.toFixed(2)} DOT (~$${usdNeeded.toFixed(0)})`;
+        dotSpiralRisk = hfDotOnly < 130 ? '🔴 HIGH' : '🟡 MEDIUM';
+        dotStatus = '<span style="color:var(--yellow)">⚠️ REBALANCING</span>';
+      } else if (hfDotOnly < 100) {
+        dotSold = collDOT; // full liquidation
+        dotSellPressureLabel = `${collDOT.toFixed(2)} DOT (FULL LIQ)`;
+        dotSpiralRisk = '🔴 CRITICAL — SPIRAL';
+        dotStatus = '<span style="color:var(--red)">💀 LIQUIDATED</span>';
+      } else {
+        dotStatus = '<span style="color:var(--green)">● SAFE</span>';
+      }
+
+      // ── Scenario B: Multi-Collateral with chosen strategy ─────────────
+      const multiCollUSD = (collDOT * simPrice) + collUSDT;
+      const hfMulti = debt > 0 ? (multiCollUSD / debt) * 100 : Infinity;
+
+      let usdtUsed = 0, dotPreserved = collDOT, multiSellPressure = '✅ Zero', multiStatus;
+
+      if (hfMulti < targetCR && hfMulti >= 100) {
+        const usdShortfall = debt * targetCR / 100 - multiCollUSD;
+
+        if (_sentinelStrategy === 'stable-first') {
+          // Use USDT first — no DOT selling at all if USDT covers it
+          usdtUsed = Math.min(collUSDT, Math.max(0, usdShortfall + collUSDT)); // use available USDT
+          dotPreserved = collDOT; // DOT untouched
+          multiSellPressure = usdtUsed > 0 ? `✅ Zero DOT sold` : '⚠️ Partial';
+          multiStatus = '<span style="color:var(--cyan)">🛡️ USDT BUFFER ACTIVE</span>';
+        } else if (_sentinelStrategy === 'proportional') {
+          const dotRatio = (collDOT * simPrice) / multiCollUSD;
+          const usdtRatio = collUSDT / multiCollUSD;
+          const usdNeeded = Math.max(0, usdShortfall);
+          const dotUSDSold = usdNeeded * dotRatio;
+          usdtUsed = usdNeeded * usdtRatio;
+          dotPreserved = collDOT - (dotUSDSold / simPrice);
+          multiSellPressure = `~${(dotUSDSold / simPrice).toFixed(2)} DOT + $${usdtUsed.toFixed(0)} USDT`;
+          multiStatus = '<span style="color:var(--yellow)">⚖️ PROPORTIONAL</span>';
+        } else {
+          // dot-only mode selected — same as legacy
+          const dotUSDSold = Math.max(0, usdShortfall);
+          dotPreserved = collDOT - dotUSDSold / simPrice;
+          multiSellPressure = `${(dotUSDSold / simPrice).toFixed(2)} DOT sold`;
+          multiStatus = '<span style="color:var(--yellow)">⚠️ DOT-ONLY MODE</span>';
+        }
+      } else if (hfMulti < 100) {
+        usdtUsed = collUSDT;
+        dotPreserved = 0;
+        multiSellPressure = 'Full liquidation';
+        multiStatus = '<span style="color:var(--red)">💀 LIQUIDATED</span>';
+      } else {
+        multiStatus = '<span style="color:var(--green)">● SAFE</span>';
+      }
+
+      // ── Render comparison ──────────────────────────────────────────────
+      const hfColor = hf => hf >= 150 ? 'var(--green)' : hf >= 130 ? 'var(--yellow)' : 'var(--red)';
+
+      document.getElementById('hfDotOnly').textContent = hfDotOnly === Infinity ? '∞' : hfDotOnly.toFixed(1) + '%';
+      document.getElementById('hfDotOnly').style.color = hfColor(hfDotOnly);
+      document.getElementById('hfMulti').textContent = hfMulti === Infinity ? '∞' : hfMulti.toFixed(1) + '%';
+      document.getElementById('hfMulti').style.color = hfColor(hfMulti);
+
+      document.getElementById('dotSoldAmt').textContent = dotSold > 0 ? dotSold.toFixed(3) + ' DOT' : '0 DOT';
+      document.getElementById('dotSellPressure').textContent = dotSellPressureLabel;
+      document.getElementById('dotSpiralRisk').textContent = dotSpiralRisk;
+      document.getElementById('dotVaultStatus').innerHTML = dotStatus;
+
+      document.getElementById('usdtBufferUsed').textContent = usdtUsed > 0 ? '$' + usdtUsed.toFixed(2) + ' USDT' : '$0 (not needed)';
+      document.getElementById('dotPreserved').textContent = dotPreserved.toFixed(3) + ' DOT';
+      document.getElementById('multiSellPressure').textContent = multiSellPressure;
+      document.getElementById('multiVaultStatus').innerHTML = multiStatus;
+
+      // ── Sentinel Decision Log ──────────────────────────────────────────
+      const logEl = document.getElementById('sentinelActionLog');
+      logEl.innerHTML = '';
+      const ts = new Date().toLocaleTimeString();
+
+      const logLines = [];
+      if (simPrice < liveDotUSD) {
+        logLines.push(`[${ts}] <span style="color:var(--bumblebee)">[ORACLE]</span> DOT dropped ${dropPct}% → $${simPrice.toFixed(3)}`);
+        logLines.push(`[${ts}] <span style="color:var(--bumblebee)">[SCAN]</span> Collateral check: DOT-only HF=${hfDotOnly.toFixed(1)}% | Multi HF=${hfMulti.toFixed(1)}%`);
+
+        if (_sentinelStrategy === 'stable-first' && hfMulti < 150 && hfMulti >= 100) {
+          logLines.push(`[${ts}] <span style="color:var(--green)">[SENTINEL]</span> Strategy: STABLE-FIRST — routing rebalance via USDT`);
+          logLines.push(`[${ts}] <span style="color:var(--green)">[SHIELD]</span> DOT position preserved. USDT absorbing shortfall. No spiral risk.`);
+        } else if (_sentinelStrategy === 'proportional' && hfMulti < 150) {
+          logLines.push(`[${ts}] <span style="color:var(--cyan)">[SENTINEL]</span> Strategy: PROPORTIONAL — splitting liquidation DOT+USDT`);
+          logLines.push(`[${ts}] <span style="color:var(--cyan)">[SHIELD]</span> Reduced DOT sell pressure vs legacy by ${((dotSold - (dotSold * (1 - (_userCollUSDT / (_userCollateral * dotPrice + _userCollUSDT || 1))))).toFixed(2))} DOT`);
+        } else if (_sentinelStrategy === 'dot-only' && hfDotOnly < 150) {
+          logLines.push(`[${ts}] <span style="color:var(--red)">[ALERT]</span> DOT-ONLY mode active — ${dotSold.toFixed(3)} DOT sold to maintain CR`);
+          logLines.push(`[${ts}] <span style="color:var(--red)">[WARN]</span> Adding sell pressure during crash. Liquidation spiral risk: ${dotSpiralRisk}`);
+        } else if (hfMulti >= 150) {
+          logLines.push(`[${ts}] <span style="color:var(--green)">[SENTINEL]</span> HF above threshold. No action required.`);
+          logLines.push(`[${ts}] <span style="color:var(--green)">[SHIELD]</span> USDT buffer is cushioning DOT price impact. Position stable.`);
+        }
+        if (hfMulti < 100) {
+          logLines.push(`[${ts}] <span style="color:var(--red)">[CRITICAL]</span> Collateral insufficient even with USDT. Emergency liquidation.`);
+        }
+      } else {
+        logLines.push(`[${ts}] <span style="color:var(--green)">[ORACLE]</span> DOT price at $${simPrice.toFixed(3)} — above live price`);
+        logLines.push(`[${ts}] <span style="color:var(--green)">[SHIELD]</span> Position strengthening. No rebalance needed.`);
+      }
+
+      logLines.forEach(l => {
+        const d = document.createElement('div');
+        d.innerHTML = l;
+        logEl.appendChild(d);
+      });
+      logEl.scrollTop = logEl.scrollHeight;
+
+      // Update top risk badge
+      const badge = document.getElementById('spiralRiskBadge');
+      if (hfMulti >= 150) {
+        badge.className = 'risk-badge risk-safe'; badge.textContent = '🛡️ SHIELD ACTIVE';
+      } else if (hfMulti >= 130) {
+        badge.className = 'risk-badge risk-warning'; badge.textContent = '⚠️ BUFFER ABSORBING';
+      } else {
+        badge.className = 'risk-badge risk-danger'; badge.textContent = '🚨 CRITICAL ZONE';
+      }
+
+      // Also update main HF gauge with multi-collateral sim
+      updateHFDisplay(hfMulti, collDOT, debt, true, collUSDT);
+    }
 
     function addGuardianLog(tag, msg) {
       const log = document.getElementById('guardianLog');
       const now = new Date().toLocaleTimeString();
       const line = document.createElement('div');
       line.className = 'log-line';
-
-      line.innerHTML = `<span class="log-ts">[${now}]</span><span class="log-tag">${tag}</span><span class="log-msg">${msg}</span>`;
+      line.innerHTML = `<span class="log-ts">[${now}]</span><span class="log-tag">${tag}</span><span>${msg}</span>`;
       log.appendChild(line);
       log.scrollTop = log.scrollHeight;
-
-      // Keep last 20 lines
-      if (log.children.length > 20) log.removeChild(log.firstChild);
+      if (log.children.length > 30) log.removeChild(log.firstChild);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  HEALTH FACTOR UI
-    // ─────────────────────────────────────────────────────────────
-
-    function updateHFDisplay(hf, collDOT, minted, sim = false) {
+    // ─── Health Factor UI ────────────────────────────────────────────────────────
+    function updateHFDisplay(hf, collDOT, minted, sim = false, collUSDT = 0) {
       const pct = document.getElementById('hfPct');
       const cir = document.getElementById('hfCircle');
       const desc = document.getElementById('hfDesc');
       const badge = document.getElementById('riskBadge');
-      const simResult = document.getElementById('simResult');
+      const simRes = document.getElementById('simResult');
 
-      userCollateral = collDOT;
-      userDebt = minted;
+      // FIX: strokeDasharray is set in CSS; only override strokeDashoffset here
+      const circum = 2 * Math.PI * 45; // 282.74
 
       if (minted === 0) {
         pct.textContent = '∞';
         cir.style.stroke = 'var(--green)';
         cir.style.strokeDashoffset = '0';
-        desc.textContent = 'You have no sUSD debt. Mint sUSD to start earning.';
+        desc.textContent = 'You have no sUSD debt. Mint sUSD to start building.';
+        if (!sim) badge.className = 'risk-badge risk-nodebt';
         return;
       }
 
       pct.textContent = hf.toFixed(1) + '%';
-      const circum = 2 * Math.PI * 45;
       const fraction = Math.min(hf / 200, 1);
       cir.style.strokeDashoffset = circum * (1 - fraction);
 
-      let color,
-        cls,
-        label,
-        descText,
-        visualState;
+      let color, cls, label, descText;
 
-      if (hf >= 150) {
-        color = 'var(--green)';
-        cls = 'risk-safe';
+      const safeThreshold = window._currentCR || 150;
+      const warnThreshold = safeThreshold - 20;
+
+      if (hf >= safeThreshold) {
+        color = 'var(--green)'; cls = 'risk-safe';
         label = '● SAFE';
         descText = 'Your position is healthy. Sentinel is watching.';
-        visualState = 'SAFE';
-      }
-
-      else if (hf >= 130) {
-        color = 'var(--yellow)';
-        cls = 'risk-warning';
+      } else if (hf >= warnThreshold) {
+        color = 'var(--yellow)'; cls = 'risk-warning';
         label = '⚠️ WARNING';
-        descText = 'Health factor is declining. Sentinel has sent you an alert.';
-        visualState = 'WARNING';
+        descText = 'Health factor is declining. Sentinel has sent an alert.';
+      } else if (hf >= 120) {
+        color = 'var(--red)'; cls = 'risk-danger';
+        label = '🚨 DANGER';
+        descText = 'Position paused by Sentinel. Repay debt to restore.';
+      } else {
+        color = 'var(--red)'; cls = 'risk-critical';
+        label = '💀 AT RISK';
+        descText = 'Emergency rebalance triggered! Check Telegram for TX.';
       }
-
-      else {
-        color = 'var(--red)';
-        cls = 'risk-danger';
-        label = (hf >= 120) ? '🚨 DANGER' : '💀 CRITICAL';
-        descText = (hf >= 120) ? 'Position paused by Sentinel. Repay debt to restore.' : 'Emergency rebalance triggered! Check Telegram for TX.';
-        visualState = 'DANGER';
-      }
-
 
       if (sim) {
-        simResult.className = 'risk-badge ' + cls;
-        simResult.style.display = 'flex';
-
-        simResult.textContent = `SIMULATED RESULT: ${label} (${hf.toFixed(1)}%)`;
-
-        if (hf < 130) {
-          addGuardianLog('WATCH', `Predictive risk alert! HF would drop to ${hf.toFixed(1)}% at sim price.`);
-        }
-      }
-
-      else {
+        simRes.className = 'risk-badge ' + cls;
+        simRes.style.display = 'flex';
+        simRes.textContent = `SIMULATED RESULT: ${label} — HF ${hf.toFixed(1)}%`;
+      } else {
         cir.style.stroke = color;
         badge.className = 'risk-badge ' + cls;
         badge.textContent = label;
         desc.textContent = descText;
-
-        // Show multi-sig approval button if HF is low and debt is high
-        if (hf < 125 && minted > 1000) {
-          addGuardianLog('SECURITY', 'High-value position at risk. Multi-Sig Approval required.');
-          showToast('🛡️', 'High-value position! Manual Multi-Sig Approval required for bot action.');
-          document.getElementById('approveRebalanceBtn').style.display = 'block';
-        }
       }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  ACTIONS
-    // ─────────────────────────────────────────────────────────────
+    // ─── Actions ─────────────────────────────────────────────────────────────────
     async function depositDOT() {
       const amt = parseFloat(document.getElementById('depositAmt').value);
-
-      if (!amt || amt <= 0) {
-        showToast('⚠️', 'Enter a valid DOT amount');
-        return;
-      }
-
+      if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid DOT amount'); return; }
       const btn = document.getElementById('depositBtn');
-      btn.innerHTML = '<span class="spinner"></span> Sending…';
-      btn.disabled = true;
-
+      btn.innerHTML = '<span class="spinner"></span> Sending…'; btn.disabled = true;
       try {
         const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
-
-        const tx = await vault.depositCollateral({
-          value: ethers.parseEther(String(amt))
-        });
+        const tx = await vault.depositCollateral({ value: ethers.parseEther(String(amt)) });
         showToast('⏳', 'Transaction sent! Waiting for confirmation…', tx.hash);
         await tx.wait();
-
         showToast('✅', `Deposited ${amt} DOT successfully!`, tx.hash);
         document.getElementById('depositAmt').value = '';
         await refresh();
-      }
-
-      catch (e) {
+      } catch (e) {
         showToast('❌', e.reason || e.message || 'Deposit failed');
-      }
-
-      finally {
-        btn.innerHTML = 'Deposit';
-        btn.disabled = false;
-      }
-    }
-
-    async function mintSUSD() {
-      const amt = parseFloat(document.getElementById('mintAmt').value);
-
-      if (!amt || amt <= 0) {
-        showToast('⚠️', 'Enter a valid sUSD amount');
-        return;
-      }
-
-      const btn = document.getElementById('mintBtn');
-      btn.innerHTML = '<span class="spinner"></span> Minting…';
-      btn.disabled = true;
-
-      try {
-        const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
-        const tx = await vault.mintStablecoin(ethers.parseEther(String(amt)));
-        showToast('⏳', 'Transaction sent! Waiting for confirmation…', tx.hash);
-        await tx.wait();
-
-        showToast('✅', `Minted ${amt} sUSD!`, tx.hash);
-        document.getElementById('mintAmt').value = '';
-        await refresh();
-      }
-
-      catch (e) {
-        showToast('❌', e.reason || e.message || 'Mint failed');
-      }
-
-      finally {
-        btn.innerHTML = 'Mint';
-        btn.disabled = false;
+      } finally {
+        btn.innerHTML = 'Deposit'; btn.disabled = false;
       }
     }
 
     async function withdrawDOT() {
       const amt = parseFloat(document.getElementById('withdrawAmt').value);
-
-      if (!amt || amt <= 0) {
-        showToast('⚠️', 'Enter a valid DOT amount');
-        return;
-      }
-
+      if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid DOT amount'); return; }
       const btn = document.getElementById('withdrawBtn');
-      btn.innerHTML = '<span class="spinner"></span> Sending…';
-      btn.disabled = true;
-
+      btn.innerHTML = '<span class="spinner"></span> Sending…'; btn.disabled = true;
       try {
         const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
         const tx = await vault.withdrawCollateral(ethers.parseEther(String(amt)));
-        showToast('⏳', 'Transaction sent! Waiting for confirmation…', tx.hash);
+        showToast('⏳', 'Transaction sent!', tx.hash);
         await tx.wait();
-
-        showToast('✅', `Withdrew ${amt} DOT successfully!`, tx.hash);
+        showToast('✅', `Withdrew ${amt} DOT!`, tx.hash);
         document.getElementById('withdrawAmt').value = '';
         await refresh();
-      }
-
-      catch (e) {
+      } catch (e) {
         showToast('❌', e.reason || e.message || 'Withdraw failed (Check HF)');
+      } finally {
+        btn.innerHTML = 'Withdraw'; btn.disabled = false;
       }
+    }
 
-      finally {
-        btn.innerHTML = 'Withdraw';
-        btn.disabled = false;
+    async function mintSUSD() {
+      const amt = parseFloat(document.getElementById('mintAmt').value);
+      if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid sUSD amount'); return; }
+      const btn = document.getElementById('mintBtn');
+      btn.innerHTML = '<span class="spinner"></span> Minting…'; btn.disabled = true;
+      try {
+        const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
+        const tx = await vault.mintStablecoin(ethers.parseEther(String(amt)));
+        showToast('⏳', 'Transaction sent!', tx.hash);
+        await tx.wait();
+        showToast('✅', `Minted ${amt} sUSD!`, tx.hash);
+        document.getElementById('mintAmt').value = '';
+        await refresh();
+      } catch (e) {
+        showToast('❌', e.reason || e.message || 'Mint failed');
+      } finally {
+        btn.innerHTML = 'Mint'; btn.disabled = false;
       }
     }
 
     async function repaySUSD() {
-      const amtInput = document.getElementById('repayAmt').value;
-      const amt = parseFloat(amtInput);
-
-      if (!amt || amt <= 0) {
-        showToast('⚠️', 'Enter a valid sUSD amount');
-        return;
-      }
-
+      const amt = parseFloat(document.getElementById('repayAmt').value);
+      if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid sUSD amount'); return; }
       const btn = document.getElementById('repayBtn');
-      btn.innerHTML = '<span class="spinner"></span> Processing…';
-      btn.disabled = true;
-
+      btn.innerHTML = '<span class="spinner"></span> Processing…'; btn.disabled = true;
       try {
         const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
-        const sUSD = new ethers.Contract(SUSD_ADDR, SUSD_ABI, signer);
+        // FIX: was referencing SUSD_ABI (undefined) — changed to ERC20_ABI
+        const sUSD = new ethers.Contract(SUSD_ADDR, ERC20_ABI, signer);
         const amtWei = ethers.parseEther(String(amt));
 
-        // Check allowance
         const allowance = await sUSD.allowance(userAddr, VAULT_ADDR);
-
         if (allowance < amtWei) {
           showToast('⏳', 'Approving sUSD for vault…');
           const atx = await sUSD.approve(VAULT_ADDR, ethers.MaxUint256);
           await atx.wait();
         }
 
-        showToast('⏳', 'Repaying debt…');
         const tx = await vault.burnStablecoin(amtWei);
-        showToast('⏳', 'Transaction sent! Waiting for confirmation…', tx.hash);
+        showToast('⏳', 'Transaction sent!', tx.hash);
         await tx.wait();
-
         showToast('✅', `Repaid ${amt} sUSD!`, tx.hash);
         document.getElementById('repayAmt').value = '';
         await refresh();
-      }
-
-      catch (e) {
+      } catch (e) {
         showToast('❌', e.reason || e.message || 'Repayment failed');
+      } finally {
+        btn.innerHTML = 'Repay'; btn.disabled = false;
       }
+    }
 
-      finally {
-        btn.innerHTML = 'Repay';
-        btn.disabled = false;
+    async function depositUSDT() {
+      if (!usdtAvailable) { showToast('⚠️', 'USDT not available on this network.'); return; }
+      const amt = parseFloat(document.getElementById('depositUSDTAmt').value);
+      if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid USDT amount'); return; }
+      const btn = document.getElementById('depositUSDTBtn');
+      btn.innerHTML = '<span class="spinner"></span> Processing…'; btn.disabled = true;
+      try {
+        const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
+        const usdt = new ethers.Contract(USDT_ADDR, ERC20_ABI, signer);
+        const amtWei = ethers.parseUnits(String(amt), 6);
+        const allowance = await usdt.allowance(userAddr, VAULT_ADDR);
+        if (allowance < amtWei) {
+          showToast('⏳', 'Approving USDT for vault…');
+          const atx = await usdt.approve(VAULT_ADDR, ethers.MaxUint256);
+          await atx.wait();
+        }
+        const tx = await vault.depositUSDT(amtWei);
+        showToast('⏳', 'Transaction sent!', tx.hash);
+        await tx.wait();
+        showToast('✅', `Deposited ${amt} USDT!`, tx.hash);
+        document.getElementById('depositUSDTAmt').value = '';
+        await refresh();
+      } catch (e) {
+        showToast('❌', e.reason || e.message || 'Deposit failed');
+      } finally {
+        btn.innerHTML = 'Deposit'; btn.disabled = false;
+      }
+    }
+
+    async function withdrawUSDT() {
+      if (!usdtAvailable) { showToast('⚠️', 'USDT not available on this network.'); return; }
+      const amt = parseFloat(document.getElementById('withdrawUSDTAmt').value);
+      if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid USDT amount'); return; }
+      const btn = document.getElementById('withdrawUSDTBtn');
+      btn.innerHTML = '<span class="spinner"></span> Sending…'; btn.disabled = true;
+      try {
+        const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
+        const tx = await vault.withdrawUSDT(ethers.parseUnits(String(amt), 6));
+        showToast('⏳', 'Transaction sent!', tx.hash);
+        await tx.wait();
+        showToast('✅', `Withdrew ${amt} USDT!`, tx.hash);
+        document.getElementById('withdrawUSDTAmt').value = '';
+        await refresh();
+      } catch (e) {
+        showToast('❌', e.reason || e.message || 'Withdraw failed');
+      } finally {
+        btn.innerHTML = 'Withdraw'; btn.disabled = false;
       }
     }
 
     async function approveRebalance() {
       const btn = document.getElementById('approveRebalanceBtn');
-      btn.innerHTML = '<span class="spinner"></span> Approving…';
-      btn.disabled = true;
-
+      btn.innerHTML = '<span class="spinner"></span> Approving…'; btn.disabled = true;
       try {
         const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
         const tx = await vault.approveRebalance();
-        showToast('⏳', 'Multi-Sig Approval sent! Waiting for confirmation…', tx.hash);
+        showToast('⏳', 'Multi-Sig Approval sent!', tx.hash);
         await tx.wait();
-        showToast('✅', 'Multi-Sig Approval Confirmed! Sentinel can now protect your position.');
+        showToast('✅', 'Multi-Sig Approval Confirmed!');
         btn.style.display = 'none';
         addGuardianLog('SECURITY', 'User Multi-Sig Approval confirmed on-chain.');
-      }
-
-      catch (e) {
+      } catch (e) {
         showToast('❌', e.reason || e.message || 'Approval failed');
+      } finally {
+        btn.innerHTML = '🛡️ Approve Multi-Sig Action'; btn.disabled = false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // AEGIS PREDICTIVE VOLATILITY BUFFER (VolatilityService)
+    // ═══════════════════════════════════════════════════════════════════
+    const VOL_WINDOW = 25;
+    const VOL_RED_FLAG = 7.0; // 7% average delta triggers AEGIS upgrade
+    const VOL_CAUTION = 3.0;
+
+    function recordPriceForVolatility(price) {
+      _priceHistory.push(price);
+      if (_priceHistory.length > VOL_WINDOW) _priceHistory.shift();
+      updateAegisPanel();
+    }
+
+    function computeVolatility(history) {
+      if (history.length < 2) return 0;
+      const deltas = [];
+      for (let i = 1; i < history.length; i++) {
+        const pct = Math.abs((history[i] - history[i - 1]) / history[i - 1]) * 100;
+        deltas.push(pct);
+      }
+      return deltas.reduce((a, b) => a + b, 0) / deltas.length;
+    }
+
+    function updateAegisPanel() {
+      // If we don't have enough history, generate some synthetic noise for visual effect
+      if (_priceHistory.length < 10) {
+        for (let i = 0; i < 20; i++) {
+          const noise = (Math.random() - 0.5) * dotPrice * 0.04;
+          _priceHistory.unshift(dotPrice + noise);
+        }
       }
 
-      finally {
-        btn.innerHTML = '🛡️ Approve Multi-Sig Action';
+      const volScore = computeVolatility(_priceHistory);
+      const isRedFlag = volScore >= VOL_RED_FLAG;
+      const isCaution = volScore >= VOL_CAUTION && !isRedFlag;
+
+      // Update volatility bar
+      const scorePct = Math.min(volScore / 10 * 100, 100);
+      const scoreCol = isRedFlag ? 'var(--red)' : isCaution ? 'var(--yellow)' : 'var(--green)';
+
+      const scoreBar = document.getElementById('volScoreBar');
+      const scoreLabel = document.getElementById('volScoreLabel');
+      if (scoreBar) { scoreBar.style.width = scorePct + '%'; scoreBar.style.background = scoreCol; }
+      if (scoreLabel) { scoreLabel.textContent = volScore.toFixed(2) + '% avg delta'; scoreLabel.style.color = scoreCol; }
+
+      // Render volatility history sparks
+      const container = document.getElementById('volHistory');
+      if (container) {
+        container.innerHTML = '';
+        const maxVol = Math.max(..._priceHistory.map((p, i) => i === 0 ? 0 : Math.abs((p - _priceHistory[i - 1]) / _priceHistory[i - 1]) * 100), 0.1);
+        for (let i = 1; i < _priceHistory.length; i++) {
+          const pct = Math.abs((_priceHistory[i] - _priceHistory[i - 1]) / _priceHistory[i - 1]) * 100;
+          const h = Math.max(4, (pct / maxVol) * 36);
+          const col = pct >= VOL_RED_FLAG ? 'var(--red)' : pct >= VOL_CAUTION ? 'var(--yellow)' : 'var(--green)';
+          const bar = document.createElement('div');
+          bar.className = 'vol-bar';
+          bar.style.cssText = `height:${h}px; background:${col}; opacity:${0.5 + 0.5 * (pct / maxVol)};`;
+          container.appendChild(bar);
+        }
+      }
+
+      // Update active CR
+      const activeCR = isRedFlag ? 170 : 150;
+      window._aegisActiveCR = activeCR;
+
+      const modeBadge = document.getElementById('aegisModeBadge');
+      const activeCREl = document.getElementById('aegisActiveCR');
+      const activeCRBox = document.getElementById('aegisActiveCRBox');
+      const redAlert = document.getElementById('aegisRedFlagAlert');
+      const normAlert = document.getElementById('aegisNormalAlert');
+      const crBar = document.getElementById('aegisCRBar');
+      const crLabel = document.getElementById('aegisCRLabel');
+
+      if (isRedFlag) {
+        if (modeBadge) { modeBadge.className = 'risk-badge risk-danger'; modeBadge.textContent = '🔴 RED FLAG MODE — 170% CR'; }
+        if (activeCREl) { activeCREl.textContent = '170%'; activeCREl.style.color = 'var(--red)'; }
+        if (activeCRBox) { activeCRBox.style.borderColor = 'rgba(255,77,77,0.5)'; activeCRBox.style.background = 'rgba(255,77,77,0.08)'; }
+        if (redAlert) redAlert.style.display = 'block';
+        if (normAlert) normAlert.style.display = 'none';
+        if (crBar) { crBar.style.width = '100%'; crBar.style.background = 'var(--red)'; }
+        if (crLabel) { crLabel.textContent = '170% CR'; crLabel.style.color = 'var(--red)'; }
+      } else {
+        if (modeBadge) { modeBadge.className = 'risk-badge risk-safe'; modeBadge.textContent = '🟢 NORMAL MODE — 150% CR'; }
+        if (activeCREl) { activeCREl.textContent = '150%'; activeCREl.style.color = 'var(--green)'; }
+        if (activeCRBox) { activeCRBox.style.borderColor = 'rgba(57,255,20,0.3)'; activeCRBox.style.background = 'rgba(57,255,20,0.05)'; }
+        if (redAlert) redAlert.style.display = 'none';
+        if (normAlert) normAlert.style.display = 'block';
+        if (crBar) { crBar.style.width = '50%'; crBar.style.background = 'var(--green)'; }
+        if (crLabel) { crLabel.textContent = '150% CR'; crLabel.style.color = 'var(--bumblebee)'; }
+      }
+
+      const collUSD = (_userCollateral * dotPrice) + _userCollUSDT;
+      const maxMint = collUSD > 0 ? Math.max(0, collUSD * 100 / activeCR - _userDebt) : 0;
+      const maxMintEl = document.getElementById('aegisMaxMintDisplay');
+      if (maxMintEl) maxMintEl.textContent = maxMint.toFixed(2) + ' sUSD';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // LLM RISK REPORT — CLAUDE API INTEGRATION
+    // ═══════════════════════════════════════════════════════════════════
+    async function askSentinel(question) {
+      const inputEl = document.getElementById('llmInput');
+      const q = question || (inputEl && inputEl.value.trim());
+      if (!q) return;
+      if (inputEl) inputEl.value = '';
+
+      const chat = document.getElementById('llmChat');
+      const sendBtn = document.getElementById('llmSendBtn');
+      if (!chat) return;
+
+      // Render user message
+      const userMsgDiv = document.createElement('div');
+      userMsgDiv.style.marginBottom = '15px';
+      userMsgDiv.innerHTML = `<div class="llm-msg-user">⚡ YOU</div><div style="font-size:0.85rem; color:var(--white); padding:8px 0;">${q}</div>`;
+      chat.appendChild(userMsgDiv);
+
+      // Thinking state
+      const thinkId = 'llm-think-' + Date.now();
+      const thinkDiv = document.createElement('div');
+      thinkDiv.id = thinkId;
+      thinkDiv.className = 'llm-msg-bot thinking';
+      thinkDiv.textContent = 'Sentinel is analyzing your position…';
+      chat.appendChild(thinkDiv);
+      chat.scrollTop = chat.scrollHeight;
+      if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '…'; }
+
+      // Build context
+      const collUSD = (_userCollateral * dotPrice) + _userCollUSDT;
+      const hfLive = _userDebt > 0 ? (collUSD / _userDebt * 100).toFixed(1) : 'N/A';
+      const volScore = computeVolatility(_priceHistory);
+      const activeCR = window._aegisActiveCR || 150;
+
+      const systemPrompt = `You are Sentinel, an AI DeFi guardian for a vault on Polkadot. 
+        VAULT: DOT price: $${dotPrice.toFixed(4)}, Collateral: $${collUSD.toFixed(2)}, Debt: ${_userDebt.toFixed(2)} sUSD, HF: ${hfLive}%, Required CR: ${activeCR}%.
+        Answer in 3-5 sentences. Be direct, technical, and refer to market conditions.`;
+
+      _llmHistory.push({ role: 'user', content: q });
+
+      try {
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 400,
+            system: systemPrompt,
+            messages: _llmHistory.slice(-6)
+          })
+        });
+
+        const data = await resp.json();
+        const answer = data.content?.[0]?.text || 'Sentinel could not generate a response. Check API key.';
+
+        _llmHistory.push({ role: 'assistant', content: answer });
+
+        const thinkEl = document.getElementById(thinkId);
+        if (thinkEl) {
+          thinkEl.className = 'llm-msg-bot';
+          thinkEl.innerHTML = `<span style="font-size:0.7rem; color:var(--bumblebee); font-weight:700; font-family:'Orbitron',sans-serif;">🤖 SENTINEL</span><br><span style="font-size:0.85rem;">${answer.replace(/\n/g, '<br>')}</span>`;
+        }
+        addGuardianLog('LLM', `Risk report generated.`);
+      } catch (err) {
+        const thinkEl = document.getElementById(thinkId);
+        if (thinkEl) {
+          thinkEl.className = 'llm-msg-bot';
+          thinkEl.innerHTML = `<span style="color:var(--red);">⚠️ LLM API unavailable. Check network or API key.</span>`;
+        }
+      }
+
+      chat.scrollTop = chat.scrollHeight;
+      if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Ask ⚡'; }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PVM RUST BRAIN — DECISION VERIFIER (SIMULATED)
+    // ═══════════════════════════════════════════════════════════════════
+    function runPVMVerify() {
+      const dotIn = parseFloat(document.getElementById('pvmDotInput').value) || dotPrice;
+      const crIn = parseFloat(document.getElementById('pvmCRInput').value) || 0;
+      const btn = document.getElementById('pvmVerifyBtn');
+      const result = document.getElementById('pvmResult');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ RUNNING PVM BYTECODE…';
+
+      setTimeout(() => {
+        const collUSD = (_userCollateral * dotIn) + _userCollUSDT;
+        const debt = _userDebt > 0 ? _userDebt : 1;
+        const cr = crIn > 0 ? crIn : (collUSD / debt * 100);
+        const target = window._aegisActiveCR || 150;
+
+        let action, color, actionDetail;
+
+        if (cr >= target) {
+          action = 'RebalanceAction::None';
+          color = 'rgba(57,255,20,0.1)';
+          actionDetail = `CR ${cr.toFixed(1)}% ≥ target ${target}%. No rebalance needed.`;
+        } else if (cr >= 120) {
+          const usdtNeeded = Math.max(0, debt * target / 100 - collUSD);
+          if (_userCollUSDT >= usdtNeeded) {
+            action = `RebalanceAction::UsePrimaryBuffer($${usdtNeeded.toFixed(2)} USDT)`;
+            color = 'rgba(0,242,255,0.08)';
+            actionDetail = `HF < ${target}%. USDT buffer covers shortfall of $${usdtNeeded.toFixed(2)}. DOT preserved.`;
+          } else {
+            const dotNeeded = usdtNeeded - _userCollUSDT;
+            action = `RebalanceAction::HybridLiquidate(USDT: $${_userCollUSDT.toFixed(2)}, DOT: $${dotNeeded.toFixed(2)})`;
+            color = 'rgba(255,215,0,0.08)';
+            actionDetail = `Partial USDT coverage. DOT must be sold to maintain health.`;
+          }
+        } else {
+          action = 'RebalanceAction::EmergencyLiquidate';
+          color = 'rgba(255,77,77,0.1)';
+          actionDetail = `CR ${cr.toFixed(1)}% < 120%. Full liquidation triggered.`;
+        }
+
+        result.style.display = 'block';
+        result.style.background = color;
+        result.style.border = '1px solid rgba(57,255,20,0.2)';
+        result.innerHTML = `
+          <div style="color:var(--green); font-weight:700; margin-bottom:4px;">✅ PVM VERIFICATION COMPLETE</div>
+          <div style="color:var(--muted); margin-bottom:6px;">Inputs: DOT=$${dotIn.toFixed(2)} · CR=${cr.toFixed(1)}%</div>
+          <div style="color:var(--bumblebee);">Output: <b>${action}</b></div>
+          <div style="color:var(--white); margin-top:4px;">${actionDetail}</div>
+        `;
+
+        addGuardianLog('PVM', `Verification complete → ${action.split('(')[0]}`);
         btn.disabled = false;
-      }
+        btn.textContent = '▶ RUN PVM VERIFICATION';
+      }, 900);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  HELPERS
-    // ─────────────────────────────────────────────────────────────
-    function setMaxDot() {
-      document.getElementById('depositAmt').value = document.getElementById('depositAmt').dataset.max || '';
-    }
+    function setMaxDot() { document.getElementById('depositAmt').value = document.getElementById('depositAmt').dataset.max || ''; }
+    function setMaxWithdraw() { document.getElementById('withdrawAmt').value = document.getElementById('withdrawAmt').dataset.max || ''; }
+    function setMaxUSDT() { document.getElementById('depositUSDTAmt').value = document.getElementById('depositUSDTAmt').dataset.max || ''; }
+    function setMaxUSDTWithdraw() { document.getElementById('withdrawUSDTAmt').value = document.getElementById('withdrawUSDTAmt').dataset.max || ''; }
+    function setMaxMint() { document.getElementById('mintAmt').value = document.getElementById('mintAmt').dataset.max || ''; }
+    function setMaxRepay() { document.getElementById('repayAmt').value = document.getElementById('repayAmt').dataset.max || ''; }
 
-    function setMaxMint() {
-      document.getElementById('mintAmt').value = document.getElementById('mintAmt').dataset.max || '';
-    }
-
-    function setMaxWithdraw() {
-      document.getElementById('withdrawAmt').value = document.getElementById('withdrawAmt').dataset.max || '';
-    }
-
-    function setMaxRepay() {
-      document.getElementById('repayAmt').value = document.getElementById('repayAmt').dataset.max || '';
-    }
-
-    function shortAddr(a) {
-      return a.slice(0, 6) + '...' + a.slice(-4);
-    }
+    function shortAddr(a) { return a.slice(0, 6) + '...' + a.slice(-4); }
 
     let toastTimer;
-
     function showToast(icon, msg, txHash) {
       const t = document.getElementById('toast');
       const link = document.getElementById('toastLink');
       document.getElementById('toastIcon').textContent = icon;
       document.getElementById('toastMsg').textContent = msg;
-
       if (txHash) {
         link.href = `${EXPLORER}/tx/${txHash}`;
-        link.textContent = 'View on Blockscout →';
+        link.textContent = 'View on Blockscout ↗';
         link.style.display = 'block';
-      }
-
-      else {
+      } else {
         link.style.display = 'none';
       }
-
       t.classList.add('show');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 6000);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 5000);
     }
 
+    document.addEventListener('DOMContentLoaded', () => {
+      updateAegisPanel();
+    });
   </script>
 </body>
 

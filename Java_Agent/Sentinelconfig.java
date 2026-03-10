@@ -41,11 +41,29 @@ public class SentinelConfig {
 
     // ── Strategy ──────────────────────────────────────────────────
     // "CONSERVATIVE" or "AGGRESSIVE"
-    private String strategyMode = "CONSERVATIVE"; 
+    private String strategyMode = "CONSERVATIVE";
 
-    // ── Telegram ──────────────────────────────────────────────────
-    private String telegramBotToken;
-    private String telegramBotUsername;
+    // ── Aegis Dynamic Buffer ───────────────────────────────────────
+    // USD std-dev volatility level that activates the elevated safety threshold
+    private double aegisVolatilityThreshold = 0.30;
+    // Health Factor % target during red-flag market conditions (replaces hfSafeThreshold)
+    private int    aegisElevatedBuffer      = 170;
+
+    // ── LLM Risk Reports ──────────────────────────────────────────
+    // Optional: OpenAI API key for GPT-powered /why explanations.
+    // Leave blank to use the built-in template fallback.
+    private String openAiApiKey;
+    private String openAiModel = "gpt-4o-mini";
+
+    // ── Multi-Collateral (USDT) ───────────────────────────────────
+    // ERC-20 precompile address for native USDT on Polkadot Hub.
+    // Asset Hub USDT (assetId=1984) → precompile: 0xFFFFFFFF000007C0
+    private String usdtTokenAddress;
+
+    // ── PVM Precompile (Trustless Rebalancing Brain) ──────────────
+    // Address of the deployed PVM precompile on Polkadot Hub.
+    // Set to empty string to skip PVM verification (graceful degradation).
+    private String pvmPrecompileAddress;
 
     // ── Gas ───────────────────────────────────────────────────────
     private long   gasLimit;

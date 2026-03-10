@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
 import {SentinelUSD} from "../src/SentinelUSD.sol";
-import {SentinelVault} from "../src/SentinelVault_Complete.sol";
+import {SentinelVault_complete} from "../src/SentinelVault_Complete.sol";
 import {MockPriceOracle} from "../src/MockPriceOracle.sol";
 
 // ─────────────────────────────────────────────
@@ -55,6 +55,8 @@ contract DeployScript is Script {
     // (emergencyRebalance DEX swap will be disabled but everything else works)
     address constant PLACEHOLDER_DEX_ROUTER = address(0);
     address constant PLACEHOLDER_WDOT = address(0);
+    address constant USDT_TOKEN_ADDR =
+        0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5; // Mock USDT deployed
 
     function run() external {
         // ── Load environment ──────────────────────────────────────
@@ -81,13 +83,16 @@ contract DeployScript is Script {
 
         vm.startBroadcast(deployerKey);
 
-        // ── Step 1: Deploy Mock Oracle ────────────────────────────
-        // Deploy our test oracle that returns a configurable DOT price.
-        // For testnet demos, we can manually set the price to simulate drops.
         MockPriceOracle oracle = new MockPriceOracle(
             100_000_000 // Initial DOT price = $1.00 (8 decimals: 1.00 * 1e8)
         );
-        console.log("MockPriceOracle deployed:", address(oracle));
+        console.log("MockPriceOracle (DOT) deployed:", address(oracle));
+
+        // ── Step 1.5: Deploy Mock USDT Oracle ──────────────────────
+        MockPriceOracle usdtOracle = new MockPriceOracle(
+            100_000_000 // Initial USDT price = $1.00 (8 decimals)
+        );
+        console.log("MockPriceOracle (USDT) deployed:", address(usdtOracle));
 
         // ── Step 2: Deploy SentinelUSD ────────────────────────────
         // Pass deployer as placeholder vault — we'll update it after vault deploy
@@ -98,12 +103,14 @@ contract DeployScript is Script {
         console.log("SentinelUSD (sUSD) deployed:", address(sUSD));
 
         // ── Step 3: Deploy SentinelVault_Complete ─────────────────
-        SentinelVault vault = new SentinelVault(
+        SentinelVault_complete vault = new SentinelVault_complete(
             address(oracle), // DOT/USD price oracle
             guardian, // Sentinel bot's signing wallet
             address(sUSD), // sUSD stablecoin contract
             dexRouter, // Hydration DEX router (0x0 for now)
-            wdot // Wrapped DOT (0x0 for now)
+            wdot, // Wrapped DOT (0x0 for now)
+            USDT_TOKEN_ADDR, // USDT native precompile
+            address(usdtOracle) // USDT/USD price oracle
         );
         console.log("SentinelVault deployed:", address(vault));
 

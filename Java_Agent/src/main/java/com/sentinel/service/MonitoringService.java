@@ -28,16 +28,24 @@ import java.util.concurrent.ConcurrentHashMap;
  *   125–130%        → DANGER  — pause position on-chain + alert
  *   120–125%        → CRITICAL — emergency rebalance + alert
  *   < 120%          → LIQUIDATABLE — urgent alert (open to public liquidation)
+ *
+ * 🛡️ AEGIS BUFFER:
+ *   When VolatilityService detects "red flag" market conditions (DOT price
+ *   standard deviation exceeds sentinel.aegis-volatility-threshold), the safe
+ *   HF target is automatically raised from 150% to sentinel.aegis-elevated-buffer
+ *   (default: 170%). This means rebalances will target a higher collateral ratio
+ *   during volatile periods, giving positions more breathing room.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MonitoringService {
 
-    private final SentinelConfig      config;
+    private final SentinelConfig       config;
     private final VaultContractService vaultService;
     private final TelegramAlertService telegramService;
-    private final PythOracleService   oracleService;
+    private final PythOracleService    oracleService;
+    private final VolatilityService    volatilityService;
 
     private final Map<String, Long> lastAlertTime   = new ConcurrentHashMap<>();
     private final Set<String> rebalancedThisCycle   = ConcurrentHashMap.newKeySet();
@@ -48,15 +56,38 @@ public class MonitoringService {
         log.info("═══════════════════════════════════════════");
         log.info("Sentinel monitoring cycle started...");
 
+        // ── Step 1: Get live DOT price and feed volatility tracker ──────────────
         BigDecimal dotPrice;
         try {
             dotPrice = oracleService.getDOTPriceUSD();
-            log.info("DOT/USD price: ${}", dotPrice.toPlainString());
+            volatilityService.addPrice(dotPrice);
+            log.info("DOT/USD price: ${} (Volatility σ={})",
+                    dotPrice.toPlainString(),
+                    volatilityService.calculateShortTermVolatility().toPlainString());
         } catch (Exception e) {
             log.error("Cannot fetch DOT price — skipping cycle: {}", e.getMessage());
             return;
         }
 
+        // ── Step 2: Determine Aegis effective safe threshold ─────────────────────
+        boolean aegisActive = volatilityService.isRedFlagCondition(config.getAegisVolatilityThreshold());
+        int effectiveSafeThreshold = aegisActive
+                ? config.getAegisElevatedBuffer()
+                : config.getHfSafeThreshold();
+
+        if (aegisActive) {
+            log.warn("╔═══════════════════════════════════════════╗");
+            log.warn("║  🛡️  AEGIS BUFFER ACTIVATED — RED FLAG    ║");
+            log.warn("║  {}  ║",
+                    volatilityService.getAegisBufferDescription(config.getAegisVolatilityThreshold()));
+            log.warn("║  Safe HF target raised: {}% → {}%          ║",
+                    config.getHfSafeThreshold(), effectiveSafeThreshold);
+            log.warn("╚═══════════════════════════════════════════╝");
+        } else {
+            log.info("🛡️ Aegis: {}", volatilityService.getAegisBufferDescription(config.getAegisVolatilityThreshold()));
+        }
+
+        // ── Step 3: Fetch all vault users ────────────────────────────────────────
         List<String> users;
         try {
             users = vaultService.getAllUsers();
@@ -71,6 +102,7 @@ public class MonitoringService {
             return;
         }
 
+        // ── Step 4: Check each position ──────────────────────────────────────────
         rebalancedThisCycle.clear();
         int safe = 0, warning = 0, danger = 0, critical = 0, liquidatable = 0;
 
@@ -85,11 +117,26 @@ public class MonitoringService {
                         log.debug("SAFE: {} HF={}", position.getShortAddress(),
                                 position.getHealthFactorPercent());
                     }
-                    case WARNING     -> { warning++;     handleWarning(position); }
-                    case DANGER      -> { danger++;      handleDanger(position); }
-                    case CRITICAL    -> { critical++;    handleCritical(position, dotPrice); }
+                    case WARNING     -> { warning++;     handleWarning(position, aegisActive); }
+                    case DANGER      -> { danger++;      handleDanger(position, aegisActive); }
+                    case CRITICAL    -> { critical++;    handleCritical(position, dotPrice, effectiveSafeThreshold); }
                     case LIQUIDATABLE -> { liquidatable++; handleLiquidatable(position); }
                 }
+
+                // ── AI Prediction Layer (enhanced with Aegis status) ──────────────
+                int riskPct = volatilityService.predictLiquidationRisk(
+                        position.getHealthFactorPercent().contains("%")
+                                ? Double.parseDouble(position.getHealthFactorPercent().replace("%", "")) / 100.0
+                                : 2.0,
+                        dotPrice);
+
+                if (riskPct > 50 && !isInCooldown(userAddress + "_predict")) {
+                    log.info("🤖 SENTINEL PREDICT: User {} — {}% liquidation risk within 30m. Aegis: {}",
+                            position.getShortAddress(), riskPct,
+                            aegisActive ? "ELEVATED" : "NORMAL");
+                    updateAlertTime(userAddress + "_predict");
+                }
+
             } catch (Exception e) {
                 log.error("Error checking position for {}: {}", userAddress, e.getMessage());
             }
@@ -104,18 +151,21 @@ public class MonitoringService {
     //  RISK HANDLERS
     // ─────────────────────────────────────────────
 
-    private void handleWarning(VaultPosition position) {
-        log.warn("⚠️  WARNING: {} HF={}", position.getShortAddress(), position.getHealthFactorPercent());
+    private void handleWarning(VaultPosition position, boolean aegisActive) {
+        log.warn("⚠️  WARNING: {} HF={} [Aegis: {}]",
+                position.getShortAddress(), position.getHealthFactorPercent(),
+                aegisActive ? "ELEVATED" : "NORMAL");
         if (isInCooldown(position.getUserAddress())) return;
         if (telegramService.isWalletLinked(position.getUserAddress())) {
-            telegramService.sendWarningAlert(position);
+            telegramService.sendWarningAlert(position, aegisActive);
             updateAlertTime(position.getUserAddress());
         }
     }
 
-    private void handleDanger(VaultPosition position) {
-        log.warn("🚨 DANGER: {} HF={} — pausing position",
-                position.getShortAddress(), position.getHealthFactorPercent());
+    private void handleDanger(VaultPosition position, boolean aegisActive) {
+        log.warn("🚨 DANGER: {} HF={} — pausing position [Aegis: {}]",
+                position.getShortAddress(), position.getHealthFactorPercent(),
+                aegisActive ? "ELEVATED" : "NORMAL");
 
         if (position.isPaused()) {
             log.info("Position {} is already paused.", position.getShortAddress());
@@ -123,8 +173,11 @@ public class MonitoringService {
         }
 
         try {
+            String aegisNote = aegisActive
+                    ? " [Aegis buffer active — elevated market risk detected]"
+                    : "";
             String reason = "Health Factor dropped to " + position.getHealthFactorPercent()
-                    + " — below 125% danger threshold";
+                    + " — below 125% danger threshold" + aegisNote;
             String txHash = vaultService.pausePosition(position.getUserAddress(), reason);
             log.warn("Position paused! TX: {}", txHash);
             if (telegramService.isWalletLinked(position.getUserAddress())) {
@@ -136,9 +189,16 @@ public class MonitoringService {
         }
     }
 
-    private void handleCritical(VaultPosition position, BigDecimal dotPrice) {
-        log.error("🔴 CRITICAL: {} HF={} — triggering emergency rebalance",
-                position.getShortAddress(), position.getHealthFactorPercent());
+    /**
+     * Triggers emergency rebalance.
+     *
+     * When Aegis is active, the rebalance target is raised to `effectiveSafeThreshold`
+     * (e.g. 170%) instead of the normal 150%, so the position has more buffer after
+     * the rebalance during a volatile market period.
+     */
+    private void handleCritical(VaultPosition position, BigDecimal dotPrice, int effectiveSafeThreshold) {
+        log.error("🔴 CRITICAL: {} HF={} — triggering emergency rebalance (target HF: {}%)",
+                position.getShortAddress(), position.getHealthFactorPercent(), effectiveSafeThreshold);
 
         if (rebalancedThisCycle.contains(position.getUserAddress())) return;
 
@@ -148,16 +208,16 @@ public class MonitoringService {
             BigDecimal mintedSUSD = new BigDecimal(position.getMintedSUSD())
                     .divide(BigDecimal.TEN.pow(18), 8, RoundingMode.HALF_UP);
 
-            // Target debt that restores HF to 150%
+            // Use the Aegis-adjusted target (170% if red-flag, 150% otherwise)
             BigDecimal targetDebt = collateralUSD.divide(
-                    BigDecimal.valueOf(config.getHfSafeThreshold())
+                    BigDecimal.valueOf(effectiveSafeThreshold)
                             .divide(BigDecimal.valueOf(100), 8, RoundingMode.HALF_UP),
                     8, RoundingMode.HALF_UP);
 
             BigDecimal debtToRepayUSD = mintedSUSD.subtract(targetDebt);
             if (debtToRepayUSD.compareTo(BigDecimal.ZERO) <= 0) {
-                log.warn("Rebalance calc shows no debt to repay for {} — skipping",
-                        position.getShortAddress());
+                log.warn("Rebalance calc shows no debt to repay for {} (target {}%) — skipping",
+                        position.getShortAddress(), effectiveSafeThreshold);
                 return;
             }
 
@@ -177,7 +237,7 @@ public class MonitoringService {
             String dotToSellFormatted = dotToSellDecimal.setScale(4, RoundingMode.HALF_UP).toPlainString();
 
             if (telegramService.isWalletLinked(position.getUserAddress())) {
-                telegramService.sendRebalanceStartedAlert(position, dotToSellFormatted);
+                telegramService.sendRebalanceStartedAlert(position, dotToSellFormatted, effectiveSafeThreshold);
             }
 
             String txHash = vaultService.emergencyRebalance(
@@ -193,8 +253,8 @@ public class MonitoringService {
             }
 
             updateAlertTime(position.getUserAddress());
-            log.info("Emergency rebalance complete for {}. New HF: {}",
-                    position.getShortAddress(), afterPosition.getHealthFactorPercent());
+            log.info("Emergency rebalance complete for {}. New HF: {} (target was {}%)",
+                    position.getShortAddress(), afterPosition.getHealthFactorPercent(), effectiveSafeThreshold);
 
         } catch (Exception e) {
             log.error("Emergency rebalance FAILED for {}: {}",

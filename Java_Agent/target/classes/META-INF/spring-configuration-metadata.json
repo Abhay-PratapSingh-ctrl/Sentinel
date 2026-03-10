@@ -8,6 +8,18 @@
   ],
   "properties": [
     {
+      "name": "sentinel.aegis-elevated-buffer",
+      "type": "java.lang.Integer",
+      "sourceType": "com.sentinel.config.SentinelConfig",
+      "defaultValue": 170
+    },
+    {
+      "name": "sentinel.aegis-volatility-threshold",
+      "type": "java.lang.Double",
+      "sourceType": "com.sentinel.config.SentinelConfig",
+      "defaultValue": 0.3
+    },
+    {
       "name": "sentinel.chain-id",
       "type": "java.lang.Long",
       "sourceType": "com.sentinel.config.SentinelConfig",
@@ -65,6 +77,22 @@
       "defaultValue": 0
     },
     {
+      "name": "sentinel.open-ai-api-key",
+      "type": "java.lang.String",
+      "sourceType": "com.sentinel.config.SentinelConfig"
+    },
+    {
+      "name": "sentinel.open-ai-model",
+      "type": "java.lang.String",
+      "sourceType": "com.sentinel.config.SentinelConfig",
+      "defaultValue": "gpt-4o-mini"
+    },
+    {
+      "name": "sentinel.pvm-precompile-address",
+      "type": "java.lang.String",
+      "sourceType": "com.sentinel.config.SentinelConfig"
+    },
+    {
       "name": "sentinel.pyth-api-url",
       "type": "java.lang.String",
       "sourceType": "com.sentinel.config.SentinelConfig"
@@ -73,6 +101,12 @@
       "name": "sentinel.rpc-url",
       "type": "java.lang.String",
       "sourceType": "com.sentinel.config.SentinelConfig"
+    },
+    {
+      "name": "sentinel.strategy-mode",
+      "type": "java.lang.String",
+      "sourceType": "com.sentinel.config.SentinelConfig",
+      "defaultValue": "CONSERVATIVE"
     },
     {
       "name": "sentinel.susd-address",
@@ -86,6 +120,11 @@
     },
     {
       "name": "sentinel.telegram-bot-username",
+      "type": "java.lang.String",
+      "sourceType": "com.sentinel.config.SentinelConfig"
+    },
+    {
+      "name": "sentinel.usdt-token-address",
       "type": "java.lang.String",
       "sourceType": "com.sentinel.config.SentinelConfig"
     },

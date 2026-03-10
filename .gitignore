@@ -12,3 +12,15 @@ docs/
 
 # Dotenv file
 .env
+
+# Sentinel Bot
+Java_Agent/target/
+Java_Agent/bot.log
+Java_Agent/frontend.log
+Java_Agent/start_bot.sh
+
+# Forge broadacast logs
+broadcast/
+
+# Misc
+deploy_output.txt

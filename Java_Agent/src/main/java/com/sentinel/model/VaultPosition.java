@@ -12,19 +12,22 @@ import java.math.RoundingMode;
  * Represents the on-chain state of a single user's position
  * in SentinelVault, enriched with computed fields for the bot's logic.
  *
- * Populated by VaultContractService after calling getPosition(user).
+ * Populated by VaultReaderService after calling getPosition(user).
  */
 @Data
 @Builder
 public class VaultPosition {
 
     // ── Raw on-chain data (returned by getPosition()) ─────────────
-    private String  userAddress;
-    private BigInteger collateralDOT;   // DOT locked (wei, 1e18)
-    private BigInteger mintedSUSD;      // sUSD debt (wei, 1e18)
-    private BigInteger collateralUSD;   // USD value of collateral (1e18)
-    private BigInteger healthFactor;    // Health factor (1e18 scaled)
-    private boolean    paused;          // Currently frozen by Sentinel?
+    private String     userAddress;
+    private BigInteger collateralDOT;    // Native DOT locked (wei, 1e18)
+    private BigInteger collateralUSDT;   // Native USDT locked (6 decimals, e.g. 100_000_000 = $100)
+    private BigInteger mintedSUSD;       // sUSD debt (wei, 1e18)
+    private BigInteger collateralUSD;    // Total USD value of ALL collateral (1e18 scaled)
+    private BigInteger healthFactor;     // Health factor considering all collateral (1e18 scaled)
+    private boolean    paused;           // Currently frozen by Sentinel?
+    private boolean    aegisActive;      // Track 1 AI feature active?
+    private BigInteger activeCollateralRatio; // Current target HF (e.g. 15000 = 150%)
 
     // ── Enriched by bot after fetching ────────────────────────────
     private BigDecimal dotPriceUSD;     // Live DOT price at time of fetch
@@ -83,12 +86,39 @@ public class VaultPosition {
     }
 
     /**
-     * Returns the USD value of collateral formatted.
+     * Returns the USDT collateral in human-readable format (6 decimals).
+     * Example: 100_000_000 → "$100.00 USDT"
+     */
+    public String getCollateralUSDTFormatted() {
+        if (collateralUSDT == null || collateralUSDT.compareTo(BigInteger.ZERO) == 0) {
+            return "$0.00 USDT";
+        }
+        BigDecimal usdt = new BigDecimal(collateralUSDT)
+                .divide(BigDecimal.TEN.pow(6), 2, RoundingMode.HALF_UP);
+        return "$" + usdt.toPlainString() + " USDT";
+    }
+
+    /**
+     * Returns total collateral USD value (DOT + USDT combined).
+     * collateralUSD is set by the contract's _getTotalCollateralUSD() — already combined.
      */
     public String getCollateralUSDFormatted() {
         BigDecimal usd = new BigDecimal(collateralUSD)
                 .divide(BigDecimal.TEN.pow(18), 2, RoundingMode.HALF_UP);
         return "$" + usd.toPlainString();
+    }
+
+    /**
+     * Multi-collateral summary — shows both DOT and USDT if USDT > 0.
+     * Used in Telegram alert messages.
+     */
+    public String getCollateralSummary() {
+        boolean hasUSDT = collateralUSDT != null && collateralUSDT.compareTo(BigInteger.ZERO) > 0;
+        if (hasUSDT) {
+            return getCollateralDOTFormatted() + " + " + getCollateralUSDTFormatted()
+                    + " (total: " + getCollateralUSDFormatted() + ")";
+        }
+        return getCollateralDOTFormatted() + " (" + getCollateralUSDFormatted() + ")";
     }
 
     /**
