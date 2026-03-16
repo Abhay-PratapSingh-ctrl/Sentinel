@@ -1898,7 +1898,8 @@
         <div style="font-size:0.78rem; color:var(--muted); margin-bottom:20px; line-height:1.6;">
           Sentinel uses <b style="color:var(--cyan)">Polkadot Asset Hub native USDT</b> (asset ID 1984) exposed via the
           ERC-20 precompile at <code
-            style="color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:0.78rem;">0xFFFFFFFF000007C0</code>.
+            style="color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:0.78rem;">0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5</code>
+          <span style="font-size:0.6rem; opacity:0.7;">(Mainnet: 0xFFFFFFFF000007C0)</span>.
           This means no wrapped tokens, no bridging risk — real native assets, directly in the vault.
         </div>
 
@@ -1933,8 +1934,11 @@
               <span style="font-size:1.4rem;">🛡️</span>
               <div>
                 <div style="font-weight:700; font-size:0.9rem;">USDT</div>
-                <div style="font-size:0.65rem; color:var(--muted); font-family:'JetBrains Mono',monospace;">
-                  0xFFFFFFFF000007C0</div>
+                <div
+                  style="font-size:0.65rem; color:var(--muted); font-family:'JetBrains Mono',monospace; line-height:1.2;">
+                  0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5<br />
+                  <span style="font-size:0.55rem; opacity:0.6;">(Mainnet: 0xFFFFFFFF000007C0)</span>
+                </div>
               </div>
               <span class="native-badge" style="margin-left:auto;">ERC-20 Precompile</span>
             </div>
@@ -2056,6 +2060,7 @@
     const VAULT_ABI = [
       "function getPosition(address) view returns (uint256, uint256, uint256, uint256, uint256, bool, bool, uint256)",
       "function depositCollateral() payable",
+      "function getHealthFactor(address) view returns (uint256)",
       "function depositUSDT(uint256)",
       "function withdrawCollateral(uint256)",
       "function withdrawUSDT(uint256)",
@@ -2076,7 +2081,7 @@
     let dotPrice = 5.0;
     // Seed price history so AEGIS panel is active immediately
     const _priceHistory = [5.05, 4.98, 5.02, 4.96, 5.0];
-    let _userCollateral = 0, _userDebt = 0, _userCollUSDT = 0;
+    let _userCollateral = 0, _userDebt = 0, _userCollUSDT = 0, _userCollUSD = 0;
     let isSimulating = false;
     let usdtAvailable = false; // FIX: track USDT availability
     let _llmHistory = [];
@@ -2194,6 +2199,7 @@
             const lp = await legacyVault.getPosition(userAddr);
             // Defaulting Aegis fields to false/150
             pos = [lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], false, 150n];
+            window.currentCR = 150;
           } catch (e2) {
             addGuardianLog('ERROR', 'Could not read vault position: ' + e2.message);
             return;
@@ -2235,8 +2241,8 @@
         const collUSDT = usdtAvailable ? parseFloat(ethers.formatUnits(pos[1], 6)) : 0;
         const minted = parseFloat(ethers.formatEther(pos[2]));
         const collUSD = parseFloat(ethers.formatEther(pos[3]));
-        const hf = parseFloat(ethers.formatEther(pos[4])) * 100;
-
+        const rawHF = await vault.getHealthFactor(userAddr);
+        const hf = rawHF > BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFF") ? Infinity : parseFloat(ethers.formatEther(rawHF)) * 100;
         const walBal = parseFloat(ethers.formatEther(balance));
         const susdBal = parseFloat(ethers.formatEther(sUSDBal));
 
@@ -2244,6 +2250,7 @@
         _userCollateral = collDOT;
         _userDebt = minted;
         _userCollUSDT = collUSDT;
+        _userCollUSD = collUSD;
 
         // Update UI
         document.getElementById('collateralDOTVal').textContent = collDOT.toFixed(2) + ' DOT';
@@ -2269,7 +2276,8 @@
           aegisEl.innerHTML = '🛡️ AEGIS: NORMAL';
         }
 
-        const targetCR = currentCR;
+        const targetCR = (currentCR && currentCR > 0) ? currentCR : 150;
+        window._currentCR = targetCR;
         const maxMintable = collUSD > 0 ? (collUSD * 100 / targetCR - minted) : 0;
         document.getElementById('maxMint').textContent = `Max mintable (${targetCR}%): ` + (maxMintable > 0 ? maxMintable.toFixed(2) + ' sUSD' : '0 (fully utilized)');
 
@@ -2308,7 +2316,7 @@
         updateAegisPanel();
         // Warn if simulating near dangerous territory
         if (_userDebt > 0) {
-          const liveHF = ((_userCollateral * dotPrice + _userCollUSDT) / _userDebt) * 100;
+          const liveHF = (_userCollUSD / _userDebt) * 100;
           if (liveHF < 150 && liveHF >= 130) addGuardianLog('WARN', `HF at ${liveHF.toFixed(1)}% — USDT buffer absorbing volatility. DOT protected.`);
           else if (liveHF < 130) addGuardianLog('ALERT', `HF CRITICAL: ${liveHF.toFixed(1)}% — Spiral Shield engaging. Routing via USDT.`);
         }
@@ -2546,8 +2554,8 @@
       }
 
       pct.textContent = hf.toFixed(1) + '%';
-      const fraction = Math.min(hf / 200, 1);
-      cir.style.strokeDashoffset = circum * (1 - fraction);
+      const fraction = Math.min(hf / 300, 1);
+      cir.style.strokeDashoffset = String(circum * (1 - fraction));
 
       let color, cls, label, descText;
 
@@ -2835,7 +2843,7 @@
         if (crLabel) { crLabel.textContent = '150% CR'; crLabel.style.color = 'var(--bumblebee)'; }
       }
 
-      const collUSD = (_userCollateral * dotPrice) + _userCollUSDT;
+      const collUSD = _userCollUSD || (_userCollateral * dotPrice + _userCollUSDT);
       const maxMint = collUSD > 0 ? Math.max(0, collUSD * 100 / activeCR - _userDebt) : 0;
       const maxMintEl = document.getElementById('aegisMaxMintDisplay');
       if (maxMintEl) maxMintEl.textContent = maxMint.toFixed(2) + ' sUSD';
@@ -2871,7 +2879,7 @@
       if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '…'; }
 
       // Build context
-      const collUSD = (_userCollateral * dotPrice) + _userCollUSDT;
+      const collUSD = _userCollUSD || (_userCollateral * dotPrice + _userCollUSDT);
       const hfLive = _userDebt > 0 ? (collUSD / _userDebt * 100).toFixed(1) : 'N/A';
       const volScore = computeVolatility(_priceHistory);
       const activeCR = window._aegisActiveCR || 150;
@@ -2883,11 +2891,11 @@
       _llmHistory.push({ role: 'user', content: q });
 
       try {
-        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        const resp = await fetch('http://localhost:8081/api/ask', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: 'claude-3-5-sonnet-20240620',
             max_tokens: 400,
             system: systemPrompt,
             messages: _llmHistory.slice(-6)
@@ -2895,7 +2903,15 @@
         });
 
         const data = await resp.json();
-        const answer = data.content?.[0]?.text || 'Sentinel could not generate a response. Check API key.';
+        let answer = '';
+
+        if (data.content && data.content[0] && data.content[0].text) {
+          answer = data.content[0].text;
+        } else if (data.error && data.error.message) {
+          answer = `⚠️ API Error: ${data.error.message}`;
+        } else {
+          answer = 'Sentinel could not generate a response. Please check your Anthropic credits or API key.';
+        }
 
         _llmHistory.push({ role: 'assistant', content: answer });
 
