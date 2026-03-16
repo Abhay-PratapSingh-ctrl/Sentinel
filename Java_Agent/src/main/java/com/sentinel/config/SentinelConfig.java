@@ -17,7 +17,7 @@ public class SentinelConfig {
 
     // ── Network ───────────────────────────────────────────────────
     private String rpcUrl;
-    private long   chainId;
+    private long chainId;
 
     // ── Contracts ─────────────────────────────────────────────────
     private String vaultAddress;
@@ -31,10 +31,10 @@ public class SentinelConfig {
     private String dotPriceFeedId;
 
     // ── Health Factor Thresholds (as percentages, e.g. 130 = 130%) ─
-    private int hfWarningThreshold;      // 130 — send Telegram warning
-    private int hfPauseThreshold;        // 125 — pause the position
-    private int hfRebalanceThreshold;    // 120 — trigger emergency rebalance
-    private int hfSafeThreshold;         // 150 — fully safe
+    private int hfWarningThreshold; // 130 — send Telegram warning
+    private int hfPauseThreshold; // 125 — pause the position
+    private int hfRebalanceThreshold; // 120 — trigger emergency rebalance
+    private int hfSafeThreshold; // 150 — fully safe
 
     // ── Scheduler ─────────────────────────────────────────────────
     private long monitorIntervalMs;
@@ -50,14 +50,18 @@ public class SentinelConfig {
     // ── Aegis Dynamic Buffer ───────────────────────────────────────
     // USD std-dev volatility level that activates the elevated safety threshold
     private double aegisVolatilityThreshold = 0.30;
-    // Health Factor % target during red-flag market conditions (replaces hfSafeThreshold)
-    private int    aegisElevatedBuffer      = 170;
+    // Health Factor % target during red-flag market conditions (replaces
+    // hfSafeThreshold)
+    private int aegisElevatedBuffer = 170;
 
     // ── LLM Risk Reports ──────────────────────────────────────────
     // Optional: OpenAI API key for GPT-powered /why explanations.
     // Leave blank to use the built-in template fallback.
     private String openAiApiKey;
     private String openAiModel = "gpt-4o-mini";
+    private String anthropicApiKey;
+    private String geminiApiKey;
+    private String groqApiKey;
 
     // ── Multi-Collateral (USDT) ───────────────────────────────────
     // ERC-20 precompile address for native USDT on Polkadot Hub.
@@ -70,7 +74,7 @@ public class SentinelConfig {
     private String pvmPrecompileAddress;
 
     // ── Gas ───────────────────────────────────────────────────────
-    private long   gasLimit;
+    private long gasLimit;
     private double gasPriceGwei;
 
     /**
@@ -78,7 +82,7 @@ public class SentinelConfig {
      * that the Solidity contract uses.
      *
      * Example: hfWarningThreshold = 130
-     *   → returns 1_300_000_000_000_000_000L (1.3 * 1e18)
+     * → returns 1_300_000_000_000_000_000L (1.3 * 1e18)
      *
      * This is used when comparing against getHealthFactor() output.
      */
