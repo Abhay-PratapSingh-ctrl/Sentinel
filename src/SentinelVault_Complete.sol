@@ -339,8 +339,8 @@ contract SentinelVault_complete {
                 pos.collateralDOT,
                 pos.collateralUSDT - amount
             );
-            uint256 requiredUSD = (pos.mintedSUSD *
-                _effectiveCollateralRatio()) / 100;
+            uint256 requiredUSD =
+                (pos.mintedSUSD * _effectiveCollateralRatio()) / 100;
             require(
                 remainingUSD >= requiredUSD,
                 "Sentinel: would undercollateralize"
@@ -426,8 +426,8 @@ contract SentinelVault_complete {
                 pos.collateralDOT - amount,
                 pos.collateralUSDT
             );
-            uint256 requiredUSD = (pos.mintedSUSD *
-                _effectiveCollateralRatio()) / 100;
+            uint256 requiredUSD =
+                (pos.mintedSUSD * _effectiveCollateralRatio()) / 100;
             require(
                 remainingUSD >= requiredUSD,
                 "Sentinel: would undercollateralize"
@@ -435,7 +435,7 @@ contract SentinelVault_complete {
         }
 
         pos.collateralDOT -= amount;
-        (bool sent, ) = payable(msg.sender).call{value: amount}("");
+        (bool sent, ) = payable(msg.sender).call{ value: amount }("");
         require(sent, "Sentinel: DOT transfer failed");
         emit CollateralWithdrawn(msg.sender, amount);
     }
@@ -655,9 +655,8 @@ contract SentinelVault_complete {
         require(sUSDReceived >= minSUSDOut, "Sentinel: slippage too high");
 
         // ── Step 6: Burn sUSD to repay debt; refund surplus ───────────────────────
-        uint256 debtRepaid = sUSDReceived <= pos.mintedSUSD
-            ? sUSDReceived
-            : pos.mintedSUSD;
+        uint256 debtRepaid =
+            sUSDReceived <= pos.mintedSUSD ? sUSDReceived : pos.mintedSUSD;
         pos.mintedSUSD -= debtRepaid;
         sUSD.burnFrom(address(this), debtRepaid);
 
@@ -706,7 +705,7 @@ contract SentinelVault_complete {
 
         // Send DOT collateral to liquidator
         if (dotSeized > 0) {
-            (bool sentDOT, ) = payable(msg.sender).call{value: dotSeized}("");
+            (bool sentDOT, ) = payable(msg.sender).call{ value: dotSeized }("");
             require(sentDOT, "Sentinel: DOT transfer failed");
         }
 
