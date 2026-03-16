@@ -36,17 +36,10 @@ contract SentinelUSD {
 
     // ── Events ───────────────────────────────────────────────────
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(
-        address indexed owner_,
-        address indexed spender,
-        uint256 value
-    );
+    event Approval(address indexed owner_, address indexed spender, uint256 value);
     event VaultUpdated(address indexed newVault);
     event SupplyCapUpdated(uint256 newCap);
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     // ── Modifiers ─────────────────────────────────────────────────
     modifier onlyOwner() {
@@ -91,17 +84,10 @@ contract SentinelUSD {
         return true;
     }
 
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
         require(to != address(0), "sUSD: transfer to zero address");
         require(balanceOf[from] >= amount, "sUSD: insufficient balance");
-        require(
-            allowance[from][msg.sender] >= amount,
-            "sUSD: insufficient allowance"
-        );
+        require(allowance[from][msg.sender] >= amount, "sUSD: insufficient allowance");
         allowance[from][msg.sender] -= amount;
         balanceOf[from] -= amount;
         balanceOf[to] += amount;
@@ -122,10 +108,7 @@ contract SentinelUSD {
         require(to != address(0), "sUSD: mint to zero address");
         require(amount > 0, "sUSD: mint amount is zero");
         if (supplyCap > 0) {
-            require(
-                totalSupply + amount <= supplyCap,
-                "sUSD: supply cap exceeded"
-            );
+            require(totalSupply + amount <= supplyCap, "sUSD: supply cap exceeded");
         }
         totalSupply += amount;
         balanceOf[to] += amount;
@@ -161,10 +144,7 @@ contract SentinelUSD {
      * @notice Adjust supply ceiling. Cannot be set below current totalSupply.
      */
     function setSupplyCap(uint256 _cap) external onlyOwner {
-        require(
-            _cap == 0 || _cap >= totalSupply,
-            "sUSD: cap below current supply"
-        );
+        require(_cap == 0 || _cap >= totalSupply, "sUSD: cap below current supply");
         supplyCap = _cap;
         emit SupplyCapUpdated(_cap);
     }

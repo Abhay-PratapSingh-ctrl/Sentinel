@@ -30,3 +30,4 @@ broadcast/
 
 # Misc
 deploy_output.txt
+node_modules/

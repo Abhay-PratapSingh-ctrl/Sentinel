@@ -47,11 +47,7 @@ contract ERC20Mock {
 
     // ── Events (standard ERC-20) ──────────────────────────────────
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(
-        address indexed owner_,
-        address indexed spender,
-        uint256 value
-    );
+    event Approval(address indexed owner_, address indexed spender, uint256 value);
     event Minted(address indexed to, uint256 amount);
 
     modifier onlyOwner() {
@@ -83,10 +79,7 @@ contract ERC20Mock {
 
     function transfer(address to, uint256 amount) external returns (bool) {
         require(to != address(0), "ERC20Mock: transfer to zero address");
-        require(
-            balanceOf[msg.sender] >= amount,
-            "ERC20Mock: insufficient balance"
-        );
+        require(balanceOf[msg.sender] >= amount, "ERC20Mock: insufficient balance");
         balanceOf[msg.sender] -= amount;
         balanceOf[to] += amount;
         emit Transfer(msg.sender, to, amount);
@@ -100,17 +93,10 @@ contract ERC20Mock {
         return true;
     }
 
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
         require(to != address(0), "ERC20Mock: transfer to zero address");
         require(balanceOf[from] >= amount, "ERC20Mock: insufficient balance");
-        require(
-            allowance[from][msg.sender] >= amount,
-            "ERC20Mock: insufficient allowance"
-        );
+        require(allowance[from][msg.sender] >= amount, "ERC20Mock: insufficient allowance");
         allowance[from][msg.sender] -= amount;
         balanceOf[from] -= amount;
         balanceOf[to] += amount;
@@ -127,10 +113,7 @@ contract ERC20Mock {
      * Judges and testers use this to get USDT without a faucet.
      */
     function faucet() external {
-        require(
-            block.timestamp >= lastFaucetTime[msg.sender] + FAUCET_COOLDOWN,
-            "ERC20Mock: cooldown active wait 24h"
-        );
+        require(block.timestamp >= lastFaucetTime[msg.sender] + FAUCET_COOLDOWN, "ERC20Mock: cooldown active wait 24h");
         lastFaucetTime[msg.sender] = block.timestamp;
         _mint(msg.sender, FAUCET_AMOUNT);
     }
@@ -153,19 +136,10 @@ contract ERC20Mock {
      * Batch mint to multiple wallets in one transaction.
      * Useful for setting up multiple test positions quickly.
      */
-    function mintBatch(
-        address[] calldata recipients,
-        uint256[] calldata amounts
-    ) external onlyOwner {
-        require(
-            recipients.length == amounts.length,
-            "ERC20Mock: length mismatch"
-        );
+    function mintBatch(address[] calldata recipients, uint256[] calldata amounts) external onlyOwner {
+        require(recipients.length == amounts.length, "ERC20Mock: length mismatch");
         for (uint256 i = 0; i < recipients.length; i++) {
-            require(
-                recipients[i] != address(0),
-                "ERC20Mock: zero address in batch"
-            );
+            require(recipients[i] != address(0), "ERC20Mock: zero address in batch");
             _mint(recipients[i], amounts[i]);
             emit Minted(recipients[i], amounts[i]);
         }
