@@ -18,6 +18,12 @@ Java_Agent/target/
 Java_Agent/bot.log
 Java_Agent/frontend.log
 Java_Agent/start_bot.sh
+Java_Agent/build_output.txt
+
+# PVM
+pvm-risk-score/target/
+pvm-risk-score/*.pvm
+pvm-risk-score/Cargo.lock
 
 # Forge broadacast logs
 broadcast/

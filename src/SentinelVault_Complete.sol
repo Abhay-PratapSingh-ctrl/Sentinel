@@ -47,9 +47,17 @@ interface IPriceOracle {
 
 interface ISentinelUSD {
     function mint(address to, uint256 amount) external;
+
     function burnFrom(address from, uint256 amount) external;
-    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) external returns (bool);
+
     function balanceOf(address account) external view returns (uint256);
+
     function approve(address spender, uint256 amount) external returns (bool);
 }
 
@@ -60,8 +68,14 @@ interface ISentinelUSD {
  *      0xFFFFFFFF + <assetId as uint32 big-endian>
  */
 interface IERC20Collateral {
-    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) external returns (bool);
+
     function transfer(address to, uint256 amount) external returns (bool);
+
     function balanceOf(address account) external view returns (uint256);
 }
 
@@ -93,7 +107,9 @@ interface IUniswapV2Router {
  *  Output: abi.encode(uint32) — 1 = APPROVED, 0 = REJECTED
  */
 interface IPVM {
-    function call(bytes calldata input) external view returns (bytes memory output);
+    function call(
+        bytes calldata input
+    ) external view returns (bytes memory output);
 }
 
 // ─────────────────────────────────────────────
@@ -101,29 +117,28 @@ interface IPVM {
 // ─────────────────────────────────────────────
 
 contract SentinelVault_complete {
-
     // ── Protocol constants ─────────────────────────────────────────────
-    uint256 public constant BASE_COLLATERAL_RATIO  = 150;  // Standard 150% minting floor
-    uint256 public constant AEGIS_COLLATERAL_RATIO = 170;  // Default Aegis elevated floor
-    uint256 public constant LIQUIDATION_RATIO      = 120;  // Liquidatable below 120%
-    uint256 public constant REBALANCE_FLOOR        = 120;  // Rebalance allowed below this HF
-    uint256 public constant PRECISION              = 1e18;
-    uint256 public constant DOT_PRICE_PREC         = 1e8;  // Pyth 8-decimal price
-    uint256 public constant USDT_DECIMALS          = 1e6;  // Native USDT has 6 decimals
-    uint256 public constant SWAP_SLIPPAGE_BPS      = 200;  // 2% max slippage
-    uint256 public constant SWAP_DEADLINE_SEC      = 300;  // 5-min swap deadline
+    uint256 public constant BASE_COLLATERAL_RATIO = 150; // Standard 150% minting floor
+    uint256 public constant AEGIS_COLLATERAL_RATIO = 170; // Default Aegis elevated floor
+    uint256 public constant LIQUIDATION_RATIO = 120; // Liquidatable below 120%
+    uint256 public constant REBALANCE_FLOOR = 120; // Rebalance allowed below this HF
+    uint256 public constant PRECISION = 1e18;
+    uint256 public constant DOT_PRICE_PREC = 1e8; // Pyth 8-decimal price
+    uint256 public constant USDT_DECIMALS = 1e6; // Native USDT has 6 decimals
+    uint256 public constant SWAP_SLIPPAGE_BPS = 200; // 2% max slippage
+    uint256 public constant SWAP_DEADLINE_SEC = 300; // 5-min swap deadline
 
     // ── State ──────────────────────────────────────────────────────────
     address public owner;
     address public guardian;
-    bool    public globalPause;
+    bool public globalPause;
 
-    ISentinelUSD         public sUSD;
-    IPriceOracle         public oracle;      // DOT/USD oracle
-    IPriceOracle         public usdtOracle;  // USDT/USD oracle (≈$1 but always verified)
-    IUniswapV2Router     public dexRouter;
-    IERC20Collateral     public usdtToken;   // Native USDT ERC-20 precompile
-    address              public wdot;        // Wrapped DOT for swap path
+    ISentinelUSD public sUSD;
+    IPriceOracle public oracle; // DOT/USD oracle
+    IPriceOracle public usdtOracle; // USDT/USD oracle (≈$1 but always verified)
+    IUniswapV2Router public dexRouter;
+    IERC20Collateral public usdtToken; // Native USDT ERC-20 precompile
+    address public wdot; // Wrapped DOT for swap path
 
     /**
      * @dev PVM precompile address.
@@ -150,7 +165,7 @@ contract SentinelVault_complete {
      *      "Aegis is ACTIVE (ratio=170%). DOT 30d vol: 82%. User HF: 1.45.
      *       Explain why this user's risk level is HIGH and what they should do."
      */
-    bool    public aegisActive;
+    bool public aegisActive;
     uint256 public aegisCollateralRatioPct = AEGIS_COLLATERAL_RATIO; // guardian-configurable
 
     /**
@@ -162,10 +177,10 @@ contract SentinelVault_complete {
 
     // ── Position struct — tracks both collateral types ──────────────────
     struct Position {
-        uint256 collateralDOT;  // Native DOT locked (wei, 1e18)
+        uint256 collateralDOT; // Native DOT locked (wei, 1e18)
         uint256 collateralUSDT; // Native USDT locked (1e6 — 6 decimals)
-        uint256 mintedSUSD;     // sUSD debt outstanding (1e18)
-        bool    paused;
+        uint256 mintedSUSD; // sUSD debt outstanding (1e18)
+        bool paused;
     }
 
     mapping(address => Position) public positions;
@@ -186,7 +201,11 @@ contract SentinelVault_complete {
      *      AegisActivated.reason flows directly into the Telegram alert message
      *      and the LLM risk report prompt.
      */
-    event AegisActivated(uint256 collateralRatioPct, uint256 rebalanceTargetHfBps, string reason);
+    event AegisActivated(
+        uint256 collateralRatioPct,
+        uint256 rebalanceTargetHfBps,
+        string reason
+    );
     event AegisDeactivated(uint256 rebalanceTargetHfBps);
 
     event RebalanceVerified(
@@ -249,13 +268,13 @@ contract SentinelVault_complete {
         address _usdtToken,
         address _usdtOracle
     ) {
-        owner      = msg.sender;
-        oracle     = IPriceOracle(_oracle);
-        guardian   = _guardian;
-        sUSD       = ISentinelUSD(_sUSD);
-        dexRouter  = IUniswapV2Router(_dexRouter);
-        wdot       = _wdot;
-        usdtToken  = IERC20Collateral(_usdtToken);
+        owner = msg.sender;
+        oracle = IPriceOracle(_oracle);
+        guardian = _guardian;
+        sUSD = ISentinelUSD(_sUSD);
+        dexRouter = IUniswapV2Router(_dexRouter);
+        wdot = _wdot;
+        usdtToken = IERC20Collateral(_usdtToken);
         usdtOracle = IPriceOracle(_usdtOracle);
         // pvmPrecompile defaults to address(0) — PVM check skipped until set
     }
@@ -289,7 +308,10 @@ contract SentinelVault_complete {
     function depositUSDT(uint256 amount) external notPaused {
         require(amount > 0, "Sentinel: zero deposit");
         bool ok = usdtToken.transferFrom(msg.sender, address(this), amount);
-        require(ok, "Sentinel: USDT transfer failed  did you approve the vault?");
+        require(
+            ok,
+            "Sentinel: USDT transfer failed  did you approve the vault?"
+        );
         _ensureRegistered(msg.sender);
         positions[msg.sender].collateralUSDT += amount;
         emit USDTDeposited(msg.sender, amount);
@@ -300,14 +322,26 @@ contract SentinelVault_complete {
      *         Health Factor must remain >= effective ratio (150% normal / Aegis ratio) after.
      * @param amount USDT amount (6 decimals)
      */
-    function withdrawUSDT(uint256 amount) external notPaused posnNotPaused(msg.sender) {
+    function withdrawUSDT(
+        uint256 amount
+    ) external notPaused posnNotPaused(msg.sender) {
         Position storage pos = positions[msg.sender];
-        require(amount <= pos.collateralUSDT, "Sentinel: insufficient USDT collateral");
+        require(
+            amount <= pos.collateralUSDT,
+            "Sentinel: insufficient USDT collateral"
+        );
 
         if (pos.mintedSUSD > 0) {
-            uint256 remainingUSD = _getTotalCollateralUSD(pos.collateralDOT, pos.collateralUSDT - amount);
-            uint256 requiredUSD  = (pos.mintedSUSD * _effectiveCollateralRatio()) / 100;
-            require(remainingUSD >= requiredUSD, "Sentinel: would undercollateralize");
+            uint256 remainingUSD = _getTotalCollateralUSD(
+                pos.collateralDOT,
+                pos.collateralUSDT - amount
+            );
+            uint256 requiredUSD = (pos.mintedSUSD *
+                _effectiveCollateralRatio()) / 100;
+            require(
+                remainingUSD >= requiredUSD,
+                "Sentinel: would undercollateralize"
+            );
         }
 
         pos.collateralUSDT -= amount;
@@ -327,13 +361,18 @@ contract SentinelVault_complete {
      *  "Aegis is active. The protocol now requires 170% collateral during
      *   this high-volatility window. Your current ratio is X%."
      */
-    function mintStablecoin(uint256 amountSUSD) external notPaused posnNotPaused(msg.sender) {
+    function mintStablecoin(
+        uint256 amountSUSD
+    ) external notPaused posnNotPaused(msg.sender) {
         require(amountSUSD > 0, "Sentinel: zero amount");
         Position storage pos = positions[msg.sender];
 
-        uint256 newMinted     = pos.mintedSUSD + amountSUSD;
-        uint256 collateralUSD = _getTotalCollateralUSD(pos.collateralDOT, pos.collateralUSDT);
-        uint256 requiredUSD   = (newMinted * _effectiveCollateralRatio()) / 100;
+        uint256 newMinted = pos.mintedSUSD + amountSUSD;
+        uint256 collateralUSD = _getTotalCollateralUSD(
+            pos.collateralDOT,
+            pos.collateralUSDT
+        );
+        uint256 requiredUSD = (newMinted * _effectiveCollateralRatio()) / 100;
 
         require(
             collateralUSD >= requiredUSD,
@@ -358,7 +397,10 @@ contract SentinelVault_complete {
 
         pos.mintedSUSD -= amountSUSD;
         bool pulled = sUSD.transferFrom(msg.sender, address(this), amountSUSD);
-        require(pulled, "Sentinel: transferFrom failed  did you approve vault?");
+        require(
+            pulled,
+            "Sentinel: transferFrom failed  did you approve vault?"
+        );
         sUSD.burnFrom(address(this), amountSUSD);
         emit StablecoinBurned(msg.sender, amountSUSD);
     }
@@ -367,14 +409,26 @@ contract SentinelVault_complete {
      * @notice Withdraw native DOT collateral.
      *         Health Factor must remain >= effective ratio after withdrawal.
      */
-    function withdrawCollateral(uint256 amount) external notPaused posnNotPaused(msg.sender) {
+    function withdrawCollateral(
+        uint256 amount
+    ) external notPaused posnNotPaused(msg.sender) {
         Position storage pos = positions[msg.sender];
-        require(amount <= pos.collateralDOT, "Sentinel: insufficient DOT collateral");
+        require(
+            amount <= pos.collateralDOT,
+            "Sentinel: insufficient DOT collateral"
+        );
 
         if (pos.mintedSUSD > 0) {
-            uint256 remainingUSD = _getTotalCollateralUSD(pos.collateralDOT - amount, pos.collateralUSDT);
-            uint256 requiredUSD  = (pos.mintedSUSD * _effectiveCollateralRatio()) / 100;
-            require(remainingUSD >= requiredUSD, "Sentinel: would undercollateralize");
+            uint256 remainingUSD = _getTotalCollateralUSD(
+                pos.collateralDOT - amount,
+                pos.collateralUSDT
+            );
+            uint256 requiredUSD = (pos.mintedSUSD *
+                _effectiveCollateralRatio()) / 100;
+            require(
+                remainingUSD >= requiredUSD,
+                "Sentinel: would undercollateralize"
+            );
         }
 
         pos.collateralDOT -= amount;
@@ -403,7 +457,10 @@ contract SentinelVault_complete {
     function getHealthFactor(address user) public view returns (uint256) {
         Position memory pos = positions[user];
         if (pos.mintedSUSD == 0) return type(uint256).max;
-        uint256 totalUSD = _getTotalCollateralUSD(pos.collateralDOT, pos.collateralUSDT);
+        uint256 totalUSD = _getTotalCollateralUSD(
+            pos.collateralDOT,
+            pos.collateralUSDT
+        );
         return (totalUSD * PRECISION) / pos.mintedSUSD;
     }
 
@@ -412,16 +469,22 @@ contract SentinelVault_complete {
      *         Returns everything the Java bot needs in one call.
      *         isAegisActive + activeCollateralRatio feed directly into LLM prompts.
      */
-    function getPosition(address user) external view returns (
-        uint256 collateralDOT,
-        uint256 collateralUSDT,
-        uint256 mintedSUSD,
-        uint256 collateralUSD,
-        uint256 healthFactor,
-        bool    positionPaused,
-        bool    isAegisActive,
-        uint256 activeCollateralRatio
-    ) {
+    function getPosition(
+        address user
+    )
+        external
+        view
+        returns (
+            uint256 collateralDOT,
+            uint256 collateralUSDT,
+            uint256 mintedSUSD,
+            uint256 collateralUSD,
+            uint256 healthFactor,
+            bool positionPaused,
+            bool isAegisActive,
+            uint256 activeCollateralRatio
+        )
+    {
         Position memory pos = positions[user];
         return (
             pos.collateralDOT,
@@ -435,11 +498,17 @@ contract SentinelVault_complete {
         );
     }
 
-    function getAllUsers() external view returns (address[] memory) { return positionHolders; }
+    function getAllUsers() external view returns (address[] memory) {
+        return positionHolders;
+    }
 
-    function getDOTPrice() external view returns (int256, uint256) { return oracle.getLatestPrice(); }
+    function getDOTPrice() external view returns (int256, uint256) {
+        return oracle.getLatestPrice();
+    }
 
-    function previewSwap(uint256 dotAmount) external view returns (uint256 sUSDOut) {
+    function previewSwap(
+        uint256 dotAmount
+    ) external view returns (uint256 sUSDOut) {
         address[] memory path = _buildSwapPath();
         uint256[] memory amounts = dexRouter.getAmountsOut(dotAmount, path);
         return amounts[amounts.length - 1];
@@ -467,13 +536,19 @@ contract SentinelVault_complete {
      * @param ratioPct  New collateral ratio percent (must be > 150 and <= 300)
      * @param reason    Human-readable reason, e.g. "DOT 30d vol 82% — red flag"
      */
-    function activateAegis(uint256 ratioPct, string calldata reason) external onlyGuardian {
-        require(ratioPct > BASE_COLLATERAL_RATIO, "Sentinel: Aegis ratio must exceed base 150%");
-        require(ratioPct <= 300,                  "Sentinel: Aegis ratio ceiling is 300%");
+    function activateAegis(
+        uint256 ratioPct,
+        string calldata reason
+    ) external onlyGuardian {
+        require(
+            ratioPct > BASE_COLLATERAL_RATIO,
+            "Sentinel: Aegis ratio must exceed base 150%"
+        );
+        require(ratioPct <= 300, "Sentinel: Aegis ratio ceiling is 300%");
 
-        aegisActive             = true;
+        aegisActive = true;
         aegisCollateralRatioPct = ratioPct;
-        rebalanceTargetHfBps    = ratioPct * 100; // e.g. 170 → 17_000 bps
+        rebalanceTargetHfBps = ratioPct * 100; // e.g. 170 → 17_000 bps
 
         emit AegisActivated(ratioPct, rebalanceTargetHfBps, reason);
     }
@@ -483,7 +558,7 @@ contract SentinelVault_complete {
      *         Called when VolatilityService clears the red flag.
      */
     function deactivateAegis() external onlyGuardian {
-        aegisActive          = false;
+        aegisActive = false;
         rebalanceTargetHfBps = BASE_COLLATERAL_RATIO * 100; // back to 15_000
 
         emit AegisDeactivated(rebalanceTargetHfBps);
@@ -493,14 +568,20 @@ contract SentinelVault_complete {
     //  SECTION 4 — GUARDIAN / SENTINEL FUNCTIONS
     // ═════════════════════════════════════════════
 
-    function pausePosition(address user, string calldata reason) external onlyGuardian {
+    function pausePosition(
+        address user,
+        string calldata reason
+    ) external onlyGuardian {
         positions[user].paused = true;
         emit PositionPaused(user, reason);
     }
 
     function unpausePosition(address user) external onlyGuardian {
         uint256 hf = getHealthFactor(user);
-        require(hf >= (140 * PRECISION) / 100, "Sentinel: HF still too low to unpause");
+        require(
+            hf >= (140 * PRECISION) / 100,
+            "Sentinel: HF still too low to unpause"
+        );
         positions[user].paused = false;
         emit PositionUnpaused(user);
     }
@@ -532,34 +613,48 @@ contract SentinelVault_complete {
         uint256 minSUSDOut
     ) external onlyGuardian notPaused {
         Position storage pos = positions[user];
-        require(pos.collateralDOT >= dotToSell, "Sentinel: insufficient DOT to sell");
+        require(
+            pos.collateralDOT >= dotToSell,
+            "Sentinel: insufficient DOT to sell"
+        );
         require(dotToSell > 0, "Sentinel: sell amount is zero");
 
         // ── Step 3: PVM trustless verification ────────────────────────────────────
         bool pvmVerified = false;
         if (pvmPrecompile != address(0)) {
-            pvmVerified = _verifyWithPVM(pos.collateralDOT, pos.mintedSUSD, dotToSell);
+            pvmVerified = _verifyWithPVM(
+                pos.collateralDOT,
+                pos.mintedSUSD,
+                dotToSell
+            );
             require(pvmVerified, "Sentinel: PVM rejected rebalance decision");
         }
 
-        emit RebalanceVerified(user, dotToSell, rebalanceTargetHfBps, pvmVerified);
+        emit RebalanceVerified(
+            user,
+            dotToSell,
+            rebalanceTargetHfBps,
+            pvmVerified
+        );
 
         // ── Step 4: Deduct collateral first (Checks-Effects-Interactions) ─────────
         pos.collateralDOT -= dotToSell;
 
         // ── Step 5: Execute DEX swap — native DOT → sUSD ──────────────────────────
-        address[] memory path    = _buildSwapPath();
-        uint256          deadline = block.timestamp + SWAP_DEADLINE_SEC;
+        address[] memory path = _buildSwapPath();
+        uint256 deadline = block.timestamp + SWAP_DEADLINE_SEC;
 
-        uint256[] memory amounts = dexRouter.swapExactETHForTokens{value: dotToSell}(
-            minSUSDOut, path, address(this), deadline
-        );
+        uint256[] memory amounts = dexRouter.swapExactETHForTokens{
+            value: dotToSell
+        }(minSUSDOut, path, address(this), deadline);
 
         uint256 sUSDReceived = amounts[amounts.length - 1];
         require(sUSDReceived >= minSUSDOut, "Sentinel: slippage too high");
 
         // ── Step 6: Burn sUSD to repay debt; refund surplus ───────────────────────
-        uint256 debtRepaid = sUSDReceived <= pos.mintedSUSD ? sUSDReceived : pos.mintedSUSD;
+        uint256 debtRepaid = sUSDReceived <= pos.mintedSUSD
+            ? sUSDReceived
+            : pos.mintedSUSD;
         pos.mintedSUSD -= debtRepaid;
         sUSD.burnFrom(address(this), debtRepaid);
 
@@ -570,7 +665,13 @@ contract SentinelVault_complete {
 
         // ── Step 7: Emit result ────────────────────────────────────────────────────
         uint256 newHF = getHealthFactor(user);
-        emit EmergencyRebalance(user, dotToSell, sUSDReceived, debtRepaid, newHF);
+        emit EmergencyRebalance(
+            user,
+            dotToSell,
+            sUSDReceived,
+            debtRepaid,
+            newHF
+        );
     }
 
     /**
@@ -579,18 +680,21 @@ contract SentinelVault_complete {
      */
     function liquidate(address user) external notPaused {
         uint256 hf = getHealthFactor(user);
-        require(hf < (LIQUIDATION_RATIO * PRECISION) / 100, "Sentinel: position is healthy");
+        require(
+            hf < (LIQUIDATION_RATIO * PRECISION) / 100,
+            "Sentinel: position is healthy"
+        );
 
         Position storage pos = positions[user];
-        uint256 dotSeized  = pos.collateralDOT;
+        uint256 dotSeized = pos.collateralDOT;
         uint256 usdtSeized = pos.collateralUSDT;
-        uint256 debt       = pos.mintedSUSD;
+        uint256 debt = pos.mintedSUSD;
 
         // Clear position BEFORE external calls (reentrancy protection)
-        pos.collateralDOT  = 0;
+        pos.collateralDOT = 0;
         pos.collateralUSDT = 0;
-        pos.mintedSUSD     = 0;
-        pos.paused         = false;
+        pos.mintedSUSD = 0;
+        pos.paused = false;
 
         // Pull and burn sUSD from liquidator
         bool pulled = sUSD.transferFrom(msg.sender, address(this), debt);
@@ -631,7 +735,10 @@ contract SentinelVault_complete {
      *         Example: setRebalanceTargetHfBps(16_000) sets 160% target.
      */
     function setRebalanceTargetHfBps(uint256 _bps) external onlyGuardian {
-        require(_bps >= 10_000 && _bps <= 30_000, "Sentinel: HF bps out of range");
+        require(
+            _bps >= 10_000 && _bps <= 30_000,
+            "Sentinel: HF bps out of range"
+        );
         rebalanceTargetHfBps = _bps;
         emit RebalanceTargetUpdated(_bps);
     }
@@ -654,9 +761,12 @@ contract SentinelVault_complete {
         usdtOracle = IPriceOracle(_o);
     }
 
-    function updateDexRouter(address _router, address _wdot) external onlyOwner {
+    function updateDexRouter(
+        address _router,
+        address _wdot
+    ) external onlyOwner {
         dexRouter = IUniswapV2Router(_router);
-        wdot      = _wdot;
+        wdot = _wdot;
     }
 
     // ═════════════════════════════════════════════
@@ -691,18 +801,20 @@ contract SentinelVault_complete {
         require(dotPrice > 0, "Sentinel: invalid oracle price for PVM");
 
         bytes4 selector = bytes4(
-            keccak256("verify_rebalance(uint128,uint128,uint128,uint128,uint128,uint128)")
+            keccak256(
+                "verify_rebalance(uint128,uint128,uint128,uint128,uint128,uint128)"
+            )
         );
 
         bytes memory input = abi.encodePacked(
             selector,
             abi.encode(
-                uint128(collateralDot),           // collateral_dot
-                uint128(mintedSusd),              // minted_susd
-                uint128(uint256(dotPrice)),        // dot_price (8 decimals)
-                uint128(dotToSell),               // dot_to_sell
-                uint128(rebalanceTargetHfBps),     // target_hf_bps — elevated during Aegis
-                uint128(REBALANCE_FLOOR * 100)     // rebalance_floor_bps (12000)
+                uint128(collateralDot), // collateral_dot
+                uint128(mintedSusd), // minted_susd
+                uint128(uint256(dotPrice)), // dot_price (8 decimals)
+                uint128(dotToSell), // dot_to_sell
+                uint128(rebalanceTargetHfBps), // target_hf_bps — elevated during Aegis
+                uint128(REBALANCE_FLOOR * 100) // rebalance_floor_bps (12000)
             )
         );
 
@@ -729,7 +841,7 @@ contract SentinelVault_complete {
         (int256 dotPrice, ) = oracle.getLatestPrice();
         require(dotPrice > 0, "Sentinel: invalid DOT oracle price");
 
-        uint256 dotUSD  = (dotAmount * uint256(dotPrice)) / DOT_PRICE_PREC;
+        uint256 dotUSD = (dotAmount * uint256(dotPrice)) / DOT_PRICE_PREC;
 
         uint256 usdtUSD = 0;
         if (usdtAmount > 0) {
@@ -746,9 +858,9 @@ contract SentinelVault_complete {
      */
     function _ensureRegistered(address user) internal {
         if (
-            positions[user].collateralDOT  == 0 &&
+            positions[user].collateralDOT == 0 &&
             positions[user].collateralUSDT == 0 &&
-            positions[user].mintedSUSD     == 0
+            positions[user].mintedSUSD == 0
         ) {
             positionHolders.push(user);
         }
@@ -756,7 +868,7 @@ contract SentinelVault_complete {
 
     /** @dev Swap path: [WDOT → sUSD] for Hydration DEX. */
     function _buildSwapPath() internal view returns (address[] memory path) {
-        path    = new address[](2);
+        path = new address[](2);
         path[0] = wdot;
         path[1] = address(sUSD);
     }

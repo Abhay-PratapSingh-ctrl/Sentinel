@@ -255,7 +255,6 @@
       }
     }
 
-    /* ── FIX: Health Factor Gauge CSS ── */
     .hf-gauge {
       position: relative;
       width: 110px;
@@ -275,14 +274,12 @@
       stroke-width: 8;
     }
 
-    /* FIX: strokeDasharray was missing — gauge would never render */
     .hf-fill {
       fill: none;
       stroke: var(--green);
       stroke-width: 8;
       stroke-linecap: round;
       stroke-dasharray: 282.74;
-      /* 2 * PI * 45 */
       stroke-dashoffset: 282.74;
       transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease;
     }
@@ -387,6 +384,18 @@
     .ticker-price {
       font-weight: 700;
       color: var(--cyan);
+    }
+
+    /* Oracle sync indicator */
+    .oracle-sync {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(57, 255, 20, 0.1);
+      border: 1px solid rgba(57, 255, 20, 0.25);
+      color: var(--green);
+      margin-left: 8px;
+      font-family: 'JetBrains Mono', monospace;
     }
 
     @keyframes pulse {
@@ -519,18 +528,6 @@
     .btn-secondary:disabled {
       opacity: .4;
       cursor: not-allowed;
-    }
-
-    .btn-outline {
-      border: 1px solid var(--bumblebee);
-      color: var(--bumblebee);
-      font-family: 'Orbitron', sans-serif;
-      text-transform: uppercase;
-    }
-
-    .btn-outline:hover {
-      background: rgba(255, 215, 0, 0.1);
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
     }
 
     .btn-danger {
@@ -901,7 +898,6 @@
       font-weight: 700;
     }
 
-    /* ── Spiral Prevention Engine ── */
     .spiral-compare-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -960,7 +956,6 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
-    /* Strategy buttons */
     .strategy-btn {
       padding: 8px 14px;
       border-radius: 8px;
@@ -997,7 +992,6 @@
       box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
     }
 
-    /* FIX: USDT unavailable warning */
     .usdt-warning {
       font-size: 0.75rem;
       padding: 6px 10px;
@@ -1008,7 +1002,6 @@
       margin-top: 8px;
     }
 
-    /* ── Aegis Volatility Panel ── */
     .aegis-panel {
       margin-top: 24px;
       background: linear-gradient(135deg, rgba(255, 77, 77, 0.05), rgba(255, 215, 0, 0.05));
@@ -1078,7 +1071,6 @@
       transition: height 0.3s ease;
     }
 
-    /* ── LLM Risk Report Panel ── */
     .llm-panel {
       margin-top: 24px;
       background: linear-gradient(135deg, rgba(0, 242, 255, 0.03), rgba(139, 92, 246, 0.05));
@@ -1173,7 +1165,6 @@
       color: var(--muted);
     }
 
-    /* ── PVM Brain Panel ── */
     .pvm-panel {
       margin-top: 24px;
       background: linear-gradient(135deg, rgba(57, 255, 20, 0.03), rgba(0, 0, 0, 0.2));
@@ -1279,7 +1270,6 @@
       display: none;
     }
 
-    /* ── Native USDT badge ── */
     .native-badge {
       display: inline-flex;
       align-items: center;
@@ -1344,7 +1334,7 @@
       </div>
       <div class="network-info" style="display:flex; justify-content:center; gap: 20px;">
         <div class="net-tag" style="border-color: var(--bumblebee);">🔗 HUB: <b>POLKADOT</b></div>
-        <div class="net-tag" style="border-color: var(--cyber-cyan);">🏛️ CORE: <b>0xb57a...3579</b></div>
+        <div class="net-tag" style="border-color: var(--cyber-cyan);">🏛️ CORE: <b>0x644c...8e81</b></div>
         <div class="net-tag" style="border-color: var(--optimus-red);">🔋 POWER: <b>PYTH</b></div>
       </div>
     </div>
@@ -1353,15 +1343,16 @@
       <h1 class="hero">Your <span>Vault Position</span></h1>
       <p class="hero-sub">Deposit DOT as collateral and mint sUSD. Sentinel monitors your health factor 24/7.</p>
 
+      <!-- ── CHANGE 1: Oracle sync indicator added to price ticker ── -->
       <div class="price-ticker">
         <div class="ticker-dot"></div>
         <span class="ticker-text">DOT/USD</span>
         <span class="ticker-price" id="dotPrice">Loading…</span>
         <span class="ticker-text" style="margin-left:8px;">via Pyth Network</span>
+        <span class="oracle-sync" id="oracleSyncStatus">⏳ ORACLE SYNC</span>
       </div>
 
       <div class="grid-3" style="margin-bottom:24px;">
-        <!-- Health Factor Card -->
         <div class="card hf-card" id="hfCard">
           <div class="hf-gauge">
             <svg viewBox="0 0 100 100">
@@ -1380,7 +1371,6 @@
           </div>
         </div>
 
-        <!-- Collateral Card -->
         <div class="card" id="collateralCard">
           <div class="card-label">Collateral Armor</div>
           <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -1396,13 +1386,11 @@
           </div>
           <div class="card-sub" id="totalCollateralUSD"
             style="margin-top:12px; font-weight:700; color:var(--cyber-cyan);">Total: $—</div>
-          <!-- FIX: Warning shown when USDT contract is unavailable -->
           <div id="usdtContractWarning" class="usdt-warning" style="display:none;">
             ⚠️ USDT contract not available on this network. USDT collateral disabled.
           </div>
         </div>
 
-        <!-- Minted Debt Card -->
         <div class="card">
           <div class="card-label">Minted Debt</div>
           <div class="card-value" id="mintedVal">— sUSD</div>
@@ -1413,7 +1401,6 @@
             🛡️ AEGIS: NORMAL
           </div>
 
-          <!-- Aegis Dynamic CR indicator -->
           <div
             style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.25); border-radius:8px; border:1px solid rgba(255,215,0,0.1);">
             <div
@@ -1428,16 +1415,12 @@
               <span>Normal (150%)</span><span>Red Alert (170%)</span>
             </div>
           </div>
-
-          <button id="approveRebalanceBtn" class="btn btn-primary"
-            style="margin-top:12px; display:none; width:100%; font-size:0.75rem;" onclick="approveRebalance()">🛡️
-            Approve Multi-Sig Action</button>
+          <!-- CHANGE 2: approveRebalance button REMOVED — function doesn't exist in contract -->
         </div>
       </div>
 
       <p class="section-title">Actions</p>
       <div class="grid-2">
-        <!-- DOT Management -->
         <div class="card action-card">
           <div class="card-label" style="margin-bottom:12px;">💎 DOT Collateral Armor</div>
           <div class="input-group">
@@ -1458,17 +1441,16 @@
               id="hintCollateralDOT">—</span></div>
         </div>
 
-        <!-- USDT Management -->
         <div class="card action-card">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
             <div class="card-label" style="margin-bottom:0;">🛡️ USDT Collateral Shield</div>
-            <span class="native-badge">⛓️ Asset Hub Native</span>
+            <span class="native-badge">⛓️ ERC20Mock</span>
           </div>
           <div
             style="font-size:0.72rem; color:var(--muted); margin-bottom:10px; padding:8px; background:rgba(0,242,255,0.04); border-radius:6px; border:1px solid rgba(0,242,255,0.1);">
-            Uses Polkadot Asset Hub native USDT via ERC-20 precompile at <span
-              style="color:var(--cyan); font-family:monospace;">0xFFFF...07C0</span>. Stable buffer, zero volatility
-            exposure.
+            Mock USDT deployed at <span
+              style="color:var(--cyan); font-family:monospace; font-size:0.68rem;">0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5</span>.
+            Mainnet: real Asset Hub precompile.
           </div>
           <div id="usdtActionWarning" class="usdt-warning" style="display:none; margin-bottom:12px;">
             ⚠️ USDT not available on this network.
@@ -1491,7 +1473,6 @@
               id="hintCollateralUSDT">—</span></div>
         </div>
 
-        <!-- Mint & Repay -->
         <div class="card action-card" style="grid-column: 1 / -1;">
           <div class="card-label" style="margin-bottom:12px;">🪙 Debt Management (sUSD)</div>
           <div class="grid-2" style="gap:20px;">
@@ -1515,12 +1496,8 @@
         </div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════════════
-           LIQUIDATION SPIRAL PREVENTION ENGINE
-           ══════════════════════════════════════════════════════════════ -->
+      <!-- SPIRAL PREVENTION ENGINE -->
       <div class="card sim-card" style="margin-top:24px;" id="spiralSimCard">
-
-        <!-- Header -->
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
           <div>
             <div class="card-label" style="color:var(--bumblebee); margin-bottom:4px;">🌀 Liquidation Spiral Prevention
@@ -1532,7 +1509,6 @@
             SHIELD ACTIVE</div>
         </div>
 
-        <!-- Explainer -->
         <div
           style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,215,0,0.1); border-radius:10px; padding:14px; margin:16px 0; font-size:0.8rem; color:var(--muted); line-height:1.7;">
           <b style="color:var(--bumblebee);">⚠️ The Paradox:</b> If Sentinel only holds DOT and the price crashes,
@@ -1541,7 +1517,6 @@
           without touching DOT. No forced sells. No spiral.
         </div>
 
-        <!-- Sentinel Strategy Selector -->
         <div style="margin-bottom:16px;">
           <div
             style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
@@ -1560,7 +1535,6 @@
           </div>
         </div>
 
-        <!-- Price Slider -->
         <div class="sim-slider-container">
           <div
             style="display:flex; justify-content:space-between; font-size:0.78rem; font-weight:600; color:var(--muted);">
@@ -1576,10 +1550,7 @@
           </div>
         </div>
 
-        <!-- Side-by-side comparison cards -->
         <div class="spiral-compare-grid" id="spiralCompareGrid" style="display:none;">
-
-          <!-- DOT-Only Outcome -->
           <div class="spiral-col" id="colDotOnly">
             <div class="spiral-col-header" style="background:rgba(255,77,77,0.15); border-color:rgba(255,77,77,0.4);">
               <span>⚠️ DOT-Only (Legacy)</span>
@@ -1595,8 +1566,6 @@
               <div class="spiral-row"><span>Vault status:</span><span id="dotVaultStatus">—</span></div>
             </div>
           </div>
-
-          <!-- Multi-Collateral Outcome -->
           <div class="spiral-col" id="colMulti">
             <div class="spiral-col-header" style="background:rgba(57,255,20,0.1); border-color:rgba(57,255,20,0.35);">
               <span>🛡️ Multi-Collateral (Sentinel)</span>
@@ -1614,7 +1583,6 @@
           </div>
         </div>
 
-        <!-- Sentinel Action Log (live during simulation) -->
         <div id="sentinelActionBox" style="display:none; margin-top:16px;">
           <div
             style="font-size:0.7rem; font-weight:700; color:var(--bumblebee); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-family:'Orbitron',sans-serif;">
@@ -1624,7 +1592,6 @@
           </div>
         </div>
 
-        <!-- Crash Depth Meter -->
         <div id="crashMeter" style="display:none; margin-top:16px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <span
@@ -1644,23 +1611,14 @@
           </div>
         </div>
 
-        <!-- No debt notice -->
         <div id="simNoDebt"
           style="display:none; margin-top:12px; font-size:0.8rem; color:var(--muted); text-align:center; padding:12px; background:rgba(255,255,255,0.03); border-radius:8px;">
           ℹ️ Mint some sUSD debt first to activate the spiral simulation.
         </div>
-
-        <!-- Legacy sim result (kept for compatibility) -->
         <div id="simResult" style="display:none;"></div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════════════
-           SENTINEL INTELLIGENCE & RISK SUITE
-           ══════════════════════════════════════════════════════════════ -->
-
-      <!-- ══════════════════════════════════════════════════════════════
-           PANEL 1 — AEGIS PREDICTIVE VOLATILITY BUFFER
-           ══════════════════════════════════════════════════════════════ -->
+      <!-- AEGIS PANEL -->
       <div class="aegis-panel" style="margin-top:32px;">
         <div
           style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
@@ -1680,17 +1638,13 @@
           creating a protective buffer before the crash hits.
         </div>
 
-        <!-- Volatility Bars (sparkline) -->
         <div style="margin-bottom:14px;">
           <div
             style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">
             24h Volatility Pulse — Pyth Price Deltas</div>
-          <div class="vol-history" id="volHistory">
-            <!-- JS fills these -->
-          </div>
+          <div class="vol-history" id="volHistory"></div>
         </div>
 
-        <!-- Current vol score -->
         <div style="margin-bottom:12px;">
           <div
             style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--muted); margin-bottom:4px;">
@@ -1706,7 +1660,6 @@
           </div>
         </div>
 
-        <!-- Dynamic CR display -->
         <div class="aegis-cr-display">
           <div class="aegis-cr-box">
             <div class="aegis-cr-val" id="aegisBaseCR" style="color:var(--green);">150%</div>
@@ -1724,7 +1677,6 @@
           </div>
         </div>
 
-        <!-- Red Flag trigger explanation -->
         <div id="aegisRedFlagAlert"
           style="display:none; padding:10px 14px; background:rgba(255,77,77,0.1); border:1px solid rgba(255,77,77,0.35); border-radius:8px; font-size:0.78rem; color:var(--red); margin-top:8px;">
           🚨 <b>RED FLAG MARKET CONDITIONS DETECTED.</b> Aegis has raised the minimum CR to 170%. Your mint capacity is
@@ -1736,9 +1688,7 @@
         </div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════════════
-           PANEL 2 — LLM RISK REPORT (Claude API)
-           ══════════════════════════════════════════════════════════════ -->
+      <!-- LLM PANEL -->
       <div class="llm-panel" style="margin-top:32px;">
         <div
           style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:4px;">
@@ -1747,15 +1697,15 @@
               LLM Report Engine</div>
             <div class="hf-title" style="font-size:0.95rem;">Ask Sentinel Anything About Your Position</div>
           </div>
+          <!-- CHANGE 3: badge updated from CLAUDE POWERED → GROQ POWERED -->
           <div class="risk-badge risk-safe"
             style="font-size:0.7rem; background:rgba(0,242,255,0.1); border-color:rgba(0,242,255,0.3); color:var(--cyan);">
-            ⚡ CLAUDE POWERED</div>
+            ⚡ GROQ POWERED</div>
         </div>
         <div style="font-size:0.78rem; color:var(--muted); margin-bottom:14px;">Sentinel uses live Pyth oracle data,
           your vault position, and Aegis volatility score to generate natural language risk reports — just like the
           Telegram bot.</div>
 
-        <!-- Quick question chips -->
         <div class="llm-quick-btns">
           <button class="llm-quick" onclick="askSentinel('Why is my risk level Danger?')">Why is my risk
             Danger?</button>
@@ -1771,27 +1721,24 @@
             scenario</button>
         </div>
 
-        <!-- Chat window -->
         <div class="llm-chat" id="llmChat">
           <div style="color:var(--muted); font-style:italic; text-align:center; padding:20px 0;">
             Connect your wallet and ask Sentinel a question above, or type below ↓
           </div>
         </div>
 
-        <!-- Input -->
         <div class="llm-input-row">
           <input class="llm-input" id="llmInput" type="text" placeholder="Ask Sentinel: 'Why is my HF declining?'"
             onkeydown="if(event.key==='Enter') askSentinel()" />
           <button class="btn btn-secondary" id="llmSendBtn" onclick="askSentinel()" style="white-space:nowrap;">Ask
             ⚡</button>
         </div>
-        <div style="font-size:0.65rem; color:var(--muted); margin-top:6px; opacity:0.7;">Powered by Claude Sonnet ·
-          Context: live Pyth price · Aegis volatility · vault position</div>
+        <!-- CHANGE 4: footer updated from Claude Sonnet → Groq -->
+        <div style="font-size:0.65rem; color:var(--muted); margin-top:6px; opacity:0.7;">Powered by Groq · Context: live
+          Pyth price · Aegis volatility · vault position</div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════════════
-           PANEL 3 — PVM RUST BRAIN (Trustless Rebalancing)
-           ══════════════════════════════════════════════════════════════ -->
+      <!-- PVM PANEL -->
       <div class="pvm-panel" style="margin-top:32px;">
         <div
           style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
@@ -1812,7 +1759,6 @@
           action before execution.
         </div>
 
-        <!-- Architecture diagram -->
         <div class="pvm-arch">
           <div class="pvm-box pvm-box-offchain">
             <div class="pvm-box-label" style="color:var(--red);">⚠️ Off-chain (Legacy)</div>
@@ -1829,7 +1775,6 @@
           </div>
         </div>
 
-        <!-- PVM Decision Verifier (simulated) -->
         <div
           style="background:rgba(0,0,0,0.3); border:1px solid rgba(57,255,20,0.15); border-radius:10px; padding:14px; margin-top:4px;">
           <div
@@ -1853,7 +1798,6 @@
           <div class="pvm-result" id="pvmResult"></div>
         </div>
 
-        <!-- Rust code snippet -->
         <div style="margin-top:16px;">
           <div
             style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">
@@ -1878,9 +1822,7 @@
         </div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════════════
-           PANEL 4 — NATIVE USDT VIA ERC-20 PRECOMPILE (TRACK 2)
-           ══════════════════════════════════════════════════════════════ -->
+      <!-- TRACK 2 PANEL -->
       <div class="card"
         style="margin-top:32px; background:linear-gradient(135deg, rgba(0,242,255,0.04), rgba(26,31,46,0.9)); border-color:rgba(0,242,255,0.25);">
         <div
@@ -1896,15 +1838,13 @@
         </div>
 
         <div style="font-size:0.78rem; color:var(--muted); margin-bottom:20px; line-height:1.6;">
-          Sentinel uses <b style="color:var(--cyan)">Polkadot Asset Hub native USDT</b> (asset ID 1984) exposed via the
-          ERC-20 precompile at <code
+          Sentinel uses <b style="color:var(--cyan)">Mock USDT (ERC20Mock)</b> deployed at <code
             style="color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:0.78rem;">0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5</code>
-          <span style="font-size:0.6rem; opacity:0.7;">(Mainnet: 0xFFFFFFFF000007C0)</span>.
-          This means no wrapped tokens, no bridging risk — real native assets, directly in the vault.
+          on testnet.
+          <span style="opacity:0.6;"> Mainnet: real Asset Hub native USDT precompile at 0xFFFFFFFF000007C0.</span>
         </div>
 
         <div class="grid-2" style="gap:20px; margin-bottom:20px;">
-          <!-- DOT: Native WND -->
           <div
             style="border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:16px; background:rgba(255,215,0,0.04);">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
@@ -1919,42 +1859,37 @@
             <div style="font-size:0.75rem; color:var(--muted); line-height:1.6;">
               Accepted as <b style="color:var(--bumblebee)">volatile collateral</b> via <code
                 style="color:var(--bumblebee)">depositCollateral()</code> payable. Price tracked live via <b>Pyth
-                oracle</b> feed. No ERC-20 approval required.
+                oracle</b> feed and pushed on-chain every 30s.
             </div>
             <div
               style="margin-top:10px; padding:6px 10px; background:rgba(255,215,0,0.08); border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--bumblebee);">
-              decimals: 18 · type: msg.value payable · oracle: Pyth DOT/USD
+              decimals: 18 · type: msg.value payable · oracle: Pyth DOT/USD (auto-synced)
             </div>
           </div>
 
-          <!-- USDT: Asset Hub ERC-20 precompile -->
           <div
             style="border:1px solid rgba(0,242,255,0.25); border-radius:10px; padding:16px; background:rgba(0,242,255,0.04);">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
               <span style="font-size:1.4rem;">🛡️</span>
               <div>
-                <div style="font-weight:700; font-size:0.9rem;">USDT</div>
-                <div
-                  style="font-size:0.65rem; color:var(--muted); font-family:'JetBrains Mono',monospace; line-height:1.2;">
-                  0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5<br />
-                  <span style="font-size:0.55rem; opacity:0.6;">(Mainnet: 0xFFFFFFFF000007C0)</span>
-                </div>
+                <div style="font-weight:700; font-size:0.9rem;">USDT (Mock)</div>
+                <div style="font-size:0.65rem; color:var(--muted); font-family:'JetBrains Mono',monospace;">
+                  0xAfBDeD...402c5</div>
               </div>
-              <span class="native-badge" style="margin-left:auto;">ERC-20 Precompile</span>
+              <span class="native-badge" style="margin-left:auto;">ERC20Mock</span>
             </div>
             <div style="font-size:0.75rem; color:var(--muted); line-height:1.6;">
-              <b style="color:var(--cyan)">Stable collateral</b> via Asset Hub asset ID 1984, wrapped in Polkadot's
-              ERC-20 precompile. Accepted via <code style="color:var(--cyan)">depositUSDT(uint256)</code>. Priced at $1
-              — zero volatility buffer.
+              <b style="color:var(--cyan)">Stable collateral</b> via ERC20Mock (testnet). Accepted via <code
+                style="color:var(--cyan)">depositUSDT(uint256)</code>. Use <code
+                style="color:var(--cyan)">faucet()</code> to get free USDT for testing.
             </div>
             <div
               style="margin-top:10px; padding:6px 10px; background:rgba(0,242,255,0.08); border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--cyan);">
-              decimals: 6 · type: ERC-20 approve+transfer · price: $1.00 stable
+              decimals: 6 · type: ERC-20 approve+transfer · faucet: 10k USDT/24h
             </div>
           </div>
         </div>
 
-        <!-- How the precompile works -->
         <div
           style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,242,255,0.1); border-radius:10px; padding:14px;">
           <div
@@ -1981,7 +1916,7 @@
         </div>
       </div>
 
-      <!-- How it works -->
+      <!-- HOW IT WORKS -->
       <div class="card"
         style="margin-top:40px; background: rgba(139,92,246,.03); border-color: rgba(139, 92, 246, .1);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
@@ -2015,27 +1950,19 @@
         </div>
       </div>
 
-      <!-- Guardian Log -->
+      <!-- GUARDIAN LOG -->
       <div class="card log-card">
         <div class="log-header">
           <span style="animation: blink 1s infinite;">▶</span> SENTINEL CORE NEURAL LINK — ACTIVE
         </div>
         <div id="guardianLog" class="log-terminal">
-          <div class="log-line">
-            <span class="log-ts">[BOOT]</span>
-            <span class="log-tag">CORE</span>
-            <span>Neural processors online. Spiral Shield protocol loading…</span>
-          </div>
-          <div class="log-line">
-            <span class="log-ts">[BOOT]</span>
-            <span class="log-tag">SHIELD</span>
-            <span>Multi-collateral defense matrix initialised. Strategy: STABLE-FIRST.</span>
-          </div>
-          <div class="log-line">
-            <span class="log-ts">[BOOT]</span>
-            <span class="log-tag">ARMOR</span>
-            <span>USDT buffer layer armed. DOT sell pressure suppression: ACTIVE.</span>
-          </div>
+          <div class="log-line"><span class="log-ts">[BOOT]</span><span class="log-tag">CORE</span><span>Neural
+              processors online. Spiral Shield protocol loading…</span></div>
+          <div class="log-line"><span class="log-ts">[BOOT]</span><span
+              class="log-tag">SHIELD</span><span>Multi-collateral defense matrix initialised. Strategy:
+              STABLE-FIRST.</span></div>
+          <div class="log-line"><span class="log-ts">[BOOT]</span><span class="log-tag">ARMOR</span><span>USDT buffer
+              layer armed. DOT sell pressure suppression: ACTIVE.</span></div>
         </div>
       </div>
 
@@ -2056,6 +1983,13 @@
     const RPC_URL = 'https://services.polkadothub-rpc.com/testnet';
     const EXPLORER = 'https://polkadot-hub-testnet.blockscout.com';
     const PYTH_URL = 'https://hermes.pyth.network/v2/updates/price/latest?ids[]=0xca3eed9b267293f6595901c734c7525ce8ef49adafe8284606ceb307afa2ca5b';
+
+    // CHANGE 5: MockPriceOracle — replace ORACLE_ADDR after deploying MockPriceOracle.sol
+    const ORACLE_ADDR = '0xdAeDe10E2aB19201485283aFdACbE2E296435aE6';
+    const ORACLE_ABI = [
+      "function setPrice(int256 _price)",
+      "function getLatestPrice() view returns (int256, uint256)"
+    ];
 
     const VAULT_ABI = [
       "function getPosition(address) view returns (uint256, uint256, uint256, uint256, uint256, bool, bool, uint256)",
@@ -2079,11 +2013,10 @@
 
     let provider, signer, userAddr;
     let dotPrice = 5.0;
-    // Seed price history so AEGIS panel is active immediately
     const _priceHistory = [5.05, 4.98, 5.02, 4.96, 5.0];
     let _userCollateral = 0, _userDebt = 0, _userCollUSDT = 0, _userCollUSD = 0;
     let isSimulating = false;
-    let usdtAvailable = false; // FIX: track USDT availability
+    let usdtAvailable = false;
     let _llmHistory = [];
 
     const KNOWN_WALLETS = [
@@ -2104,7 +2037,6 @@
     function showWalletPicker() {
       const list = document.getElementById('walletList');
       list.innerHTML = `<div style="padding: 20px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--bumblebee); animation: pulse 1s infinite;">SCANNING FOR NEURAL SIGNATURES...</div>`;
-
       setTimeout(() => {
         list.innerHTML = '';
         KNOWN_WALLETS.forEach(w => {
@@ -2127,9 +2059,7 @@
       document.getElementById('walletModal').classList.add('open');
     }
 
-    function closeModal() {
-      document.getElementById('walletModal').classList.remove('open');
-    }
+    function closeModal() { document.getElementById('walletModal').classList.remove('open'); }
 
     document.getElementById('walletModal').addEventListener('click', e => {
       if (e.target === document.getElementById('walletModal')) closeModal();
@@ -2138,10 +2068,8 @@
     async function connectWallet(walletId, rawProvider) {
       closeModal();
       if (!rawProvider) { showToast('⚠️', 'No wallet detected. Install Talisman or MetaMask.'); return; }
-
       try {
         await rawProvider.request({ method: 'eth_requestAccounts' });
-
         try {
           await rawProvider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_HEX }] });
         } catch (sw) {
@@ -2158,36 +2086,28 @@
             });
           }
         }
-
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
         userAddr = await signer.getAddress();
-
         document.getElementById('walletPrompt').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
         document.getElementById('navRight').innerHTML = `<div class="wallet-address">${shortAddr(userAddr)}</div>`;
-
         await refresh();
         setInterval(refresh, 30000);
         fetchDotPrice();
         setInterval(fetchDotPrice, 30000);
-
         showToast('✅', `${walletId.charAt(0).toUpperCase() + walletId.slice(1)} connected!`);
       } catch (e) {
         showToast('❌', e.message || 'Connection failed');
       }
     }
 
-    // ─── Data Refresh ────────────────────────────────────────────────────────────
     async function refresh() {
       if (!provider || !userAddr) return;
-
       try {
         const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, provider);
-        // FIX: Use ERC20_ABI (not SUSD_ABI which was never defined)
         const sUSD = new ethers.Contract(SUSD_ADDR, ERC20_ABI, provider);
 
-        // ── Fetch Position with fallback ──
         let pos;
         try {
           pos = await vault.getPosition(userAddr);
@@ -2197,7 +2117,6 @@
               "function getPosition(address) view returns (uint256, uint256, uint256, uint256, uint256, bool)"
             ], provider);
             const lp = await legacyVault.getPosition(userAddr);
-            // Defaulting Aegis fields to false/150
             pos = [lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], false, 150n];
             window.currentCR = 150;
           } catch (e2) {
@@ -2209,9 +2128,7 @@
         const balance = await provider.getBalance(userAddr);
         const sUSDBal = await sUSD.balanceOf(userAddr);
 
-        // FIX: Safely attempt USDT reads — mark unavailable if contract fails
-        let usdtBal = 0n;
-        let walUSDTBal = 0;
+        let usdtBal = 0n, walUSDTBal = 0;
         if (USDT_ADDR) {
           try {
             const usdt = new ethers.Contract(USDT_ADDR, ERC20_ABI, provider);
@@ -2226,13 +2143,11 @@
           usdtAvailable = false;
         }
 
-        // Show/hide USDT warning banners
         document.getElementById('usdtContractWarning').style.display = usdtAvailable ? 'none' : 'block';
         document.getElementById('usdtActionWarning').style.display = usdtAvailable ? 'none' : 'block';
         document.getElementById('depositUSDTBtn').disabled = !usdtAvailable;
         document.getElementById('withdrawUSDTBtn').disabled = !usdtAvailable;
 
-        // Aegis status (reads from getPosition return values)
         let aegisActive = pos[6];
         let currentCR = Number(pos[7]);
         window._currentCR = currentCR;
@@ -2246,20 +2161,17 @@
         const walBal = parseFloat(ethers.formatEther(balance));
         const susdBal = parseFloat(ethers.formatEther(sUSDBal));
 
-        // Store globals for simulator
         _userCollateral = collDOT;
         _userDebt = minted;
         _userCollUSDT = collUSDT;
         _userCollUSD = collUSD;
 
-        // Update UI
         document.getElementById('collateralDOTVal').textContent = collDOT.toFixed(2) + ' DOT';
         document.getElementById('collateralDOTUSD').textContent = '≈ $' + (collDOT * dotPrice).toFixed(2);
         document.getElementById('collateralUSDTVal').textContent = usdtAvailable ? collUSDT.toFixed(2) + ' USDT' : 'N/A';
         document.getElementById('collateralUSDTUSD').textContent = usdtAvailable ? '≈ $' + collUSDT.toFixed(2) : '';
         document.getElementById('totalCollateralUSD').textContent = 'Total: $' + collUSD.toFixed(2);
         document.getElementById('mintedVal').textContent = minted.toFixed(2) + ' sUSD';
-
         document.getElementById('walletBal').textContent = walBal.toFixed(3);
         document.getElementById('walletUSDTBal').textContent = usdtAvailable ? walUSDTBal.toFixed(2) : 'N/A';
         document.getElementById('sUSDBal').textContent = susdBal.toFixed(2);
@@ -2292,17 +2204,15 @@
         document.getElementById('repayAmt').dataset.max = Math.min(minted, susdBal).toFixed(4);
 
         updateHFDisplay(hf, collDOT, minted, false, collUSDT);
-        // Re-sync slider to live price after data load
         if (!isSimulating) updateSimSlider(dotPrice);
-        // Sync Aegis panel
         updateAegisPanel();
-
       } catch (e) {
         console.error('refresh error:', e);
         addGuardianLog('ERROR', e.message);
       }
     }
 
+    // CHANGE 5 continued: fetchDotPrice now auto-pushes live price to MockPriceOracle on-chain
     async function fetchDotPrice() {
       try {
         const r = await fetch(PYTH_URL);
@@ -2310,11 +2220,35 @@
         const p = d.parsed[0].price;
         dotPrice = parseFloat(p.price) * Math.pow(10, p.expo);
         document.getElementById('dotPrice').textContent = '$' + dotPrice.toFixed(4);
+
+        // ── Auto-push live Pyth price to MockPriceOracle on-chain ────────────
+        // Converts e.g. $1.5739 → 157390000 (8 decimal int256 matching Pyth format)
+        if (signer && ORACLE_ADDR !== 'YOUR_DEPLOYED_ORACLE_ADDRESS') {
+          const syncEl = document.getElementById('oracleSyncStatus');
+          try {
+            syncEl.textContent = '⏳ SYNCING…';
+            syncEl.style.borderColor = 'rgba(255,215,0,0.4)';
+            syncEl.style.color = 'var(--yellow)';
+            const oracle = new ethers.Contract(ORACLE_ADDR, ORACLE_ABI, signer);
+            const onChainPrice = BigInt(Math.round(dotPrice * 1e8));
+            const tx = await oracle.setPrice(onChainPrice);
+            await tx.wait();
+            syncEl.textContent = '✅ ON-CHAIN';
+            syncEl.style.borderColor = 'rgba(57,255,20,0.4)';
+            syncEl.style.color = 'var(--green)';
+            addGuardianLog('ORACLE', `On-chain price synced → $${dotPrice.toFixed(4)}`);
+          } catch (e) {
+            syncEl.textContent = '⚠️ SYNC FAIL';
+            syncEl.style.color = 'var(--red)';
+            addGuardianLog('WARN', `Oracle sync failed: ${e.message}`);
+          }
+        }
+
         if (!isSimulating) updateSimSlider(dotPrice);
-        recordPriceForVolatility(dotPrice); // ← AEGIS VolatilityService feed
+        recordPriceForVolatility(dotPrice);
         addGuardianLog('PRICE', `DOT/USD pulse received: $${dotPrice.toFixed(4)}`);
         updateAegisPanel();
-        // Warn if simulating near dangerous territory
+
         if (_userDebt > 0) {
           const liveHF = (_userCollUSD / _userDebt) * 100;
           if (liveHF < 150 && liveHF >= 130) addGuardianLog('WARN', `HF at ${liveHF.toFixed(1)}% — USDT buffer absorbing volatility. DOT protected.`);
@@ -2326,27 +2260,23 @@
       }
     }
 
-    // ─── Spiral Prevention Engine ─────────────────────────────────────────────────
-    let _sentinelStrategy = 'stable-first'; // 'stable-first' | 'proportional' | 'dot-only'
+    let _sentinelStrategy = 'stable-first';
 
     function setStrategy(strat, btn) {
       _sentinelStrategy = strat;
       document.querySelectorAll('.strategy-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      // Re-run simulation with new strategy if slider is active
       if (isSimulating) runSpiralSim(parseFloat(document.getElementById('priceSlider').value) / 100);
       addGuardianLog('STRATEGY', `Rebalance mode set → ${strat.toUpperCase()}`);
     }
 
     function updateSimSlider(realPrice) {
       const slider = document.getElementById('priceSlider');
-      const min = realPrice * 0.1; // allow crash to 10% of current
+      const min = realPrice * 0.1;
       const max = realPrice * 2.0;
-
       document.getElementById('simPriceMin').textContent = '$' + min.toFixed(2);
       document.getElementById('simPriceMax').textContent = '$' + max.toFixed(2);
       document.getElementById('simPriceCurrent').textContent = 'Live: $' + realPrice.toFixed(2);
-
       slider.min = Math.floor(min * 100);
       slider.max = Math.floor(max * 100);
       slider.value = Math.floor(realPrice * 100);
@@ -2383,28 +2313,24 @@
       const collUSDT = _userCollUSDT;
       const liveDotUSD = dotPrice;
 
-      // ── Crash depth meter ──────────────────────────────────────────────
       const priceDrop = Math.max(0, (liveDotUSD - simPrice) / liveDotUSD);
       const dropPct = (priceDrop * 100).toFixed(1);
       document.getElementById('crashDepthPct').textContent = simPrice < liveDotUSD ? `-${dropPct}% DOT` : `+${(((simPrice - liveDotUSD) / liveDotUSD) * 100).toFixed(1)}% DOT`;
       document.getElementById('crashDepthBar').style.width = Math.min(priceDrop * 200, 100) + '%';
 
-      // ── Scenario A: DOT-Only (legacy, no stable buffer) ───────────────
-      // Pretend all collateral is DOT; on undercollateralisation Sentinel must sell DOT
-      const dotOnlyCollUSD = collDOT * simPrice; // USDT buffer ignored
+      const dotOnlyCollUSD = collDOT * simPrice;
       const hfDotOnly = debt > 0 ? (dotOnlyCollUSD / debt) * 100 : Infinity;
       const targetCR = 150;
       let dotSold = 0, dotSellPressureLabel = 'None', dotSpiralRisk = '✅ None', dotStatus;
 
       if (hfDotOnly < targetCR && hfDotOnly >= 100) {
-        // Must sell DOT to restore CR to 150%
         const usdNeeded = debt * targetCR / 100 - dotOnlyCollUSD;
         dotSold = usdNeeded / simPrice;
         dotSellPressureLabel = `${dotSold.toFixed(2)} DOT (~$${usdNeeded.toFixed(0)})`;
         dotSpiralRisk = hfDotOnly < 130 ? '🔴 HIGH' : '🟡 MEDIUM';
         dotStatus = '<span style="color:var(--yellow)">⚠️ REBALANCING</span>';
       } else if (hfDotOnly < 100) {
-        dotSold = collDOT; // full liquidation
+        dotSold = collDOT;
         dotSellPressureLabel = `${collDOT.toFixed(2)} DOT (FULL LIQ)`;
         dotSpiralRisk = '🔴 CRITICAL — SPIRAL';
         dotStatus = '<span style="color:var(--red)">💀 LIQUIDATED</span>';
@@ -2412,19 +2338,15 @@
         dotStatus = '<span style="color:var(--green)">● SAFE</span>';
       }
 
-      // ── Scenario B: Multi-Collateral with chosen strategy ─────────────
       const multiCollUSD = (collDOT * simPrice) + collUSDT;
       const hfMulti = debt > 0 ? (multiCollUSD / debt) * 100 : Infinity;
-
       let usdtUsed = 0, dotPreserved = collDOT, multiSellPressure = '✅ Zero', multiStatus;
 
       if (hfMulti < targetCR && hfMulti >= 100) {
         const usdShortfall = debt * targetCR / 100 - multiCollUSD;
-
         if (_sentinelStrategy === 'stable-first') {
-          // Use USDT first — no DOT selling at all if USDT covers it
-          usdtUsed = Math.min(collUSDT, Math.max(0, usdShortfall + collUSDT)); // use available USDT
-          dotPreserved = collDOT; // DOT untouched
+          usdtUsed = Math.min(collUSDT, Math.max(0, usdShortfall + collUSDT));
+          dotPreserved = collDOT;
           multiSellPressure = usdtUsed > 0 ? `✅ Zero DOT sold` : '⚠️ Partial';
           multiStatus = '<span style="color:var(--cyan)">🛡️ USDT BUFFER ACTIVE</span>';
         } else if (_sentinelStrategy === 'proportional') {
@@ -2437,22 +2359,19 @@
           multiSellPressure = `~${(dotUSDSold / simPrice).toFixed(2)} DOT + $${usdtUsed.toFixed(0)} USDT`;
           multiStatus = '<span style="color:var(--yellow)">⚖️ PROPORTIONAL</span>';
         } else {
-          // dot-only mode selected — same as legacy
           const dotUSDSold = Math.max(0, usdShortfall);
           dotPreserved = collDOT - dotUSDSold / simPrice;
           multiSellPressure = `${(dotUSDSold / simPrice).toFixed(2)} DOT sold`;
           multiStatus = '<span style="color:var(--yellow)">⚠️ DOT-ONLY MODE</span>';
         }
       } else if (hfMulti < 100) {
-        usdtUsed = collUSDT;
-        dotPreserved = 0;
+        usdtUsed = collUSDT; dotPreserved = 0;
         multiSellPressure = 'Full liquidation';
         multiStatus = '<span style="color:var(--red)">💀 LIQUIDATED</span>';
       } else {
         multiStatus = '<span style="color:var(--green)">● SAFE</span>';
       }
 
-      // ── Render comparison ──────────────────────────────────────────────
       const hfColor = hf => hf >= 150 ? 'var(--green)' : hf >= 130 ? 'var(--yellow)' : 'var(--red)';
 
       document.getElementById('hfDotOnly').textContent = hfDotOnly === Infinity ? '∞' : hfDotOnly.toFixed(1) + '%';
@@ -2464,28 +2383,23 @@
       document.getElementById('dotSellPressure').textContent = dotSellPressureLabel;
       document.getElementById('dotSpiralRisk').textContent = dotSpiralRisk;
       document.getElementById('dotVaultStatus').innerHTML = dotStatus;
-
       document.getElementById('usdtBufferUsed').textContent = usdtUsed > 0 ? '$' + usdtUsed.toFixed(2) + ' USDT' : '$0 (not needed)';
       document.getElementById('dotPreserved').textContent = dotPreserved.toFixed(3) + ' DOT';
       document.getElementById('multiSellPressure').textContent = multiSellPressure;
       document.getElementById('multiVaultStatus').innerHTML = multiStatus;
 
-      // ── Sentinel Decision Log ──────────────────────────────────────────
       const logEl = document.getElementById('sentinelActionLog');
       logEl.innerHTML = '';
       const ts = new Date().toLocaleTimeString();
-
       const logLines = [];
       if (simPrice < liveDotUSD) {
         logLines.push(`[${ts}] <span style="color:var(--bumblebee)">[ORACLE]</span> DOT dropped ${dropPct}% → $${simPrice.toFixed(3)}`);
         logLines.push(`[${ts}] <span style="color:var(--bumblebee)">[SCAN]</span> Collateral check: DOT-only HF=${hfDotOnly.toFixed(1)}% | Multi HF=${hfMulti.toFixed(1)}%`);
-
         if (_sentinelStrategy === 'stable-first' && hfMulti < 150 && hfMulti >= 100) {
           logLines.push(`[${ts}] <span style="color:var(--green)">[SENTINEL]</span> Strategy: STABLE-FIRST — routing rebalance via USDT`);
           logLines.push(`[${ts}] <span style="color:var(--green)">[SHIELD]</span> DOT position preserved. USDT absorbing shortfall. No spiral risk.`);
         } else if (_sentinelStrategy === 'proportional' && hfMulti < 150) {
           logLines.push(`[${ts}] <span style="color:var(--cyan)">[SENTINEL]</span> Strategy: PROPORTIONAL — splitting liquidation DOT+USDT`);
-          logLines.push(`[${ts}] <span style="color:var(--cyan)">[SHIELD]</span> Reduced DOT sell pressure vs legacy by ${((dotSold - (dotSold * (1 - (_userCollUSDT / (_userCollateral * dotPrice + _userCollUSDT || 1))))).toFixed(2))} DOT`);
         } else if (_sentinelStrategy === 'dot-only' && hfDotOnly < 150) {
           logLines.push(`[${ts}] <span style="color:var(--red)">[ALERT]</span> DOT-ONLY mode active — ${dotSold.toFixed(3)} DOT sold to maintain CR`);
           logLines.push(`[${ts}] <span style="color:var(--red)">[WARN]</span> Adding sell pressure during crash. Liquidation spiral risk: ${dotSpiralRisk}`);
@@ -2501,24 +2415,14 @@
         logLines.push(`[${ts}] <span style="color:var(--green)">[SHIELD]</span> Position strengthening. No rebalance needed.`);
       }
 
-      logLines.forEach(l => {
-        const d = document.createElement('div');
-        d.innerHTML = l;
-        logEl.appendChild(d);
-      });
+      logLines.forEach(l => { const d = document.createElement('div'); d.innerHTML = l; logEl.appendChild(d); });
       logEl.scrollTop = logEl.scrollHeight;
 
-      // Update top risk badge
       const badge = document.getElementById('spiralRiskBadge');
-      if (hfMulti >= 150) {
-        badge.className = 'risk-badge risk-safe'; badge.textContent = '🛡️ SHIELD ACTIVE';
-      } else if (hfMulti >= 130) {
-        badge.className = 'risk-badge risk-warning'; badge.textContent = '⚠️ BUFFER ABSORBING';
-      } else {
-        badge.className = 'risk-badge risk-danger'; badge.textContent = '🚨 CRITICAL ZONE';
-      }
+      if (hfMulti >= 150) { badge.className = 'risk-badge risk-safe'; badge.textContent = '🛡️ SHIELD ACTIVE'; }
+      else if (hfMulti >= 130) { badge.className = 'risk-badge risk-warning'; badge.textContent = '⚠️ BUFFER ABSORBING'; }
+      else { badge.className = 'risk-badge risk-danger'; badge.textContent = '🚨 CRITICAL ZONE'; }
 
-      // Also update main HF gauge with multi-collateral sim
       updateHFDisplay(hfMulti, collDOT, debt, true, collUSDT);
     }
 
@@ -2533,16 +2437,13 @@
       if (log.children.length > 30) log.removeChild(log.firstChild);
     }
 
-    // ─── Health Factor UI ────────────────────────────────────────────────────────
     function updateHFDisplay(hf, collDOT, minted, sim = false, collUSDT = 0) {
       const pct = document.getElementById('hfPct');
       const cir = document.getElementById('hfCircle');
       const desc = document.getElementById('hfDesc');
       const badge = document.getElementById('riskBadge');
       const simRes = document.getElementById('simResult');
-
-      // FIX: strokeDasharray is set in CSS; only override strokeDashoffset here
-      const circum = 2 * Math.PI * 45; // 282.74
+      const circum = 2 * Math.PI * 45;
 
       if (minted === 0) {
         pct.textContent = '∞';
@@ -2557,26 +2458,21 @@
       const fraction = Math.min(hf / 300, 1);
       cir.style.strokeDashoffset = String(circum * (1 - fraction));
 
-      let color, cls, label, descText;
-
       const safeThreshold = window._currentCR || 150;
       const warnThreshold = safeThreshold - 20;
+      let color, cls, label, descText;
 
       if (hf >= safeThreshold) {
-        color = 'var(--green)'; cls = 'risk-safe';
-        label = '● SAFE';
+        color = 'var(--green)'; cls = 'risk-safe'; label = '● SAFE';
         descText = 'Your position is healthy. Sentinel is watching.';
       } else if (hf >= warnThreshold) {
-        color = 'var(--yellow)'; cls = 'risk-warning';
-        label = '⚠️ WARNING';
+        color = 'var(--yellow)'; cls = 'risk-warning'; label = '⚠️ WARNING';
         descText = 'Health factor is declining. Sentinel has sent an alert.';
       } else if (hf >= 120) {
-        color = 'var(--red)'; cls = 'risk-danger';
-        label = '🚨 DANGER';
+        color = 'var(--red)'; cls = 'risk-danger'; label = '🚨 DANGER';
         descText = 'Position paused by Sentinel. Repay debt to restore.';
       } else {
-        color = 'var(--red)'; cls = 'risk-critical';
-        label = '💀 AT RISK';
+        color = 'var(--red)'; cls = 'risk-critical'; label = '💀 AT RISK';
         descText = 'Emergency rebalance triggered! Check Telegram for TX.';
       }
 
@@ -2592,7 +2488,6 @@
       }
     }
 
-    // ─── Actions ─────────────────────────────────────────────────────────────────
     async function depositDOT() {
       const amt = parseFloat(document.getElementById('depositAmt').value);
       if (!amt || amt <= 0) { showToast('⚠️', 'Enter a valid DOT amount'); return; }
@@ -2660,17 +2555,14 @@
       btn.innerHTML = '<span class="spinner"></span> Processing…'; btn.disabled = true;
       try {
         const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
-        // FIX: was referencing SUSD_ABI (undefined) — changed to ERC20_ABI
         const sUSD = new ethers.Contract(SUSD_ADDR, ERC20_ABI, signer);
         const amtWei = ethers.parseEther(String(amt));
-
         const allowance = await sUSD.allowance(userAddr, VAULT_ADDR);
         if (allowance < amtWei) {
           showToast('⏳', 'Approving sUSD for vault…');
           const atx = await sUSD.approve(VAULT_ADDR, ethers.MaxUint256);
           await atx.wait();
         }
-
         const tx = await vault.burnStablecoin(amtWei);
         showToast('⏳', 'Transaction sent!', tx.hash);
         await tx.wait();
@@ -2734,29 +2626,11 @@
       }
     }
 
-    async function approveRebalance() {
-      const btn = document.getElementById('approveRebalanceBtn');
-      btn.innerHTML = '<span class="spinner"></span> Approving…'; btn.disabled = true;
-      try {
-        const vault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
-        const tx = await vault.approveRebalance();
-        showToast('⏳', 'Multi-Sig Approval sent!', tx.hash);
-        await tx.wait();
-        showToast('✅', 'Multi-Sig Approval Confirmed!');
-        btn.style.display = 'none';
-        addGuardianLog('SECURITY', 'User Multi-Sig Approval confirmed on-chain.');
-      } catch (e) {
-        showToast('❌', e.reason || e.message || 'Approval failed');
-      } finally {
-        btn.innerHTML = '🛡️ Approve Multi-Sig Action'; btn.disabled = false;
-      }
-    }
-
     // ═══════════════════════════════════════════════════════════════════
-    // AEGIS PREDICTIVE VOLATILITY BUFFER (VolatilityService)
+    // AEGIS PREDICTIVE VOLATILITY BUFFER
     // ═══════════════════════════════════════════════════════════════════
     const VOL_WINDOW = 25;
-    const VOL_RED_FLAG = 7.0; // 7% average delta triggers AEGIS upgrade
+    const VOL_RED_FLAG = 7.0;
     const VOL_CAUTION = 3.0;
 
     function recordPriceForVolatility(price) {
@@ -2776,7 +2650,6 @@
     }
 
     function updateAegisPanel() {
-      // If we don't have enough history, generate some synthetic noise for visual effect
       if (_priceHistory.length < 10) {
         for (let i = 0; i < 20; i++) {
           const noise = (Math.random() - 0.5) * dotPrice * 0.04;
@@ -2787,8 +2660,6 @@
       const volScore = computeVolatility(_priceHistory);
       const isRedFlag = volScore >= VOL_RED_FLAG;
       const isCaution = volScore >= VOL_CAUTION && !isRedFlag;
-
-      // Update volatility bar
       const scorePct = Math.min(volScore / 10 * 100, 100);
       const scoreCol = isRedFlag ? 'var(--red)' : isCaution ? 'var(--yellow)' : 'var(--green)';
 
@@ -2797,7 +2668,6 @@
       if (scoreBar) { scoreBar.style.width = scorePct + '%'; scoreBar.style.background = scoreCol; }
       if (scoreLabel) { scoreLabel.textContent = volScore.toFixed(2) + '% avg delta'; scoreLabel.style.color = scoreCol; }
 
-      // Render volatility history sparks
       const container = document.getElementById('volHistory');
       if (container) {
         container.innerHTML = '';
@@ -2813,7 +2683,6 @@
         }
       }
 
-      // Update active CR
       const activeCR = isRedFlag ? 170 : 150;
       window._aegisActiveCR = activeCR;
 
@@ -2850,7 +2719,7 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // LLM RISK REPORT — CLAUDE API INTEGRATION
+    // LLM RISK REPORT — GROQ PROXY
     // ═══════════════════════════════════════════════════════════════════
     async function askSentinel(question) {
       const inputEl = document.getElementById('llmInput');
@@ -2862,13 +2731,11 @@
       const sendBtn = document.getElementById('llmSendBtn');
       if (!chat) return;
 
-      // Render user message
       const userMsgDiv = document.createElement('div');
       userMsgDiv.style.marginBottom = '15px';
       userMsgDiv.innerHTML = `<div class="llm-msg-user">⚡ YOU</div><div style="font-size:0.85rem; color:var(--white); padding:8px 0;">${q}</div>`;
       chat.appendChild(userMsgDiv);
 
-      // Thinking state
       const thinkId = 'llm-think-' + Date.now();
       const thinkDiv = document.createElement('div');
       thinkDiv.id = thinkId;
@@ -2878,7 +2745,6 @@
       chat.scrollTop = chat.scrollHeight;
       if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '…'; }
 
-      // Build context
       const collUSD = _userCollUSD || (_userCollateral * dotPrice + _userCollUSDT);
       const hfLive = _userDebt > 0 ? (collUSD / _userDebt * 100).toFixed(1) : 'N/A';
       const volScore = computeVolatility(_priceHistory);
@@ -2904,13 +2770,12 @@
 
         const data = await resp.json();
         let answer = '';
-
         if (data.content && data.content[0] && data.content[0].text) {
           answer = data.content[0].text;
         } else if (data.error && data.error.message) {
           answer = `⚠️ API Error: ${data.error.message}`;
         } else {
-          answer = 'Sentinel could not generate a response. Please check your Anthropic credits or API key.';
+          answer = 'Sentinel could not generate a response. Please check your API key or proxy.';
         }
 
         _llmHistory.push({ role: 'assistant', content: answer });
@@ -2925,7 +2790,7 @@
         const thinkEl = document.getElementById(thinkId);
         if (thinkEl) {
           thinkEl.className = 'llm-msg-bot';
-          thinkEl.innerHTML = `<span style="color:var(--red);">⚠️ LLM API unavailable. Check network or API key.</span>`;
+          thinkEl.innerHTML = `<span style="color:var(--red);">⚠️ LLM proxy unavailable. Ensure localhost:8081 is running.</span>`;
         }
       }
 
@@ -3018,9 +2883,7 @@
       toastTimer = setTimeout(() => t.classList.remove('show'), 5000);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      updateAegisPanel();
-    });
+    document.addEventListener('DOMContentLoaded', () => { updateAegisPanel(); });
   </script>
 </body>
 
