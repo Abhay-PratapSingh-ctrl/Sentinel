@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import {SentinelVault} from "../src/SentinelVault_Complete.sol";
-import {SentinelUSD} from "../src/SentinelUSD.sol";
-import {MockPriceOracle} from "../src/MockPriceOracle.sol";
+import { SentinelVault_complete } from "../contracts/src/SentinelVault_Complete.sol";
+import { SentinelUSD } from "../contracts/src/SentinelUSD.sol";
+import { MockPriceOracle } from "../contracts/src/MockPriceOracle.sol";
 
 /*
  * Demo Script — Full Sentinel Flow
@@ -45,7 +45,7 @@ contract Demo_DepositAndMint is Script {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address depositor = vm.addr(deployerKey);
 
-        SentinelVault vault = SentinelVault(payable(VAULT));
+        SentinelVault_complete vault = SentinelVault_complete(payable(VAULT));
         SentinelUSD sUSD = SentinelUSD(SUSD);
 
         // Deposit 100 DOT (100 * 1e18 wei)
@@ -67,7 +67,7 @@ contract Demo_DepositAndMint is Script {
         vm.startBroadcast(deployerKey);
 
         // Step 1: Deposit 100 DOT as collateral
-        vault.depositCollateral{value: dotToDeposit}();
+        vault.depositCollateral{ value: dotToDeposit }();
         console.log("Collateral deposited!");
 
         // Step 2: Mint 60 sUSD (safely under the 150% ceiling)
@@ -77,8 +77,16 @@ contract Demo_DepositAndMint is Script {
         vm.stopBroadcast();
 
         // Print current health factor
-        (uint256 collateralDOT, uint256 mintedSUSD, uint256 collateralUSD, uint256 healthFactor, bool paused) =
-            vault.getPosition(depositor);
+        (
+            uint256 collateralDOT,
+            uint256 collateralUSDT,
+            uint256 mintedSUSD,
+            uint256 collateralUSD,
+            uint256 healthFactor,
+            bool paused,
+            bool isAegis,
+            uint256 ratio
+        ) = vault.getPosition(depositor);
 
         console.log("");
         console.log("==============================================");
@@ -94,7 +102,9 @@ contract Demo_DepositAndMint is Script {
         console.log("");
         console.log("NEXT: Run Demo_CrashPrice to trigger the Sentinel bot!");
         console.log("Make sure the bot is running first:");
-        console.log("  source .env && java -jar Java_Agent/target/sentinel-bot-1.0.0.jar");
+        console.log(
+            "  source .env && java -jar Java_Agent/target/sentinel-bot-1.0.0.jar"
+        );
     }
 }
 
@@ -107,7 +117,7 @@ contract Demo_CrashPrice is Script {
         address deployer = vm.addr(deployerKey);
 
         MockPriceOracle oracle = MockPriceOracle(ORACLE);
-        SentinelVault vault = SentinelVault(payable(VAULT));
+        SentinelVault_complete vault = SentinelVault_complete(payable(VAULT));
 
         // Drop DOT price from $1.00 to $0.60
         // At $0.60/DOT with 100 DOT collateral and 60 sUSD debt:
@@ -131,7 +141,8 @@ contract Demo_CrashPrice is Script {
         console.log("");
 
         // Show updated position state
-        (,, uint256 collateralUSD, uint256 healthFactor,) = vault.getPosition(deployer);
+        (, , , uint256 collateralUSD, uint256 healthFactor, , , ) = vault
+            .getPosition(deployer);
 
         console.log("Updated collateral USD:", collateralUSD);
         console.log("Updated health factor :", healthFactor);
@@ -158,12 +169,20 @@ contract Demo_ReadPosition is Script {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address user = vm.addr(deployerKey);
 
-        SentinelVault vault = SentinelVault(payable(VAULT));
+        SentinelVault_complete vault = SentinelVault_complete(payable(VAULT));
         MockPriceOracle oracle = MockPriceOracle(ORACLE);
 
         (int256 dotPrice, uint256 updatedAt) = oracle.getLatestPrice();
-        (uint256 collateralDOT, uint256 mintedSUSD, uint256 collateralUSD, uint256 healthFactor, bool paused) =
-            vault.getPosition(user);
+        (
+            uint256 collateralDOT,
+            uint256 collateralUSDT,
+            uint256 mintedSUSD,
+            uint256 collateralUSD,
+            uint256 healthFactor,
+            bool paused,
+            bool isAegis,
+            uint256 ratio
+        ) = vault.getPosition(user);
 
         console.log("==============================================");
         console.log("  CURRENT POSITION STATE");
@@ -183,8 +202,19 @@ contract Demo_ReadPosition is Script {
 interface ExtVault {
     function getAllUsers() external view returns (address[] memory);
 
-    function getPosition(address user)
+    function getPosition(
+        address user
+    )
         external
         view
-        returns (uint256 collateralDOT, uint256 mintedSUSD, uint256 collateralUSD, uint256 healthFactor, bool paused);
+        returns (
+            uint256 collateralDOT,
+            uint256 collateralUSDT,
+            uint256 mintedSUSD,
+            uint256 collateralUSD,
+            uint256 healthFactor,
+            bool positionPaused,
+            bool isAegisActive,
+            uint256 activeCollateralRatio
+        );
 }
