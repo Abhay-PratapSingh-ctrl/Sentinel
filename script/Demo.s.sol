@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import { SentinelVault } from "../src/SentinelVault_Complete.sol";
-import { SentinelUSD } from "../src/SentinelUSD.sol";
-import { MockPriceOracle } from "../src/MockPriceOracle.sol";
+import { SentinelVault } from "../contracts/SentinelVault_Complete.sol";
+import { SentinelUSD } from "../contracts/SentinelUSD.sol";
+import { MockPriceOracle } from "../contracts/MockPriceOracle.sol";
 
 /*
  * Demo Script — Full Sentinel Flow
@@ -79,10 +79,13 @@ contract Demo_DepositAndMint is Script {
         // Print current health factor
         (
             uint256 collateralDOT,
+            uint256 collateralUSDT,
             uint256 mintedSUSD,
             uint256 collateralUSD,
             uint256 healthFactor,
-            bool paused
+            bool paused,
+            bool isAegisActive,
+            uint256 activeCollateralRatio
         ) = vault.getPosition(depositor);
 
         console.log("");
@@ -138,9 +141,8 @@ contract Demo_CrashPrice is Script {
         console.log("");
 
         // Show updated position state
-        (, , uint256 collateralUSD, uint256 healthFactor, ) = vault.getPosition(
-            deployer
-        );
+        (, , , uint256 collateralUSD, uint256 healthFactor, , , ) = vault
+            .getPosition(deployer);
 
         console.log("Updated collateral USD:", collateralUSD);
         console.log("Updated health factor :", healthFactor);
@@ -173,10 +175,13 @@ contract Demo_ReadPosition is Script {
         (int256 dotPrice, uint256 updatedAt) = oracle.getLatestPrice();
         (
             uint256 collateralDOT,
+            uint256 collateralUSDT,
             uint256 mintedSUSD,
             uint256 collateralUSD,
             uint256 healthFactor,
-            bool paused
+            bool paused,
+            bool isAegisActive,
+            uint256 activeCollateralRatio
         ) = vault.getPosition(user);
 
         console.log("==============================================");
@@ -204,9 +209,12 @@ interface ExtVault {
         view
         returns (
             uint256 collateralDOT,
+            uint256 collateralUSDT,
             uint256 mintedSUSD,
             uint256 collateralUSD,
             uint256 healthFactor,
-            bool paused
+            bool positionPaused,
+            bool isAegisActive,
+            uint256 activeCollateralRatio
         );
 }

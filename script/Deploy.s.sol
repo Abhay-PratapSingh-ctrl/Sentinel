@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import { SentinelUSD } from "../src/SentinelUSD.sol";
-import { SentinelVault_complete } from "../src/SentinelVault_Complete.sol";
-import { MockPriceOracle } from "../src/MockPriceOracle.sol";
+import { SentinelUSD } from "../contracts/SentinelUSD.sol";
+import { SentinelVault } from "../contracts/SentinelVault_Complete.sol";
+import { MockPriceOracle } from "../contracts/MockPriceOracle.sol";
 
 // ─────────────────────────────────────────────
 //  Interfaces (copied so we don't need imports)
@@ -103,7 +103,7 @@ contract DeployScript is Script {
         console.log("SentinelUSD (sUSD) deployed:", address(sUSD));
 
         // ── Step 3: Deploy SentinelVault_Complete ─────────────────
-        SentinelVault_complete vault = new SentinelVault_complete(
+        SentinelVault vault = new SentinelVault(
             address(oracle), // DOT/USD price oracle
             guardian, // Sentinel bot's signing wallet
             address(sUSD), // sUSD stablecoin contract
