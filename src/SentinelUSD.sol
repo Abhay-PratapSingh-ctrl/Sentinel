@@ -19,20 +19,19 @@ pragma solidity ^0.8.20;
  * └─────────────────────────────────────────────────────────────┘
  */
 contract SentinelUSD {
-
     // ── ERC-20 Metadata ──────────────────────────────────────────
-    string  public constant name     = "Sentinel USD";
-    string  public constant symbol   = "sUSD";
-    uint8   public constant decimals = 18;
+    string public constant name = "Sentinel USD";
+    string public constant symbol = "sUSD";
+    uint8 public constant decimals = 18;
 
     // ── Storage ──────────────────────────────────────────────────
     uint256 public totalSupply;
-    uint256 public supplyCap;   // Hard ceiling on total sUSD (0 = no cap)
+    uint256 public supplyCap; // Hard ceiling on total sUSD (0 = no cap)
 
     address public owner;
-    address public vault;       // SentinelVault — the only minter/burner
+    address public vault; // SentinelVault — the only minter/burner
 
-    mapping(address => uint256)                     public balanceOf;
+    mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
     // ── Events ───────────────────────────────────────────────────
@@ -60,8 +59,8 @@ contract SentinelUSD {
      */
     constructor(address _vault, uint256 _supplyCap) {
         require(_vault != address(0), "sUSD: zero vault address");
-        owner     = msg.sender;
-        vault     = _vault;
+        owner = msg.sender;
+        vault = _vault;
         supplyCap = _supplyCap;
     }
 
@@ -73,7 +72,7 @@ contract SentinelUSD {
         require(to != address(0), "sUSD: transfer to zero address");
         require(balanceOf[msg.sender] >= amount, "sUSD: insufficient balance");
         balanceOf[msg.sender] -= amount;
-        balanceOf[to]         += amount;
+        balanceOf[to] += amount;
         emit Transfer(msg.sender, to, amount);
         return true;
     }
@@ -86,12 +85,12 @@ contract SentinelUSD {
     }
 
     function transferFrom(address from, address to, uint256 amount) external returns (bool) {
-        require(to != address(0),                   "sUSD: transfer to zero address");
-        require(balanceOf[from]             >= amount, "sUSD: insufficient balance");
+        require(to != address(0), "sUSD: transfer to zero address");
+        require(balanceOf[from] >= amount, "sUSD: insufficient balance");
         require(allowance[from][msg.sender] >= amount, "sUSD: insufficient allowance");
         allowance[from][msg.sender] -= amount;
-        balanceOf[from]             -= amount;
-        balanceOf[to]               += amount;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
         emit Transfer(from, to, amount);
         return true;
     }
@@ -107,11 +106,11 @@ contract SentinelUSD {
      */
     function mint(address to, uint256 amount) external onlyVault {
         require(to != address(0), "sUSD: mint to zero address");
-        require(amount > 0,       "sUSD: mint amount is zero");
+        require(amount > 0, "sUSD: mint amount is zero");
         if (supplyCap > 0) {
             require(totalSupply + amount <= supplyCap, "sUSD: supply cap exceeded");
         }
-        totalSupply   += amount;
+        totalSupply += amount;
         balanceOf[to] += amount;
         emit Transfer(address(0), to, amount);
     }
@@ -124,7 +123,7 @@ contract SentinelUSD {
     function burnFrom(address from, uint256 amount) external onlyVault {
         require(balanceOf[from] >= amount, "sUSD: burn exceeds balance");
         balanceOf[from] -= amount;
-        totalSupply     -= amount;
+        totalSupply -= amount;
         emit Transfer(from, address(0), amount);
     }
 
@@ -132,21 +131,27 @@ contract SentinelUSD {
     //  SECTION 3 — ADMIN
     // ═════════════════════════════════════════════
 
-    /** @notice Point to a new vault contract (upgrade path). */
+    /**
+     * @notice Point to a new vault contract (upgrade path).
+     */
     function setVault(address _vault) external onlyOwner {
         require(_vault != address(0), "sUSD: zero address");
         vault = _vault;
         emit VaultUpdated(_vault);
     }
 
-    /** @notice Adjust supply ceiling. Cannot be set below current totalSupply. */
+    /**
+     * @notice Adjust supply ceiling. Cannot be set below current totalSupply.
+     */
     function setSupplyCap(uint256 _cap) external onlyOwner {
         require(_cap == 0 || _cap >= totalSupply, "sUSD: cap below current supply");
         supplyCap = _cap;
         emit SupplyCapUpdated(_cap);
     }
 
-    /** @notice Transfer contract ownership. */
+    /**
+     * @notice Transfer contract ownership.
+     */
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != address(0), "sUSD: zero address");
         emit OwnershipTransferred(owner, newOwner);

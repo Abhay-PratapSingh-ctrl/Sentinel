@@ -36,11 +36,7 @@ contract PVMIntegrationTest is Test {
 
         // In Foundry, calling an empty address reverts if not handled.
         // We can mock the call to return a specific value or just let it fail.
-        vm.mockCallRevert(
-            address(0x420),
-            abi.encodeWithSelector(IPolkaVM.execute.selector),
-            "PVM Not Found"
-        );
+        vm.mockCallRevert(address(0x420), abi.encodeWithSelector(IPolkaVM.execute.selector), "PVM Not Found");
 
         uint256 hf = vault.getHealthFactor(user);
         assertEq(hf, 2e18); // Fallback works
@@ -50,11 +46,7 @@ contract PVMIntegrationTest is Test {
         vault.setPVMConfig(bytes32(uint256(123)), true);
 
         // Mock a successful PVM execution returning 250% HF
-        vm.mockCall(
-            address(0x420),
-            abi.encodeWithSelector(IPolkaVM.execute.selector),
-            abi.encode(abi.encode(2.5e18))
-        );
+        vm.mockCall(address(0x420), abi.encodeWithSelector(IPolkaVM.execute.selector), abi.encode(abi.encode(2.5e18)));
 
         uint256 hf = vault.getHealthFactor(user);
         assertEq(hf, 2.5e18);

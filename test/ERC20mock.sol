@@ -27,22 +27,21 @@ pragma solidity ^0.8.20;
  *    this address with the real USDT Asset Hub precompile."
  */
 contract ERC20Mock {
-
     // ── Metadata ──────────────────────────────────────────────────
     // Matches real USDT exactly — name, symbol, decimals
-    string  public name;
-    string  public symbol;
-    uint8   public decimals;
+    string public name;
+    string public symbol;
+    uint8 public decimals;
 
     // ── State ─────────────────────────────────────────────────────
     uint256 public totalSupply;
     address public owner;
 
-    mapping(address => uint256)                     public balanceOf;
+    mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
     // ── Faucet ────────────────────────────────────────────────────
-    uint256 public constant FAUCET_AMOUNT   = 10_000 * 1e6;  // 10,000 USDT (6 decimals)
+    uint256 public constant FAUCET_AMOUNT = 10_000 * 1e6; // 10,000 USDT (6 decimals)
     uint256 public constant FAUCET_COOLDOWN = 24 hours;
     mapping(address => uint256) public lastFaucetTime;
 
@@ -64,14 +63,10 @@ contract ERC20Mock {
      * Constructor mints 10,000,000 USDT to the deployer immediately.
      * No faucet needed for your own wallet.
      */
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint8  _decimals
-    ) {
-        owner    = msg.sender;
-        name     = _name;
-        symbol   = _symbol;
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) {
+        owner = msg.sender;
+        name = _name;
+        symbol = _symbol;
         decimals = _decimals;
 
         // Mint 10 million USDT to deployer on deploy
@@ -83,10 +78,10 @@ contract ERC20Mock {
     // ═════════════════════════════════════════════
 
     function transfer(address to, uint256 amount) external returns (bool) {
-        require(to != address(0),                "ERC20Mock: transfer to zero address");
+        require(to != address(0), "ERC20Mock: transfer to zero address");
         require(balanceOf[msg.sender] >= amount, "ERC20Mock: insufficient balance");
         balanceOf[msg.sender] -= amount;
-        balanceOf[to]         += amount;
+        balanceOf[to] += amount;
         emit Transfer(msg.sender, to, amount);
         return true;
     }
@@ -99,12 +94,12 @@ contract ERC20Mock {
     }
 
     function transferFrom(address from, address to, uint256 amount) external returns (bool) {
-        require(to != address(0),                    "ERC20Mock: transfer to zero address");
-        require(balanceOf[from]             >= amount, "ERC20Mock: insufficient balance");
+        require(to != address(0), "ERC20Mock: transfer to zero address");
+        require(balanceOf[from] >= amount, "ERC20Mock: insufficient balance");
         require(allowance[from][msg.sender] >= amount, "ERC20Mock: insufficient allowance");
         allowance[from][msg.sender] -= amount;
-        balanceOf[from]             -= amount;
-        balanceOf[to]               += amount;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
         emit Transfer(from, to, amount);
         return true;
     }
@@ -118,10 +113,7 @@ contract ERC20Mock {
      * Judges and testers use this to get USDT without a faucet.
      */
     function faucet() external {
-        require(
-            block.timestamp >= lastFaucetTime[msg.sender] + FAUCET_COOLDOWN,
-            "ERC20Mock: cooldown active wait 24h"
-        );
+        require(block.timestamp >= lastFaucetTime[msg.sender] + FAUCET_COOLDOWN, "ERC20Mock: cooldown active wait 24h");
         lastFaucetTime[msg.sender] = block.timestamp;
         _mint(msg.sender, FAUCET_AMOUNT);
     }
@@ -155,7 +147,7 @@ contract ERC20Mock {
 
     // ── Internal ──────────────────────────────────────────────────
     function _mint(address to, uint256 amount) internal {
-        totalSupply   += amount;
+        totalSupply += amount;
         balanceOf[to] += amount;
         emit Transfer(address(0), to, amount);
     }

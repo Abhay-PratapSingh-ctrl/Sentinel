@@ -39,9 +39,9 @@ pragma solidity ^0.8.20;
  *    $1.00 →   100_000_000   // USDT baseline price
  */
 contract MockPriceOracle {
-    int256   public price;
-    uint256  public updatedAt;
-    address  public owner;
+    int256 public price;
+    uint256 public updatedAt;
+    address public owner;
 
     event PriceUpdated(int256 oldPrice, int256 newPrice, uint256 timestamp);
 
@@ -56,8 +56,8 @@ contract MockPriceOracle {
      */
     constructor(int256 initialPrice) {
         require(initialPrice > 0, "MockOracle: price must be positive");
-        owner     = msg.sender;
-        price     = initialPrice;
+        owner = msg.sender;
+        price = initialPrice;
         updatedAt = block.timestamp;
     }
 
@@ -85,7 +85,7 @@ contract MockPriceOracle {
     function setPrice(int256 newPrice) external onlyOwner {
         require(newPrice > 0, "MockOracle: price must be positive");
         emit PriceUpdated(price, newPrice, block.timestamp);
-        price     = newPrice;
+        price = newPrice;
         updatedAt = block.timestamp;
     }
 
