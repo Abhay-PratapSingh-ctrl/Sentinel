@@ -82,7 +82,7 @@ contract MockPriceOracle {
      * @notice Set a new price. Used to simulate market crashes / rallies during demos.
      * @param newPrice  New price in 8-decimal format (e.g. 450_000_000 = $4.50)
      */
-    function setPrice(int256 newPrice) external onlyOwner {
+    function setPrice(int256 newPrice) external {
         require(newPrice > 0, "MockOracle: price must be positive");
         emit PriceUpdated(price, newPrice, block.timestamp);
         price = newPrice;

@@ -12,6 +12,170 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
+    .tab-btn {
+      padding: 10px 24px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--bumblebee);
+      color: var(--bumblebee);
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 215, 0, 0.15);
+      border-color: var(--bumblebee);
+      color: var(--bumblebee);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    @media(max-width:600px) {
+      .portfolio-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .portfolio-card {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .portfolio-card:hover {
+      border-color: var(--bumblebee);
+    }
+
+    .swap-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .swap-token-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+    }
+
+    .swap-token-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .swap-token-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--white);
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: right;
+      width: 140px;
+    }
+
+    .swap-arrow {
+      text-align: center;
+      font-size: 1.4rem;
+      color: var(--bumblebee);
+      margin: 4px 0;
+      cursor: pointer;
+    }
+
+    .profile-card {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(0, 242, 255, 0.05));
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .profile-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 2px solid var(--bumblebee);
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(0, 242, 255, 0.2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    }
+
+    .profile-name-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+      outline: none;
+      color: var(--white);
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: 'Orbitron', sans-serif;
+      padding: 4px 0;
+      width: 200px;
+    }
+
+    .profile-bio-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      outline: none;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-family: 'Inter', sans-serif;
+      padding: 8px 12px;
+      width: 100%;
+      resize: none;
+      margin-top: 8px;
+    }
+
+    .profile-bio-input:focus {
+      border-color: var(--bumblebee);
+      color: var(--white);
+    }
+
+    .faucet-cooldown {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
     :root {
       --bg: #0a0c10;
       --steel: #1a1f2e;
@@ -1284,6 +1448,18 @@
       margin-left: 6px;
       vertical-align: middle;
     }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
   </style>
 </head>
 
@@ -1420,78 +1596,247 @@
       </div>
 
       <p class="section-title">Actions</p>
-      <div class="grid-2">
-        <div class="card action-card">
-          <div class="card-label" style="margin-bottom:12px;">💎 DOT Collateral Armor</div>
-          <div class="input-group">
-            <label>Deposit Amount <span class="max-link" onclick="setMaxDot()">Use max</span></label>
-            <div class="input-row">
-              <input id="depositAmt" type="number" min="0" step="0.1" placeholder="e.g. 10" />
-              <button class="btn btn-primary" id="depositBtn" onclick="depositDOT()">Deposit</button>
+
+      <!-- Tab Navigation -->
+      <div style="display:flex; gap:8px; margin-bottom:20px;">
+        <button class="tab-btn active" id="tabVault" onclick="switchTab('vault')">⚡ Vault</button>
+        <button class="tab-btn" id="tabTrade" onclick="switchTab('trade')">💱 Trade & Portfolio</button>
+      </div>
+
+      <!-- VAULT TAB -->
+      <div id="vaultTab">
+        <div class="grid-2">
+          <div class="card action-card">
+            <div class="card-label" style="margin-bottom:12px;">💎 DOT Collateral Armor</div>
+            <div class="input-group">
+              <label>Deposit Amount <span class="max-link" onclick="setMaxDot()">Use max</span></label>
+              <div class="input-row">
+                <input id="depositAmt" type="number" min="0" step="0.1" placeholder="e.g. 10" />
+                <button class="btn btn-primary" id="depositBtn" onclick="depositDOT()">Deposit</button>
+              </div>
+            </div>
+            <div class="input-group" style="margin-top:10px;">
+              <label>Withdraw Amount <span class="max-link" onclick="setMaxWithdraw()">Use max safe</span></label>
+              <div class="input-row">
+                <input id="withdrawAmt" type="number" min="0" step="0.1" placeholder="e.g. 5" />
+                <button class="btn btn-danger" id="withdrawBtn" onclick="withdrawDOT()">Withdraw</button>
+              </div>
+            </div>
+            <div class="hint-text">Balance: <span id="walletBal">—</span> DOT | Deposited: <span
+                id="hintCollateralDOT">—</span></div>
+          </div>
+
+          <div class="card action-card">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+              <div class="card-label" style="margin-bottom:0;">🛡️ USDT Collateral Shield</div>
+              <span class="native-badge">⛓️ ERC20Mock</span>
+            </div>
+            <div
+              style="font-size:0.72rem; color:var(--muted); margin-bottom:10px; padding:8px; background:rgba(0,242,255,0.04); border-radius:6px; border:1px solid rgba(0,242,255,0.1);">
+              Mock USDT deployed at <span
+                style="color:var(--cyan); font-family:monospace; font-size:0.68rem;">0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5</span>.
+              Mainnet: real Asset Hub precompile.
+            </div>
+            <div id="usdtActionWarning" class="usdt-warning" style="display:none; margin-bottom:12px;">
+              ⚠️ USDT not available on this network.
+            </div>
+            <div class="input-group">
+              <label>Deposit Amount <span class="max-link" onclick="setMaxUSDT()">Use max</span></label>
+              <div class="input-row">
+                <input id="depositUSDTAmt" type="number" min="0" step="1" placeholder="e.g. 100" />
+                <button class="btn btn-primary" id="depositUSDTBtn" onclick="depositUSDT()">Deposit</button>
+              </div>
+            </div>
+            <div class="input-group" style="margin-top:10px;">
+              <label>Withdraw Amount <span class="max-link" onclick="setMaxUSDTWithdraw()">Use max safe</span></label>
+              <div class="input-row">
+                <input id="withdrawUSDTAmt" type="number" min="0" step="1" placeholder="e.g. 50" />
+                <button class="btn btn-danger" id="withdrawUSDTBtn" onclick="withdrawUSDT()">Withdraw</button>
+              </div>
+            </div>
+            <div class="hint-text">Balance: <span id="walletUSDTBal">—</span> USDT | Deposited: <span
+                id="hintCollateralUSDT">—</span></div>
+          </div>
+
+          <div class="card action-card" style="grid-column: 1 / -1;">
+            <div class="card-label" style="margin-bottom:12px;">🪙 Debt Management (sUSD)</div>
+            <div class="grid-2" style="gap:20px;">
+              <div class="input-group">
+                <label>Mint Amount <span class="max-link" onclick="setMaxMint()">Use max safe</span></label>
+                <div class="input-row">
+                  <input id="mintAmt" type="number" min="0" step="1" placeholder="e.g. 60" />
+                  <button class="btn btn-secondary" id="mintBtn" onclick="mintSUSD()">Mint</button>
+                </div>
+                <div class="hint-text">Debt: <span id="hintDebt">—</span> sUSD</div>
+              </div>
+              <div class="input-group">
+                <label>Repay Amount <span class="max-link" onclick="setMaxRepay()">Use full debt</span></label>
+                <div class="input-row">
+                  <input id="repayAmt" type="number" min="0" step="1" placeholder="e.g. 100" />
+                  <button class="btn btn-secondary" id="repayBtn" onclick="repaySUSD()">Repay</button>
+                </div>
+                <div class="hint-text">Wallet: <span id="sUSDBal">—</span> sUSD</div>
+              </div>
             </div>
           </div>
-          <div class="input-group" style="margin-top:10px;">
-            <label>Withdraw Amount <span class="max-link" onclick="setMaxWithdraw()">Use max safe</span></label>
-            <div class="input-row">
-              <input id="withdrawAmt" type="number" min="0" step="0.1" placeholder="e.g. 5" />
-              <button class="btn btn-danger" id="withdrawBtn" onclick="withdrawDOT()">Withdraw</button>
-            </div>
+        </div>
+      </div>
+
+      <!-- TRADE TAB -->
+      <div id="tradeTab" style="display:none;">
+
+        <!-- User Profile Card -->
+        <div class="profile-card">
+          <div class="profile-avatar" id="profileAvatar">⚡</div>
+          <div style="flex:1;">
+            <div
+              style="font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+              Vault Operator</div>
+            <input class="profile-name-input" id="profileName" placeholder="Enter your name…" oninput="saveProfile()" />
+            <div style="font-size:0.72rem; color:var(--muted); margin-top:6px; font-family:'JetBrains Mono',monospace;"
+              id="profileAddr">—</div>
+            <textarea class="profile-bio-input" id="profileBio" rows="2"
+              placeholder="Tell the network about yourself… (e.g. DeFi researcher, NIT Trichy)"
+              oninput="saveProfile()"></textarea>
           </div>
-          <div class="hint-text">Balance: <span id="walletBal">—</span> DOT | Deposited: <span
-              id="hintCollateralDOT">—</span></div>
+          <div style="text-align:center;">
+            <div
+              style="font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">
+              Vault Score</div>
+            <div id="vaultScore"
+              style="font-family:'Orbitron',sans-serif; font-size:1.8rem; font-weight:700; color:var(--bumblebee);">—
+            </div>
+            <div style="font-size:0.65rem; color:var(--muted);">health index</div>
+          </div>
         </div>
 
-        <div class="card action-card">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <div class="card-label" style="margin-bottom:0;">🛡️ USDT Collateral Shield</div>
-            <span class="native-badge">⛓️ ERC20Mock</span>
+        <!-- Portfolio Overview -->
+        <div
+          style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-family:'Orbitron',sans-serif;">
+          📊 Portfolio Overview</div>
+        <div class="portfolio-grid">
+          <!-- DOT Card -->
+          <div class="portfolio-card">
+            <div style="font-size:2rem; margin-bottom:8px;">💎</div>
+            <div style="font-family:'Orbitron',sans-serif; font-size:0.7rem; color:var(--muted); margin-bottom:6px;">DOT
+            </div>
+            <div id="portDOTBal"
+              style="font-size:1.3rem; font-weight:700; color:var(--bumblebee); font-family:'JetBrains Mono',monospace;">
+              —</div>
+            <div id="portDOTUSD" style="font-size:0.75rem; color:var(--muted); margin-top:4px;">≈ $—</div>
+            <div
+              style="margin-top:8px; padding:4px 8px; background:rgba(255,215,0,0.1); border-radius:6px; font-size:0.65rem; color:var(--bumblebee);">
+              Wallet + Deposited</div>
           </div>
+          <!-- USDT Card -->
+          <div class="portfolio-card">
+            <div style="font-size:2rem; margin-bottom:8px;">🛡️</div>
+            <div style="font-family:'Orbitron',sans-serif; font-size:0.7rem; color:var(--muted); margin-bottom:6px;">
+              USDT</div>
+            <div id="portUSDTBal"
+              style="font-size:1.3rem; font-weight:700; color:var(--cyan); font-family:'JetBrains Mono',monospace;">—
+            </div>
+            <div id="portUSDTUSD" style="font-size:0.75rem; color:var(--muted); margin-top:4px;">≈ $—</div>
+            <div
+              style="margin-top:8px; padding:4px 8px; background:rgba(0,242,255,0.1); border-radius:6px; font-size:0.65rem; color:var(--cyan);">
+              Stable Buffer</div>
+          </div>
+          <!-- sUSD Card -->
+          <div class="portfolio-card">
+            <div style="font-size:2rem; margin-bottom:8px;">🪙</div>
+            <div style="font-family:'Orbitron',sans-serif; font-size:0.7rem; color:var(--muted); margin-bottom:6px;">
+              sUSD</div>
+            <div id="portSUSDBal"
+              style="font-size:1.3rem; font-weight:700; color:var(--green); font-family:'JetBrains Mono',monospace;">—
+            </div>
+            <div id="portSUSDUSD" style="font-size:0.75rem; color:var(--muted); margin-top:4px;">≈ $—</div>
+            <div
+              style="margin-top:8px; padding:4px 8px; background:rgba(57,255,20,0.1); border-radius:6px; font-size:0.65rem; color:var(--green);">
+              Minted Stablecoin</div>
+          </div>
+        </div>
+
+        <!-- Total Portfolio Value -->
+        <div
+          style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,215,0,0.15); border-radius:12px; padding:14px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div
+              style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:'Orbitron',sans-serif;">
+              Total Portfolio Value</div>
+            <div id="portTotalUSD"
+              style="font-size:1.8rem; font-weight:700; color:var(--bumblebee); font-family:'Orbitron',sans-serif;">$—
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.7rem; color:var(--muted); margin-bottom:4px;">Net Position (Collateral - Debt)</div>
+            <div id="portNetPos"
+              style="font-size:1.1rem; font-weight:700; color:var(--green); font-family:'JetBrains Mono',monospace;">$—
+            </div>
+          </div>
+        </div>
+
+        <!-- DOT → USDT Swap -->
+        <div
+          style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-family:'Orbitron',sans-serif;">
+          💱 Get USDT</div>
+        <div class="swap-box">
+          <div style="font-size:0.78rem; color:var(--muted); margin-bottom:16px; line-height:1.6;">
+            Swap DOT for USDT to use as a <b style="color:var(--cyan)">stable collateral buffer</b> in your vault.
+            Powered by the Sentinel testnet faucet — 10,000 USDT available every 24 hours.
+          </div>
+
+          <!-- From: DOT -->
+          <div class="swap-token-row">
+            <div class="swap-token-label">
+              <span style="font-size:1.3rem;">💎</span>
+              <div>
+                <div style="font-weight:700;">DOT</div>
+                <div style="font-size:0.65rem; color:var(--muted);">Balance: <span id="swapDOTBal">—</span></div>
+              </div>
+            </div>
+            <input class="swap-token-input" id="swapDOTInput" type="number" placeholder="0.00" min="0"
+              oninput="updateSwapPreview()" />
+          </div>
+
+          <!-- Arrow -->
+          <div class="swap-arrow">↓</div>
+
+          <!-- To: USDT -->
+          <div class="swap-token-row" style="border-color:rgba(0,242,255,0.3);">
+            <div class="swap-token-label">
+              <span style="font-size:1.3rem;">🛡️</span>
+              <div>
+                <div style="font-weight:700; color:var(--cyan);">USDT</div>
+                <div style="font-size:0.65rem; color:var(--muted);">Balance: <span id="swapUSDTBal">—</span></div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div id="swapUSDTOut"
+                style="font-size:1.2rem; font-weight:700; color:var(--cyan); font-family:'JetBrains Mono',monospace;">—
+              </div>
+              <div style="font-size:0.65rem; color:var(--muted);">≈ $<span id="swapUSDTOutUSD">—</span></div>
+            </div>
+          </div>
+
+          <!-- Rate info -->
           <div
-            style="font-size:0.72rem; color:var(--muted); margin-bottom:10px; padding:8px; background:rgba(0,242,255,0.04); border-radius:6px; border:1px solid rgba(0,242,255,0.1);">
-            Mock USDT deployed at <span
-              style="color:var(--cyan); font-family:monospace; font-size:0.68rem;">0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5</span>.
-            Mainnet: real Asset Hub precompile.
+            style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--muted); margin:10px 4px;">
+            <span>Rate: 1 DOT = <span id="swapRate">—</span> USDT</span>
+            <span>Faucet: 10,000 USDT / 24h</span>
           </div>
-          <div id="usdtActionWarning" class="usdt-warning" style="display:none; margin-bottom:12px;">
-            ⚠️ USDT not available on this network.
-          </div>
-          <div class="input-group">
-            <label>Deposit Amount <span class="max-link" onclick="setMaxUSDT()">Use max</span></label>
-            <div class="input-row">
-              <input id="depositUSDTAmt" type="number" min="0" step="1" placeholder="e.g. 100" />
-              <button class="btn btn-primary" id="depositUSDTBtn" onclick="depositUSDT()">Deposit</button>
-            </div>
-          </div>
-          <div class="input-group" style="margin-top:10px;">
-            <label>Withdraw Amount <span class="max-link" onclick="setMaxUSDTWithdraw()">Use max safe</span></label>
-            <div class="input-row">
-              <input id="withdrawUSDTAmt" type="number" min="0" step="1" placeholder="e.g. 50" />
-              <button class="btn btn-danger" id="withdrawUSDTBtn" onclick="withdrawUSDT()">Withdraw</button>
-            </div>
-          </div>
-          <div class="hint-text">Balance: <span id="walletUSDTBal">—</span> USDT | Deposited: <span
-              id="hintCollateralUSDT">—</span></div>
-        </div>
 
-        <div class="card action-card" style="grid-column: 1 / -1;">
-          <div class="card-label" style="margin-bottom:12px;">🪙 Debt Management (sUSD)</div>
-          <div class="grid-2" style="gap:20px;">
-            <div class="input-group">
-              <label>Mint Amount <span class="max-link" onclick="setMaxMint()">Use max safe</span></label>
-              <div class="input-row">
-                <input id="mintAmt" type="number" min="0" step="1" placeholder="e.g. 60" />
-                <button class="btn btn-secondary" id="mintBtn" onclick="mintSUSD()">Mint</button>
-              </div>
-              <div class="hint-text">Debt: <span id="hintDebt">—</span> sUSD</div>
-            </div>
-            <div class="input-group">
-              <label>Repay Amount <span class="max-link" onclick="setMaxRepay()">Use full debt</span></label>
-              <div class="input-row">
-                <input id="repayAmt" type="number" min="0" step="1" placeholder="e.g. 100" />
-                <button class="btn btn-secondary" id="repayBtn" onclick="repaySUSD()">Repay</button>
-              </div>
-              <div class="hint-text">Wallet: <span id="sUSDBal">—</span> sUSD</div>
-            </div>
+          <!-- Cooldown warning -->
+          <div id="faucetCooldownMsg" class="faucet-cooldown"
+            style="display:none; color:var(--red); margin-bottom:8px;">
+            ⏳ Faucet cooldown active — available again in <span id="faucetCountdown">24h</span>
+          </div>
+
+          <!-- Swap button -->
+          <button class="btn btn-primary" id="swapBtn" onclick="executeSwap()" style="width:100%; margin-top:10px;">
+            💱 SWAP DOT → USDT
+          </button>
+          <div style="font-size:0.65rem; color:var(--muted); text-align:center; margin-top:6px;">
+            Testnet only · Faucet mint · No real DEX swap
           </div>
         </div>
       </div>
@@ -1819,6 +2164,16 @@
             <br>&nbsp;&nbsp;}
             <br>}
           </div>
+          <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+            <button class="btn btn-danger" style="font-size:0.75rem; padding:8px 14px;"
+              onclick="manualCrashPrice(1.0)">💥 Crash $1.00</button>
+            <button class="btn btn-danger" style="font-size:0.75rem; padding:8px 14px;"
+              onclick="manualCrashPrice(0.60)">💥 Crash $0.60</button>
+            <button class="btn btn-danger" style="font-size:0.75rem; padding:8px 14px;"
+              onclick="manualCrashPrice(0.30)">💥 Crash $0.30</button>
+            <button class="btn btn-primary" style="font-size:0.75rem; padding:8px 14px;"
+              onclick="manualCrashPrice(1.57)">✅ Restore $1.57</button>
+          </div>
         </div>
       </div>
 
@@ -1985,7 +2340,7 @@
     const PYTH_URL = 'https://hermes.pyth.network/v2/updates/price/latest?ids[]=0xca3eed9b267293f6595901c734c7525ce8ef49adafe8284606ceb307afa2ca5b';
 
     // CHANGE 5: MockPriceOracle — replace ORACLE_ADDR after deploying MockPriceOracle.sol
-    const ORACLE_ADDR = '0xdAeDe10E2aB19201485283aFdACbE2E296435aE6';
+    const ORACLE_ADDR = '0x0ebfb51f5a60d9274b55f53eba99beff64b88e1e';
     const ORACLE_ABI = [
       "function setPrice(int256 _price)",
       "function getLatestPrice() view returns (int256, uint256)"
@@ -2033,6 +2388,48 @@
         getProvider: () => window.ethereum?.isMetaMask ? window.ethereum : null
       }
     ];
+
+    // ── Persistent wallet connection ─────────────────────────────────
+    const STORAGE_KEY_WALLET = 'sentinel_wallet_id';
+
+    async function tryAutoReconnect() {
+      const savedWalletId = localStorage.getItem(STORAGE_KEY_WALLET);
+      if (!savedWalletId) return;
+
+      const wallet = KNOWN_WALLETS.find(w => w.id === savedWalletId);
+      if (!wallet) return;
+
+      const rawProvider = wallet.getProvider();
+      if (!rawProvider) return;
+
+      try {
+        const accounts = await rawProvider.request({ method: 'eth_accounts' });
+        if (!accounts || accounts.length === 0) return;
+
+        try {
+          await rawProvider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_HEX }] });
+        } catch (e) { }
+
+        provider = new ethers.BrowserProvider(rawProvider);
+        signer = await provider.getSigner();
+        userAddr = await signer.getAddress();
+
+        document.getElementById('walletPrompt').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('navRight').innerHTML = `<div class="wallet-address">${shortAddr(userAddr)}</div>`;
+
+        await refresh();
+        setInterval(refresh, 30000);
+        fetchDotPrice();
+        setInterval(fetchDotPrice, 30000);
+        startRebalanceListener();
+        loadProfile();
+
+        addGuardianLog('BOOT', `Auto-reconnected: ${shortAddr(userAddr)}`);
+      } catch (e) {
+        localStorage.removeItem(STORAGE_KEY_WALLET);
+      }
+    }
 
     function showWalletPicker() {
       const list = document.getElementById('walletList');
@@ -2096,7 +2493,11 @@
         setInterval(refresh, 30000);
         fetchDotPrice();
         setInterval(fetchDotPrice, 30000);
+        localStorage.setItem(STORAGE_KEY_WALLET, walletId);
+        startRebalanceListener();
+        loadProfile();
         showToast('✅', `${walletId.charAt(0).toUpperCase() + walletId.slice(1)} connected!`);
+        startRebalanceListener();
       } catch (e) {
         showToast('❌', e.message || 'Connection failed');
       }
@@ -2212,47 +2613,26 @@
       }
     }
 
-    // CHANGE 5 continued: fetchDotPrice now auto-pushes live price to MockPriceOracle on-chain
     async function fetchDotPrice() {
       try {
         const r = await fetch(PYTH_URL);
         const d = await r.json();
         const p = d.parsed[0].price;
         dotPrice = parseFloat(p.price) * Math.pow(10, p.expo);
-        document.getElementById('dotPrice').textContent = '$' + dotPrice.toFixed(4);
 
-        // ── Auto-push live Pyth price to MockPriceOracle on-chain ────────────
-        // Converts e.g. $1.5739 → 157390000 (8 decimal int256 matching Pyth format)
-        if (signer && ORACLE_ADDR !== 'YOUR_DEPLOYED_ORACLE_ADDRESS') {
-          const syncEl = document.getElementById('oracleSyncStatus');
-          try {
-            syncEl.textContent = '⏳ SYNCING…';
-            syncEl.style.borderColor = 'rgba(255,215,0,0.4)';
-            syncEl.style.color = 'var(--yellow)';
-            const oracle = new ethers.Contract(ORACLE_ADDR, ORACLE_ABI, signer);
-            const onChainPrice = BigInt(Math.round(dotPrice * 1e8));
-            const tx = await oracle.setPrice(onChainPrice);
-            await tx.wait();
-            syncEl.textContent = '✅ ON-CHAIN';
-            syncEl.style.borderColor = 'rgba(57,255,20,0.4)';
-            syncEl.style.color = 'var(--green)';
-            addGuardianLog('ORACLE', `On-chain price synced → $${dotPrice.toFixed(4)}`);
-          } catch (e) {
-            syncEl.textContent = '⚠️ SYNC FAIL';
-            syncEl.style.color = 'var(--red)';
-            addGuardianLog('WARN', `Oracle sync failed: ${e.message}`);
-          }
-        }
+        document.getElementById('dotPrice').textContent = '$' + dotPrice.toFixed(4);
+        document.getElementById('oracleSyncStatus').textContent = '🔴 MANUAL MODE';
 
         if (!isSimulating) updateSimSlider(dotPrice);
         recordPriceForVolatility(dotPrice);
         addGuardianLog('PRICE', `DOT/USD pulse received: $${dotPrice.toFixed(4)}`);
         updateAegisPanel();
+        checkHFAndAlert();
 
         if (_userDebt > 0) {
           const liveHF = (_userCollUSD / _userDebt) * 100;
-          if (liveHF < 150 && liveHF >= 130) addGuardianLog('WARN', `HF at ${liveHF.toFixed(1)}% — USDT buffer absorbing volatility. DOT protected.`);
-          else if (liveHF < 130) addGuardianLog('ALERT', `HF CRITICAL: ${liveHF.toFixed(1)}% — Spiral Shield engaging. Routing via USDT.`);
+          if (liveHF < 150 && liveHF >= 130) addGuardianLog('WARN', `HF at ${liveHF.toFixed(1)}% — USDT buffer absorbing volatility.`);
+          else if (liveHF < 130) addGuardianLog('ALERT', `HF CRITICAL: ${liveHF.toFixed(1)}% — Spiral Shield engaging.`);
         }
       } catch (e) {
         document.getElementById('dotPrice').textContent = 'Unavailable';
@@ -2883,7 +3263,413 @@
       toastTimer = setTimeout(() => t.classList.remove('show'), 5000);
     }
 
-    document.addEventListener('DOMContentLoaded', () => { updateAegisPanel(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      updateAegisPanel();
+      tryAutoReconnect();
+    });
+    // ═══════════════════════════════════════════════════════════════════
+    // SENTINEL REBALANCE ALERT SYSTEM
+    // Paste this inside your <script> block, after the constants section.
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ── Extended VAULT ABI — add these to your existing VAULT_ABI array ──
+    // "event EmergencyRebalance(address indexed user, uint256 dotSold, uint256 sUSDReceived, uint256 debtRepaid, uint256 newHealthFactor)",
+    // "event AegisActivated(uint256 collateralRatioPct, uint256 rebalanceTargetHfBps, string reason)",
+    // "event RebalanceVerified(address indexed user, uint256 dotToSell, uint256 targetHfBps, bool pvmVerified)"
+
+    // ── Telegram config (optional — set your bot token + chat ID) ────────
+    const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';  // from @BotFather
+    const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID';    // your chat/group ID
+
+    // ── HF monitoring thresholds ─────────────────────────────────────────
+    const HF_DANGER_THRESHOLD = 130; // below this → danger alert
+    const HF_REBALANCE_TRIGGER = 125; // below this → auto-notify rebalance needed
+
+    let _rebalanceAlertShown = false; // prevent spam
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 1. LISTEN FOR ON-CHAIN REBALANCE EVENTS
+    //    Call this once after wallet connects: startRebalanceListener()
+    // ═══════════════════════════════════════════════════════════════════
+    function startRebalanceListener() {
+      if (!provider) return;
+
+      const vault = new ethers.Contract(VAULT_ADDR, [
+        "event EmergencyRebalance(address indexed user, uint256 dotSold, uint256 sUSDReceived, uint256 debtRepaid, uint256 newHealthFactor)",
+        "event AegisActivated(uint256 collateralRatioPct, uint256 rebalanceTargetHfBps, string reason)",
+      ], provider);
+
+      let lastCheckedBlock = 0;
+
+      async function pollEvents() {
+        try {
+          const currentBlock = await provider.getBlockNumber();
+          if (lastCheckedBlock === 0) {
+            lastCheckedBlock = currentBlock - 1;
+          }
+          if (currentBlock <= lastCheckedBlock) return;
+
+          // Poll EmergencyRebalance events
+          const rebalanceFilter = vault.filters.EmergencyRebalance();
+          const rebalanceEvents = await vault.queryFilter(rebalanceFilter, lastCheckedBlock + 1, currentBlock);
+          rebalanceEvents.forEach(e => {
+            const { user, dotSold, sUSDReceived, debtRepaid, newHealthFactor } = e.args;
+            const dotAmt = parseFloat(ethers.formatEther(dotSold)).toFixed(3);
+            const sUSDamt = parseFloat(ethers.formatEther(sUSDReceived)).toFixed(2);
+            const debtAmt = parseFloat(ethers.formatEther(debtRepaid)).toFixed(2);
+            const newHF = (parseFloat(ethers.formatEther(newHealthFactor)) * 100).toFixed(1);
+            addGuardianLog('REBALANCE', `✅ EXECUTED — Sold ${dotAmt} DOT → ${sUSDamt} sUSD · Debt -${debtAmt} · New HF: ${newHF}%`);
+            showRebalanceNotification({ type: 'executed', dotSold: dotAmt, sUSDReceived: sUSDamt, debtRepaid: debtAmt, newHF });
+            sendTelegramAlert(`🛡️ *SENTINEL REBALANCE EXECUTED*\n\nDOT Sold: *${dotAmt}*\nsUSD Received: *${sUSDamt}*\nNew HF: *${newHF}%* ✅`);
+            setTimeout(() => refresh(), 3000);
+          });
+
+          // Poll AegisActivated events
+          const aegisFilter = vault.filters.AegisActivated();
+          const aegisEvents = await vault.queryFilter(aegisFilter, lastCheckedBlock + 1, currentBlock);
+          aegisEvents.forEach(e => {
+            const { collateralRatioPct, reason } = e.args;
+            addGuardianLog('AEGIS', `🔴 ACTIVATED — CR raised to ${Number(collateralRatioPct)}% · ${reason}`);
+            sendTelegramAlert(`⚠️ *AEGIS ACTIVATED*\nCR raised to *${Number(collateralRatioPct)}%*\nReason: _${reason}_`);
+          });
+
+          lastCheckedBlock = currentBlock;
+        } catch (e) {
+          // silent fail — polling continues regardless
+        }
+      }
+
+      // Poll every 15 seconds
+      setInterval(pollEvents, 15000);
+      pollEvents(); // run immediately on connect
+      addGuardianLog('BOOT', '🔄 Event poller active (15s interval) — watching for rebalance events…');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 2. HF MONITOR — runs inside fetchDotPrice() every 30s
+    //    Call checkHFAndAlert() from within fetchDotPrice()
+    // ═══════════════════════════════════════════════════════════════════
+    function checkHFAndAlert() {
+      if (_userDebt <= 0) return;
+
+      const collUSD = _userCollUSD || (_userCollateral * dotPrice + _userCollUSDT);
+      const hf = (collUSD / _userDebt) * 100;
+
+      if (hf < HF_REBALANCE_TRIGGER && !_rebalanceAlertShown) {
+        _rebalanceAlertShown = true;
+
+        // Guardian log
+        addGuardianLog('ALERT', `🚨 HF ${hf.toFixed(1)}% — BELOW ${HF_REBALANCE_TRIGGER}%. Sentinel signalling guardian for rebalance.`);
+
+        // Show rebalance needed notification
+        showRebalanceNotification({ type: 'needed', hf: hf.toFixed(1) });
+
+        // Telegram alert — notify that rebalance is needed
+        const dotNeeded = Math.max(0, (_userDebt * 1.5 - collUSD) / dotPrice);
+        sendTelegramAlert(
+          `🚨 *SENTINEL ALERT — REBALANCE NEEDED*\n\n` +
+          `Health Factor: *${hf.toFixed(1)}%* ⚠️\n` +
+          `DOT Price: *$${dotPrice.toFixed(4)}*\n` +
+          `Collateral: *$${collUSD.toFixed(2)}*\n` +
+          `Debt: *${_userDebt.toFixed(2)} sUSD*\n\n` +
+          `Estimated DOT to sell: *${dotNeeded.toFixed(3)} DOT*\n\n` +
+          `_Guardian action required. PVM verification will run before execution._`
+        );
+
+        // Ask LLM to generate rebalance explanation automatically
+        askSentinel(`My health factor just dropped to ${hf.toFixed(1)}%. What rebalance action should Sentinel take?`);
+
+      } else if (hf >= HF_DANGER_THRESHOLD) {
+        // Reset alert flag when position recovers
+        _rebalanceAlertShown = false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 3. REBALANCE NOTIFICATION BANNER
+    //    Shows a prominent in-page alert (more visible than toast)
+    // ═══════════════════════════════════════════════════════════════════
+    function showRebalanceNotification({ type, dotSold, sUSDReceived, debtRepaid, newHF, hf, user }) {
+
+      // Remove any existing notification
+      const existing = document.getElementById('rebalanceBanner');
+      if (existing) existing.remove();
+
+      const banner = document.createElement('div');
+      banner.id = 'rebalanceBanner';
+
+      if (type === 'executed') {
+        banner.style.cssText = `
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      z-index: 9998; padding: 16px 24px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(57,255,20,0.15), rgba(0,242,255,0.1));
+      border: 2px solid var(--green);
+      box-shadow: 0 0 30px rgba(57,255,20,0.3);
+      font-family: 'Orbitron', sans-serif; font-size: 0.8rem;
+      color: var(--green); text-align: center; min-width: 400px;
+      animation: slideDown 0.4s ease;
+    `;
+        banner.innerHTML = `
+      <div style="font-size:1.2rem; margin-bottom:6px;">🛡️ SENTINEL REBALANCE EXECUTED</div>
+      <div style="font-size:0.75rem; color:var(--white); font-family:'Inter',sans-serif; line-height:1.8;">
+        Sold <b style="color:var(--bumblebee)">${dotSold} DOT</b> →
+        received <b style="color:var(--cyan)">${sUSDReceived} sUSD</b> ·
+        debt reduced by <b style="color:var(--green)">${debtRepaid} sUSD</b><br>
+        New Health Factor: <b style="color:var(--green); font-size:1rem;">${newHF}%</b> ✅
+      </div>
+      <div style="font-size:0.65rem; color:var(--muted); margin-top:6px;">PVM verified · Executed via Hydration DEX · Position stabilised</div>
+      <button onclick="document.getElementById('rebalanceBanner').remove()" 
+        style="margin-top:10px; padding:4px 14px; border-radius:8px; border:1px solid var(--green); background:transparent; color:var(--green); cursor:pointer; font-family:'Orbitron',sans-serif; font-size:0.65rem;">
+        DISMISS
+      </button>
+    `;
+      } else {
+        // type === 'needed'
+        banner.style.cssText = `
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      z-index: 9998; padding: 16px 24px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,77,77,0.15), rgba(255,215,0,0.08));
+      border: 2px solid var(--red);
+      box-shadow: 0 0 30px rgba(255,77,77,0.3);
+      font-family: 'Orbitron', sans-serif; font-size: 0.8rem;
+      color: var(--red); text-align: center; min-width: 400px;
+      animation: slideDown 0.4s ease;
+    `;
+        banner.innerHTML = `
+      <div style="font-size:1.2rem; margin-bottom:6px;">🚨 REBALANCE SIGNAL SENT TO GUARDIAN</div>
+      <div style="font-size:0.75rem; color:var(--white); font-family:'Inter',sans-serif; line-height:1.8;">
+        Health Factor: <b style="color:var(--red)">${hf}%</b> — Below safe threshold<br>
+        Sentinel has alerted the guardian. PVM verification queued.
+      </div>
+      <div style="font-size:0.65rem; color:var(--muted); margin-top:6px;">Telegram alert sent · Awaiting guardian execution</div>
+      <button onclick="document.getElementById('rebalanceBanner').remove()" 
+        style="margin-top:10px; padding:4px 14px; border-radius:8px; border:1px solid var(--red); background:transparent; color:var(--red); cursor:pointer; font-family:'Orbitron',sans-serif; font-size:0.65rem;">
+        DISMISS
+      </button>
+    `;
+      }
+
+      document.body.appendChild(banner);
+
+      // Auto-dismiss after 10 seconds
+      setTimeout(() => { if (document.getElementById('rebalanceBanner')) banner.remove(); }, 10000);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 4. TELEGRAM ALERT SENDER
+    // ═══════════════════════════════════════════════════════════════════
+    async function sendTelegramAlert(message) {
+      if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === 'YOUR_BOT_TOKEN') {
+        addGuardianLog('TELEGRAM', `[MOCK] ${message.split('\n')[0]}`);
+        return;
+      }
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown'
+          })
+        });
+        addGuardianLog('TELEGRAM', 'Alert sent ✅');
+      } catch (e) {
+        addGuardianLog('TELEGRAM', 'Alert failed: ' + e.message);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ADD THIS ANIMATION to your <style> block
+    // ═══════════════════════════════════════════════════════════════════
+    /*
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    */
+
+    // ═══════════════════════════════════════════════════════════════════
+    // WIRING INSTRUCTIONS — 3 lines to add to existing functions:
+    // ═══════════════════════════════════════════════════════════════════
+
+    // 1. In connectWallet(), after "await refresh();" add:
+    //    startRebalanceListener();
+
+    // 2. In fetchDotPrice(), after "updateAegisPanel();" add:
+    //    checkHFAndAlert();
+
+    async function manualCrashPrice(priceUSD) {
+      try {
+        const oracle = new ethers.Contract(ORACLE_ADDR, ORACLE_ABI, signer);
+        const tx = await oracle.setPrice(BigInt(Math.round(priceUSD * 1e8)));
+        showToast('⏳', `Setting price to $${priceUSD}...`, tx.hash);
+        await tx.wait();
+        addGuardianLog('ORACLE', `Manual price set → $${priceUSD}`);
+        showToast('✅', `Price crashed to $${priceUSD}!`, tx.hash);
+        await refresh();
+      } catch (e) {
+        showToast('❌', e.reason || e.message || 'Price update failed');
+      }
+    }
+
+    function switchTab(tab) {
+      document.getElementById('vaultTab').style.display = tab === 'vault' ? 'block' : 'none';
+      document.getElementById('tradeTab').style.display = tab === 'trade' ? 'block' : 'none';
+      document.getElementById('tabVault').classList.toggle('active', tab === 'vault');
+      document.getElementById('tabTrade').classList.toggle('active', tab === 'trade');
+      if (tab === 'trade') updatePortfolio();
+    }
+
+    async function updatePortfolio() {
+      if (!provider || !userAddr) return;
+      try {
+        const sUSD = new ethers.Contract(SUSD_ADDR, ERC20_ABI, provider);
+        const usdt = new ethers.Contract(USDT_ADDR, ERC20_ABI, provider);
+
+        const dotBal = await provider.getBalance(userAddr);
+        const susdBal = await sUSD.balanceOf(userAddr);
+        const usdtBal = await usdt.balanceOf(userAddr);
+
+        const dotAmt = parseFloat(ethers.formatEther(dotBal));
+        const susdAmt = parseFloat(ethers.formatEther(susdBal));
+        const usdtAmt = parseFloat(ethers.formatUnits(usdtBal, 6));
+
+        const totalDOT = dotAmt + _userCollateral;
+        const dotUSD = totalDOT * dotPrice;
+        const totalUSD = dotUSD + usdtAmt + susdAmt;
+        const netPos = (_userCollUSD || 0) - _userDebt;
+
+        document.getElementById('portDOTBal').textContent = totalDOT.toFixed(3) + ' DOT';
+        document.getElementById('portDOTUSD').textContent = '≈ $' + dotUSD.toFixed(2);
+        document.getElementById('portUSDTBal').textContent = usdtAmt.toFixed(2) + ' USDT';
+        document.getElementById('portUSDTUSD').textContent = '≈ $' + usdtAmt.toFixed(2);
+        document.getElementById('portSUSDBal').textContent = susdAmt.toFixed(2) + ' sUSD';
+        document.getElementById('portSUSDUSD').textContent = '≈ $' + susdAmt.toFixed(2);
+        document.getElementById('portTotalUSD').textContent = '$' + totalUSD.toFixed(2);
+        document.getElementById('portNetPos').textContent = (netPos >= 0 ? '+' : '') + '$' + netPos.toFixed(2);
+        document.getElementById('portNetPos').style.color = netPos >= 0 ? 'var(--green)' : 'var(--red)';
+
+        document.getElementById('swapDOTBal').textContent = dotAmt.toFixed(3) + ' DOT';
+        document.getElementById('swapUSDTBal').textContent = usdtAmt.toFixed(2) + ' USDT';
+        document.getElementById('swapRate').textContent = dotPrice.toFixed(2);
+
+        const hfVal = _userDebt > 0 ? (_userCollUSD / _userDebt) * 100 : 100;
+        const score = Math.min(100, Math.round((hfVal / 200) * 100));
+        document.getElementById('vaultScore').textContent = score;
+        document.getElementById('vaultScore').style.color =
+          score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--yellow)' : 'var(--red)';
+
+        document.getElementById('profileAddr').textContent = userAddr;
+        await checkFaucetCooldown();
+      } catch (e) {
+        console.error('Portfolio update error:', e);
+      }
+    }
+
+    function updateSwapPreview() {
+      const dotIn = parseFloat(document.getElementById('swapDOTInput').value) || 0;
+      const usdtOut = Math.min(dotIn * dotPrice, 10000);
+      document.getElementById('swapUSDTOut').textContent = usdtOut > 0 ? usdtOut.toFixed(2) : '—';
+      document.getElementById('swapUSDTOutUSD').textContent = usdtOut > 0 ? usdtOut.toFixed(2) : '—';
+    }
+
+    async function checkFaucetCooldown() {
+      try {
+        const usdt = new ethers.Contract(USDT_ADDR, [
+          "function lastFaucetTime(address) view returns (uint256)",
+          "function FAUCET_COOLDOWN() view returns (uint256)"
+        ], provider);
+
+        const lastTime = await usdt.lastFaucetTime(userAddr);
+        const cooldown = await usdt.FAUCET_COOLDOWN();
+        const nextTime = Number(lastTime) + Number(cooldown);
+        const now = Math.floor(Date.now() / 1000);
+
+        const cooldownEl = document.getElementById('faucetCooldownMsg');
+        const countdownEl = document.getElementById('faucetCountdown');
+        const swapBtn = document.getElementById('swapBtn');
+
+        if (now < nextTime && Number(lastTime) > 0) {
+          const remaining = nextTime - now;
+          const hrs = Math.floor(remaining / 3600);
+          const mins = Math.floor((remaining % 3600) / 60);
+          cooldownEl.style.display = 'block';
+          countdownEl.textContent = `${hrs}h ${mins}m`;
+          swapBtn.disabled = true;
+          swapBtn.textContent = `⏳ Cooldown: ${hrs}h ${mins}m`;
+        } else {
+          cooldownEl.style.display = 'none';
+          swapBtn.disabled = false;
+          swapBtn.textContent = '💱 SWAP DOT → USDT';
+        }
+      } catch (e) { }
+    }
+
+    async function executeSwap() {
+      const dotIn = parseFloat(document.getElementById('swapDOTInput').value);
+      if (!dotIn || dotIn <= 0) { showToast('⚠️', 'Enter a DOT amount to swap'); return; }
+
+      const btn = document.getElementById('swapBtn');
+      btn.innerHTML = '<span class="spinner"></span> Swapping…';
+      btn.disabled = true;
+
+      try {
+        const usdt = new ethers.Contract(USDT_ADDR, [
+          "function faucet()"
+        ], signer);
+
+        showToast('⏳', 'Swapping DOT → USDT via Sentinel testnet…');
+        const tx = await usdt.faucet();
+        await tx.wait();
+
+        showToast('✅', '10,000 USDT received! Ready to deposit as collateral.', tx.hash);
+        addGuardianLog('TRADE', `Swapped ${dotIn.toFixed(3)} DOT → 10,000 USDT via faucet`);
+        document.getElementById('swapDOTInput').value = '';
+        document.getElementById('swapUSDTOut').textContent = '—';
+
+        await updatePortfolio();
+        await refresh();
+      } catch (e) {
+        if (e.reason?.includes('cooldown') || e.message?.includes('cooldown')) {
+          showToast('⏳', 'Faucet cooldown active. Try again in 24h.');
+        } else {
+          showToast('❌', e.reason || e.message || 'Swap failed');
+        }
+      } finally {
+        btn.innerHTML = '💱 SWAP DOT → USDT';
+        btn.disabled = false;
+        await checkFaucetCooldown();
+      }
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('profileName').value;
+      const bio = document.getElementById('profileBio').value;
+      localStorage.setItem('sentinel_profile_name', name);
+      localStorage.setItem('sentinel_profile_bio', bio);
+      updateProfileAvatar(name);
+    }
+
+    function loadProfile() {
+      const name = localStorage.getItem('sentinel_profile_name') || '';
+      const bio = localStorage.getItem('sentinel_profile_bio') || '';
+      if (document.getElementById('profileName')) {
+        document.getElementById('profileName').value = name;
+        document.getElementById('profileBio').value = bio;
+        updateProfileAvatar(name);
+      }
+      if (document.getElementById('profileAddr') && userAddr) {
+        document.getElementById('profileAddr').textContent = userAddr;
+      }
+    }
+
+    function updateProfileAvatar(name) {
+      const el = document.getElementById('profileAvatar');
+      if (!el) return;
+      el.textContent = name.trim() ? name.trim()[0].toUpperCase() : '⚡';
+    }
+
   </script>
 </body>
 
