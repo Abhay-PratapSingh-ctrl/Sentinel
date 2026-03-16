@@ -1,14 +1,56 @@
 [package]
-name = "pvm-risk-score"
+name    = "sentinel-pvm-brain"
 version = "0.1.0"
 edition = "2021"
+authors = ["Sentinel Protocol"]
+description = "PVM precompile: trustless rebalance verifier for SentinelVault on Polkadot Hub"
 
-[dependencies]
-polkavm-derive = "0.13.0"
+# ── no_std required for PolkaVM RISC-V target ──────────────────────────────────
+[lib]
+crate-type = ["cdylib"]   # compile to a C-compatible shared lib (PolkaVM bytecode)
+name       = "sentinel_pvm_brain"
+
+[[bin]]
+name = "sentinel_pvm_brain"
+path = "src/lib.rs"
 
 [profile.release]
+opt-level     = "z"    # minimize binary size — PVM has bytecode size limits
+lto           = true   # link-time optimisation — crucial for small PVM output
+codegen-units = 1      # single codegen unit for maximum LTO effectiveness
+panic         = "abort" # no unwinding in PVM — maps to seal_return(REJECTED)
+strip         = true   # strip debug symbols from PVM bytecode
+
+[profile.dev]
 panic = "abort"
-opt-level = "z"
-lto = true
-codegen-units = 1
-strip = true
+
+# ── Feature flags ──────────────────────────────────────────────────────────────
+[features]
+default = []
+# Enable std for local cargo test (logic tests only, not PVM target)
+std = []
+
+# ── Build targets ──────────────────────────────────────────────────────────────
+#
+# To build for PolkaVM (Polkadot Hub pallet-revive):
+#
+#   cargo build --release --target riscv32emac-unknown-none-elf
+#
+# This produces:
+#   target/riscv32emac-unknown-none-elf/release/sentinel_pvm_brain
+#
+# Then use `polkatool` to convert to PVM bytecode:
+#   polkatool link --run-only-if-linked target/.../sentinel_pvm_brain -o sentinel_brain.pvm
+#
+# Deploy the .pvm file via Polkadot Hub's precompile deployment extrinsic,
+# then call vault.setPVMPrecompile(deployedPrecompileAddress).
+#
+# To run logic tests locally (uses std, not PVM target):
+#   cargo test
+#
+# Requires .cargo/config.toml with:
+#   [build]
+#   target = "riscv32emac-unknown-none-elf"
+#
+#   [target.riscv32emac-unknown-none-elf]
+#   rustflags = ["-C", "target-feature=+e,+m,+a,+c"]

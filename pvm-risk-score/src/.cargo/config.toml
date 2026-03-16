@@ -1,0 +1,23 @@
+# .cargo/config.toml
+# PolkaVM build configuration for Sentinel Brain precompile
+#
+# Install the RISC-V target with:
+#   rustup target add riscv32emac-unknown-none-elf
+#
+# Then build with:
+#   cargo build --release
+#
+# polkatool converts the RISC-V ELF to deployable PVM bytecode:
+#   cargo install polkatool
+#   polkatool link --run-only-if-linked \
+#     target/riscv32emac-unknown-none-elf/release/sentinel_pvm_brain \
+#     -o sentinel_brain.pvm
+
+[build]
+target = "riscv32emac-unknown-none-elf"
+
+[target.riscv32emac-unknown-none-elf]
+rustflags = [
+    "-C", "target-feature=+e,+m,+a,+c",
+    "-C", "link-arg=--emit-relocs",
+]
