@@ -31,3 +31,9 @@ broadcast/
 # Misc
 deploy_output.txt
 node_modules/
+
+# Next.js
+.next/
+*.log
+*.zip
+.DS_Store
