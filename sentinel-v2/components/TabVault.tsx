@@ -1,5 +1,5 @@
 "use client";
-import { useState,useEffect} from "react";
+import { useState } from "react";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { parseEther, parseUnits, maxUint256 } from "viem";
 import { toast } from "sonner";
@@ -11,7 +11,6 @@ import { Button } from "./ui/button";
 import { Input, Label } from "./ui/input";
 import { Badge } from "./ui/badge";
 import { Flame, Droplet } from "lucide-react";
-
 
 
 function TxButton({ label, variant, loading, onClick }: {
@@ -66,7 +65,6 @@ export function TabVault() {
   const [loading,  setLoading]  = useState<Record<string, boolean>>({});
 
 
-
   const setLoad = (k: string, v: boolean) => setLoading((l) => ({ ...l, [k]: v }));
   const txLink  = (hash: `0x${string}`) =>
     toast.success("Transaction confirmed!", {
@@ -82,21 +80,27 @@ export function TabVault() {
     if (p.minted <= 0) return p.collDOT;
     const minCollUSD = p.minted * cr / 100;
     const remainingAfterUSDT = minCollUSD - p.collUSDT;
-    const minDOT = remainingAfterUSDT > 0 ? remainingAfterUSDT / dotPrice : 0;
-    return Math.max(0, p.collDOT - minDOT);
+    // Use a slightly lower price for safety when withdrawing collateral
+    const safePrice = dotPrice * 0.99; 
+    const minDOT = remainingAfterUSDT > 0 ? remainingAfterUSDT / safePrice : 0;
+    return Math.max(0, p.collDOT - minDOT - 0.01); // 0.01 DOT extra buffer
   }
 
   function getMaxUSDTWithdraw(): number {
     if (!p) return 0;
     if (p.minted <= 0) return p.collUSDT;
     const minCollUSD  = p.minted * cr / 100;
-    const dotValueUSD = p.collDOT * dotPrice;
-    return Math.max(0, p.collUSDT - Math.max(0, minCollUSD - dotValueUSD));
+    // Use a slightly lower price for DOT to be safe
+    const dotValueUSD = p.collDOT * (dotPrice * 0.99);
+    return Math.max(0, p.collUSDT - Math.max(0, minCollUSD - dotValueUSD) - 1); // 1 USDT buffer
   }
 
   function getMaxMint(): number {
     if (!p) return 0;
-    return Math.max(0, (p.collUSD * 100 / cr) - p.minted);
+    // Use the contract's own collateral USD value for the mint limit
+    // and apply a 2% safety buffer (target 152% or 172% instead of 150%/170%)
+    const safeCR = cr + 2; 
+    return Math.max(0, (p.collUSD * 100 / safeCR) - p.minted);
   }
 
   function getMaxRepay(): number {
@@ -104,7 +108,7 @@ export function TabVault() {
     return Math.min(p.minted, p.susdBal);
   }
 
-  // ── Transactions ─────────────────────────────────────────────────────────
+  // ── Vault transactions ───────────────────────────────────────────────────
   async function depositDOT() {
     if (!wc || !client) return;
     const amt = parseFloat(dotDep); if (!amt) return toast.error("Enter a valid amount");

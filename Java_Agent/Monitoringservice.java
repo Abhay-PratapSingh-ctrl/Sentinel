@@ -4,14 +4,11 @@ import com.sentinel.bot.TelegramAlertService;
 import com.sentinel.config.SentinelConfig;
 import com.sentinel.model.VaultPosition;
 import com.sentinel.oracle.PythOracleService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,25 +17,22 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * MonitoringService — The brain of the Sentinel bot.
  *
- * Runs every ${sentinel.monitor-interval-ms} (default: 60s).
+ * Runs every ${sentinel.monitor-interval-ms} (default: 30s).
  * For each user evaluates their Health Factor and acts accordingly:
  *
- *   HF >= 150%      → SAFE, log only
- *   130–150%        → WARNING — Telegram alert
- *   125–130%        → DANGER  — pause position on-chain + alert
- *   120–125%        → CRITICAL — emergency rebalance + alert
- *   < 120%          → LIQUIDATABLE — urgent alert (open to public liquidation)
+ *   HF >= 150%       → SAFE, log only
+ *   130–150%         → WARNING   — Telegram alert
+ *   125–130%         → DANGER    — pause position on-chain + alert
+ *   120–125%         → CRITICAL  — batchRepay via SentinelRebalancer + alert
+ *   < 120%           → LIQUIDATABLE — also triggers batchRepay (better than nothing)
  *
- * 🛡️ AEGIS BUFFER:
- *   When VolatilityService detects "red flag" market conditions (DOT price
- *   standard deviation exceeds sentinel.aegis-volatility-threshold), the safe
- *   HF target is automatically raised from 150% to sentinel.aegis-elevated-buffer
- *   (default: 170%). This means rebalances will target a higher collateral ratio
- *   during volatile periods, giving positions more breathing room.
+ * NOTE: vaultService.emergencyRebalance() is NOT used because the DEX router
+ * is address(0) on this testnet deployment. Instead, batchRepay() on
+ * SentinelRebalancer pulls pre-approved sUSD from users and burns it
+ * directly — no DEX swap needed.
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class MonitoringService {
 
     private final SentinelConfig       config;
@@ -46,17 +40,34 @@ public class MonitoringService {
     private final TelegramAlertService telegramService;
     private final PythOracleService    oracleService;
     private final VolatilityService    volatilityService;
+    private final RebalancerService    rebalancerService;
 
-    private final Map<String, Long> lastAlertTime   = new ConcurrentHashMap<>();
-    private final Set<String> rebalancedThisCycle   = ConcurrentHashMap.newKeySet();
-    private static final long ALERT_COOLDOWN_MS     = 30 * 1000; // 30 seconds (demo mode)
+    private final Map<String, Long> lastAlertTime       = new ConcurrentHashMap<>();
+    private final Set<String>       rebalancedThisCycle = ConcurrentHashMap.newKeySet();
+    private final Set<String>       activeRebalances    = ConcurrentHashMap.newKeySet();
+
+    private static final long ALERT_COOLDOWN_MS = 30 * 1000;
+
+    public MonitoringService(SentinelConfig config,
+                             VaultContractService vaultService,
+                             TelegramAlertService telegramService,
+                             PythOracleService oracleService,
+                             VolatilityService volatilityService,
+                             RebalancerService rebalancerService) {
+        this.config            = config;
+        this.vaultService      = vaultService;
+        this.telegramService   = telegramService;
+        this.oracleService     = oracleService;
+        this.volatilityService = volatilityService;
+        this.rebalancerService = rebalancerService;
+    }
 
     @Scheduled(fixedDelayString = "${sentinel.monitor-interval-ms}")
     public void monitorAllPositions() {
         log.info("═══════════════════════════════════════════");
         log.info("Sentinel monitoring cycle started...");
 
-        // ── Step 1: Get live DOT price and feed volatility tracker ──────────────
+        // ── Step 1: Get live DOT price ───────────────────────────────────────────
         BigDecimal dotPrice;
         try {
             dotPrice = oracleService.getDOTPriceUSD();
@@ -69,7 +80,7 @@ public class MonitoringService {
             return;
         }
 
-        // ── Step 2: Determine Aegis effective safe threshold ─────────────────────
+        // ── Step 2: Aegis effective threshold ────────────────────────────────────
         boolean aegisActive = volatilityService.isRedFlagCondition(config.getAegisVolatilityThreshold());
         int effectiveSafeThreshold = aegisActive
                 ? config.getAegisElevatedBuffer()
@@ -84,7 +95,8 @@ public class MonitoringService {
                     config.getHfSafeThreshold(), effectiveSafeThreshold);
             log.warn("╚═══════════════════════════════════════════╝");
         } else {
-            log.info("🛡️ Aegis: {}", volatilityService.getAegisBufferDescription(config.getAegisVolatilityThreshold()));
+            log.info("🛡️ Aegis: {}",
+                    volatilityService.getAegisBufferDescription(config.getAegisVolatilityThreshold()));
         }
 
         // ── Step 3: Fetch all vault users ────────────────────────────────────────
@@ -117,16 +129,17 @@ public class MonitoringService {
                         log.debug("SAFE: {} HF={}", position.getShortAddress(),
                                 position.getHealthFactorPercent());
                     }
-                    case WARNING     -> { warning++;     handleWarning(position, aegisActive); }
-                    case DANGER      -> { danger++;      handleDanger(position, aegisActive); }
-                    case CRITICAL    -> { critical++;    handleCritical(position, dotPrice, effectiveSafeThreshold); }
-                    case LIQUIDATABLE -> { liquidatable++; handleLiquidatable(position); }
+                    case WARNING      -> { warning++;      handleWarning(position, aegisActive); }
+                    case DANGER       -> { danger++;       handleDanger(position, aegisActive); }
+                    case CRITICAL     -> { critical++;     handleCritical(position, dotPrice, effectiveSafeThreshold); }
+                    case LIQUIDATABLE -> { liquidatable++; handleLiquidatable(position, dotPrice, effectiveSafeThreshold); }
                 }
 
-                // ── AI Prediction Layer (enhanced with Aegis status) ──────────────
+                // AI Prediction Layer
                 int riskPct = volatilityService.predictLiquidationRisk(
                         position.getHealthFactorPercent().contains("%")
-                                ? Double.parseDouble(position.getHealthFactorPercent().replace("%", "")) / 100.0
+                                ? Double.parseDouble(
+                                        position.getHealthFactorPercent().replace("%", "")) / 100.0
                                 : 2.0,
                         dotPrice);
 
@@ -174,8 +187,7 @@ public class MonitoringService {
 
         try {
             String aegisNote = aegisActive
-                    ? " [Aegis buffer active — elevated market risk detected]"
-                    : "";
+                    ? " [Aegis buffer active — elevated market risk detected]" : "";
             String reason = "Health Factor dropped to " + position.getHealthFactorPercent()
                     + " — below 125% danger threshold" + aegisNote;
             String txHash = vaultService.pausePosition(position.getUserAddress(), reason);
@@ -190,90 +202,104 @@ public class MonitoringService {
     }
 
     /**
-     * Triggers emergency rebalance.
+     * FIXED: Uses SentinelRebalancer.batchRepay() instead of vault.emergencyRebalance()
+     * because the vault DEX router is address(0) on this testnet deployment.
      *
-     * When Aegis is active, the rebalance target is raised to `effectiveSafeThreshold`
-     * (e.g. 170%) instead of the normal 150%, so the position has more buffer after
-     * the rebalance during a volatile market period.
+     * Flow:
+     *   1. Check user is registered with SentinelRebalancer
+     *   2. Send batchRepay() — contract burns minimum sUSD to restore HF
+     *   3. Send Telegram alerts before and after
      */
     private void handleCritical(VaultPosition position, BigDecimal dotPrice, int effectiveSafeThreshold) {
-        log.error("🔴 CRITICAL: {} HF={} — triggering emergency rebalance (target HF: {}%)",
+        String userAddress = position.getUserAddress();
+
+        log.error("🔴 CRITICAL: {} HF={} — triggering batchRepay via SentinelRebalancer (target: {}%)",
                 position.getShortAddress(), position.getHealthFactorPercent(), effectiveSafeThreshold);
 
-        if (rebalancedThisCycle.contains(position.getUserAddress())) return;
+        // Prevent duplicate rebalance in same cycle
+        if (rebalancedThisCycle.contains(userAddress)) {
+            log.info("[Rebalancer] Already rebalanced {} this cycle — skipping",
+                    position.getShortAddress());
+            return;
+        }
+
+        // Prevent concurrent rebalance for same user
+        if (activeRebalances.contains(userAddress.toLowerCase())) {
+            log.info("[Rebalancer] Rebalance already in progress for {} — skipping",
+                    position.getShortAddress());
+            return;
+        }
+
+        // Check user is registered with rebalancer (has pre-approved sUSD)
+        boolean isRegistered = rebalancerService.isUserRegistered(userAddress);
+        if (!isRegistered) {
+            log.warn("[Rebalancer] User {} NOT registered with SentinelRebalancer — cannot auto-repay",
+                    position.getShortAddress());
+            if (telegramService.isWalletLinked(userAddress)) {
+                telegramService.sendRebalanceFailedAlert(position,
+                        "Auto-Guardian not enabled. Please click 'Enable Guardian' "
+                        + "on the Sentinel dApp to activate automatic protection.");
+            }
+            return;
+        }
+
+        activeRebalances.add(userAddress.toLowerCase());
 
         try {
-            BigDecimal collateralUSD = new BigDecimal(position.getCollateralUSD())
-                    .divide(BigDecimal.TEN.pow(18), 8, RoundingMode.HALF_UP);
-            BigDecimal mintedSUSD = new BigDecimal(position.getMintedSUSD())
-                    .divide(BigDecimal.TEN.pow(18), 8, RoundingMode.HALF_UP);
-
-            // Use the Aegis-adjusted target (170% if red-flag, 150% otherwise)
-            BigDecimal targetDebt = collateralUSD.divide(
-                    BigDecimal.valueOf(effectiveSafeThreshold)
-                            .divide(BigDecimal.valueOf(100), 8, RoundingMode.HALF_UP),
-                    8, RoundingMode.HALF_UP);
-
-            BigDecimal debtToRepayUSD = mintedSUSD.subtract(targetDebt);
-            if (debtToRepayUSD.compareTo(BigDecimal.ZERO) <= 0) {
-                log.warn("Rebalance calc shows no debt to repay for {} (target {}%) — skipping",
-                        position.getShortAddress(), effectiveSafeThreshold);
-                return;
+            // Send "starting" alert
+            if (telegramService.isWalletLinked(userAddress)) {
+                telegramService.sendRebalanceStartedAlert(
+                        position, "minimum sUSD", effectiveSafeThreshold);
             }
 
-            BigDecimal dotToSellDecimal = debtToRepayUSD.divide(dotPrice, 8, RoundingMode.HALF_UP);
-            BigInteger dotToSellWei = dotToSellDecimal
-                    .multiply(BigDecimal.TEN.pow(18)).toBigInteger();
+            // Trigger batchRepay — one tx covers all critical users
+            String txHash = rebalancerService.triggerBatchRepay();
+            rebalancedThisCycle.add(userAddress);
 
-            if (dotToSellWei.compareTo(position.getCollateralDOT()) > 0) {
-                dotToSellWei = position.getCollateralDOT();
-            }
+            log.info("[Rebalancer] ✅ batchRepay tx sent: {}", txHash);
 
-            BigInteger expectedSUSDOut = debtToRepayUSD
-                    .multiply(BigDecimal.TEN.pow(18))
-                    .multiply(BigDecimal.valueOf(0.98))
-                    .toBigInteger();
+            // Wait for tx to mine then fetch updated position
+            Thread.sleep(15_000);
 
-            String dotToSellFormatted = dotToSellDecimal.setScale(4, RoundingMode.HALF_UP).toPlainString();
-
-            if (telegramService.isWalletLinked(position.getUserAddress())) {
-                telegramService.sendRebalanceStartedAlert(position, dotToSellFormatted, effectiveSafeThreshold);
-            }
-
-            String txHash = vaultService.emergencyRebalance(
-                    position.getUserAddress(), dotToSellWei, expectedSUSDOut);
-            rebalancedThisCycle.add(position.getUserAddress());
-
-            Thread.sleep(3000); // wait for tx to mine
-            VaultPosition afterPosition = vaultService.getPosition(position.getUserAddress());
+            VaultPosition afterPosition = vaultService.getPosition(userAddress);
             afterPosition.setDotPriceUSD(dotPrice);
 
-            if (telegramService.isWalletLinked(position.getUserAddress())) {
+            // Send success alert
+            if (telegramService.isWalletLinked(userAddress)) {
                 telegramService.sendRebalanceSuccessAlert(position, afterPosition, txHash);
             }
 
-            updateAlertTime(position.getUserAddress());
-            log.info("Emergency rebalance complete for {}. New HF: {} (target was {}%)",
-                    position.getShortAddress(), afterPosition.getHealthFactorPercent(), effectiveSafeThreshold);
+            updateAlertTime(userAddress);
+            log.info("[Rebalancer] ✅ Complete for {}. HF: {} → {} (target {}%)",
+                    position.getShortAddress(),
+                    position.getHealthFactorPercent(),
+                    afterPosition.getHealthFactorPercent(),
+                    effectiveSafeThreshold);
 
         } catch (Exception e) {
-            log.error("Emergency rebalance FAILED for {}: {}",
-                    position.getShortAddress(), e.getMessage());
-            if (telegramService.isWalletLinked(position.getUserAddress())) {
+            log.error("[Rebalancer] FAILED for {}: {}", position.getShortAddress(), e.getMessage());
+            if (telegramService.isWalletLinked(userAddress)) {
                 telegramService.sendRebalanceFailedAlert(position, e.getMessage());
             }
+        } finally {
+            // Release lock after 60s cooldown — prevents immediate re-trigger
+            new Thread(() -> {
+                try { Thread.sleep(60_000); } catch (InterruptedException ignored) {}
+                activeRebalances.remove(userAddress.toLowerCase());
+            }).start();
         }
     }
 
-    private void handleLiquidatable(VaultPosition position) {
-        log.error("💀 LIQUIDATABLE: {} HF={} — OPEN TO PUBLIC LIQUIDATION",
+    /**
+     * HF < 120% — still attempt batchRepay, it's better than doing nothing.
+     * The SentinelRebalancer will repay as much as the user's sUSD balance allows.
+     */
+    private void handleLiquidatable(VaultPosition position, BigDecimal dotPrice, int effectiveSafeThreshold) {
+        log.error("💀 LIQUIDATABLE: {} HF={} — attempting emergency repay via SentinelRebalancer",
                 position.getShortAddress(), position.getHealthFactorPercent());
-        if (isInCooldown(position.getUserAddress())) return;
-        if (telegramService.isWalletLinked(position.getUserAddress())) {
-            telegramService.sendRebalanceFailedAlert(position,
-                    "Position HF below 120% — now open to public liquidation!");
-        }
-        updateAlertTime(position.getUserAddress());
+
+        // Route through handleCritical — same batchRepay logic applies
+        handleCritical(position, dotPrice, effectiveSafeThreshold);
     }
 
     // ─────────────────────────────────────────────

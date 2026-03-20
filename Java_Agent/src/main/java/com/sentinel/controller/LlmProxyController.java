@@ -40,13 +40,13 @@ public class LlmProxyController {
     public ResponseEntity<String> askSentinel(@RequestBody Map<String, Object> requestBody) {
         String apiKey = config.getGroqApiKey();
         if (apiKey == null || apiKey.isBlank()) {
-            return ResponseEntity.status(500).body("{\"error\": \"Groq API key not configured on backend\"}");
+            return ResponseEntity.status(500).body("{\"content\": [{\"text\": \"LLM Error: Groq API key not configured on backend\"}]}");
         }
 
         try {
             // Map common format to Groq (OpenAI-compatible) format
             Map<String, Object> groqPayload = new HashMap<>();
-            groqPayload.put("model", "llama-3.3-70b-versatile");
+            groqPayload.put("model", "llama-3.1-8b-instant");
 
             List<Map<String, String>> messages = new ArrayList<>();
 
@@ -80,7 +80,9 @@ public class LlmProxyController {
                 String body = response.body() != null ? response.body().string() : "{}";
                 if (!response.isSuccessful()) {
                     log.error("Groq API error: {} - {}", response.code(), body);
-                    return ResponseEntity.status(response.code()).body(body);
+                    String errorText = "LLM Error: Groq API error: " + response.code() + " - " + body;
+                    Map<String, Object> errorResp = Map.of("content", List.of(Map.of("text", errorText)));
+                    return ResponseEntity.status(response.code()).body(objectMapper.writeValueAsString(errorResp));
                 }
 
                 // Groq response structure is OpenAI-compatible: choices[0].message.content
@@ -101,7 +103,13 @@ public class LlmProxyController {
             }
         } catch (IOException e) {
             log.error("LLM Proxy error", e);
-            return ResponseEntity.status(500).body("{\"error\": \"" + e.getMessage() + "\"}");
+            String errorText = "LLM Error: " + e.getMessage();
+            Map<String, Object> errorResp = Map.of("content", List.of(Map.of("text", errorText)));
+            try {
+                return ResponseEntity.status(500).body(objectMapper.writeValueAsString(errorResp));
+            } catch (IOException ex) {
+                return ResponseEntity.status(500).body("{\"content\": [{\"text\": \"LLM Error: JSON serialization failed\"}]}");
+            }
         }
     }
 }

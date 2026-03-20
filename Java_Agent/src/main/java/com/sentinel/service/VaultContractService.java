@@ -16,7 +16,6 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.*;
-import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
 
@@ -56,11 +55,12 @@ import java.util.stream.Collectors;
 public class VaultContractService {
 
     private final SentinelConfig config;
-    private Web3j       web3j;
+    private final Web3j web3j;
     private Credentials guardianCredentials;
 
-    public VaultContractService(SentinelConfig config) {
+    public VaultContractService(SentinelConfig config, Web3j web3j) {
         this.config = config;
+        this.web3j = web3j;
     }
 
     /**
@@ -69,8 +69,7 @@ public class VaultContractService {
      */
     @PostConstruct
     public void init() {
-        log.info("Connecting to Polkadot Hub EVM at: {}", config.getRpcUrl());
-        this.web3j = Web3j.build(new HttpService(config.getRpcUrl()));
+        log.info("Guardian wallet loading...");
         this.guardianCredentials = Credentials.create(config.getGuardianPrivateKey());
 
         log.info("Guardian wallet loaded: {}", guardianCredentials.getAddress());

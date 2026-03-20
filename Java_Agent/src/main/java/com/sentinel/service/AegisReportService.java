@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 public class AegisReportService {
 
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+    private static final String GROQ_API_URL   = "https://api.groq.com/openai/v1/chat/completions";
     private static final MediaType JSON_MEDIA   = MediaType.get("application/json; charset=utf-8");
 
     private final SentinelConfig    config;
@@ -47,8 +48,8 @@ public class AegisReportService {
     private final ObjectMapper      objectMapper = new ObjectMapper();
 
     private final OkHttpClient httpClient = new OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(40, TimeUnit.SECONDS)
             .build();
 
     // ─────────────────────────────────────────────
@@ -70,18 +71,35 @@ public class AegisReportService {
         BigDecimal vol      = volatilityService.calculateShortTermVolatility();
         double changePct    = volatilityService.getLatestPriceChangePct();
 
-        // Try OpenAI first if key is configured
-        String apiKey = config.getOpenAiApiKey();
-        if (apiKey != null && !apiKey.isBlank()) {
+        // ── Step 1: Try OpenAI ──────────────────────────────────────
+        String openAiKey = config.getOpenAiApiKey();
+        if (openAiKey != null && !openAiKey.isBlank()) {
             try {
                 String prompt = buildPrompt(position, dotPrice, vol, aegisActive);
-                String llmResponse = callOpenAI(prompt, apiKey);
+                String llmResponse = callLlmApi(OPENAI_API_URL, openAiKey, config.getOpenAiModel(), prompt);
                 if (llmResponse != null && !llmResponse.isBlank()) {
-                    log.info("LLM risk report generated for {}", position.getShortAddress());
-                    return formatLlmReport(position, llmResponse, dotPrice, vol, aegisActive);
+                    log.info("OpenAI risk report generated for {}", position.getShortAddress());
+                    return formatLlmReport(position, llmResponse, dotPrice, vol, aegisActive, "OpenAI");
                 }
             } catch (Exception e) {
-                log.warn("OpenAI call failed ({}), falling back to template.", e.getMessage());
+                log.warn("OpenAI call failed: {}, trying Groq fallback if available.", e.getMessage());
+            }
+        }
+
+        // ── Step 2: Try Groq (OpenAI-compatible) ───────────────────
+        String groqKey = config.getGroqApiKey();
+        if (groqKey != null && !groqKey.isBlank()) {
+            try {
+                String prompt = buildPrompt(position, dotPrice, vol, aegisActive);
+                // Default to Llama 3 70B for Groq if no specific model provided
+                String model = "llama3-70b-8192"; 
+                String llmResponse = callLlmApi(GROQ_API_URL, groqKey, model, prompt);
+                if (llmResponse != null && !llmResponse.isBlank()) {
+                    log.info("Groq risk report generated for {}", position.getShortAddress());
+                    return formatLlmReport(position, llmResponse, dotPrice, vol, aegisActive, "Groq");
+                }
+            } catch (Exception e) {
+                log.warn("Groq call failed: {}, falling back to template.", e.getMessage());
             }
         }
 
@@ -136,31 +154,33 @@ public class AegisReportService {
     //  OPENAI HTTP CALL
     // ─────────────────────────────────────────────
 
-    private String callOpenAI(String prompt, String apiKey) throws Exception {
+    private String callLlmApi(String apiUrl, String apiKey, String model, String prompt) throws Exception {
         String requestBody = objectMapper.writeValueAsString(new java.util.LinkedHashMap<>() {{
-            put("model", config.getOpenAiModel());
+            put("model", model);
             put("messages", new Object[]{
                 new java.util.LinkedHashMap<>() {{
                     put("role", "user");
                     put("content", prompt);
                 }}
             });
-            put("max_tokens", 300);
-            put("temperature", 0.7);
+            put("max_tokens", 400);
+            put("temperature", 0.6);
         }});
 
         Request request = new Request.Builder()
-                .url(OPENAI_API_URL)
+                .url(apiUrl)
                 .header("Authorization", "Bearer " + apiKey)
                 .header("Content-Type", "application/json")
                 .post(RequestBody.create(requestBody, JSON_MEDIA))
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful() || response.body() == null) {
-                log.warn("OpenAI returned non-200: {}", response.code());
+            if (!response.isSuccessful()) {
+                String err = response.body() != null ? response.body().string() : "No body";
+                log.warn("LLM Provider ({}) returned error {}: {}", apiUrl, response.code(), err);
                 return null;
             }
+            if (response.body() == null) return null;
             JsonNode root = objectMapper.readTree(response.body().string());
             return root.path("choices").get(0)
                        .path("message").path("content").asText();
@@ -175,8 +195,8 @@ public class AegisReportService {
      * Wraps the raw LLM response in a Telegram Markdown header with stats footer.
      */
     private String formatLlmReport(VaultPosition position, String llmText,
-                                   BigDecimal dotPrice, BigDecimal vol, boolean aegisActive) {
-        return "🤖 *Sentinel Risk Analysis*\n\n"
+                                   BigDecimal dotPrice, BigDecimal vol, boolean aegisActive, String provider) {
+        return "🤖 *Sentinel Risk Analysis (" + provider + ")*\n\n"
                 + "👤 Wallet: `" + position.getShortAddress() + "`\n"
                 + "💊 Health Factor: *" + position.getHealthFactorPercent() + "*\n\n"
                 + llmText.trim() + "\n\n"

@@ -22,6 +22,7 @@ public class SentinelConfig {
     // ── Contracts ─────────────────────────────────────────────────
     private String vaultAddress;
     private String susdAddress;
+    private String rebalancerAddress;
 
     // ── Wallet ────────────────────────────────────────────────────
     private String guardianPrivateKey;

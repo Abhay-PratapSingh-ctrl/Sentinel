@@ -46,7 +46,7 @@ LIVE VAULT STATE: DOT=$${dotPrice.toFixed(4)}, Collateral=$${collUSD.toFixed(2)}
 Answer in 3–5 sentences. Be direct, technical, and concise. Always reference live data.`;
 
     try {
-      const res = await fetch("http://localhost:8081/api/ask", {
+      const res = await fetch("http://localhost:8881/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,7 +61,7 @@ Answer in 3–5 sentences. Be direct, technical, and concise. Always reference l
       setMsgs((m) => [...m, { role: "assistant", content: answer }]);
       addLog("LLM", "Risk report generated.");
     } catch {
-      setMsgs((m) => [...m, { role: "assistant", content: "⚠️ LLM proxy unavailable. Ensure localhost:8081 is running." }]);
+      setMsgs((m) => [...m, { role: "assistant", content: "⚠️ LLM proxy unavailable. Ensure localhost:8881 is running." }]);
     }
     setLoading(false);
   }
@@ -151,7 +151,7 @@ Answer in 3–5 sentences. Be direct, technical, and concise. Always reference l
             </Button>
           </div>
           <div className="text-[0.6rem] text-muted mt-2 font-mono">
-            Context: live Pyth · Aegis vol score · vault position · Groq backend at localhost:8081
+            Context: live Pyth · Aegis vol score · vault position · Groq backend at localhost:8881
           </div>
         </CardContent>
       </Card>
