@@ -46,7 +46,7 @@ LIVE VAULT STATE: DOT=$${dotPrice.toFixed(4)}, Collateral=$${collUSD.toFixed(2)}
 Answer in 3–5 sentences. Be direct, technical, and concise. Always reference live data.`;
 
     try {
-      const res = await fetch("http://localhost:8881/api/ask", {
+      const res = await fetch("https://sentineljavaagent.onrender.com/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
