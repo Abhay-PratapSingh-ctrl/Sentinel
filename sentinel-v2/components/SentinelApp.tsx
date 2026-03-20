@@ -29,6 +29,9 @@ export function SentinelApp() {
   const { isConnected } = useAccount();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [walletOpen, setWalletOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => { setMounted(true); }, []);
   const { refresh } = useVaultPosition();
   const position = useStore((s) => s.position);
 
@@ -50,6 +53,8 @@ export function SentinelApp() {
     return              { color: "#ff4d4d",  label: `${hf.toFixed(1)}%` };
   };
   const hfDot = getHFDot();
+
+  if (!mounted) return null;
 
   return (
     <div className="min-h-screen flex flex-col relative z-[1]">
