@@ -56,7 +56,7 @@ contract DeployScript is Script {
     address constant PLACEHOLDER_DEX_ROUTER = address(0);
     address constant PLACEHOLDER_WDOT = address(0);
     address constant USDT_TOKEN_ADDR =
-        0xAfBDeD88916ea0DC2F4882968Cc6C3E3202402c5; // Mock USDT deployed
+        0xCba9A2Dc811778773B7959FCCDA34F0132F48DB1; // Mock USDT redeployed with swap
 
     function run() external {
         // ── Load environment ──────────────────────────────────────

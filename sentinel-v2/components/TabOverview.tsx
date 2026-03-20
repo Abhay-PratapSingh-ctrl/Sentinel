@@ -143,7 +143,10 @@ export function TabOverview() {
             <div>
               <div className="flex justify-between text-xs mb-1.5">
                 <span className="text-muted-bright flex items-center gap-1.5">🛡️ USDT</span>
-                <span className="font-mono text-cyan">${(p?.collUSDT ?? 0).toFixed(2)}</span>
+                <div className="text-right">
+                  <span className="font-mono text-cyan block">${(p?.collUSDT ?? 0).toFixed(2)} <span className="text-[0.6rem] text-muted-bright">Deposited</span></span>
+                  <span className="font-mono text-muted block text-[0.65rem]">${(p?.walUSDTBal ?? 0).toFixed(2)} <span className="text-[0.6rem]">In Wallet</span></span>
+                </div>
               </div>
               <Progress
                 value={collUSD > 0 ? ((p?.collUSDT ?? 0) / collUSD) * 100 : 0}

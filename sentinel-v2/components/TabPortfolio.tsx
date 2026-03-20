@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { formatEther, formatUnits } from "viem";
+import { formatEther, formatUnits, parseEther } from "viem";
 import { toast } from "sonner";
 import { useStore } from "@/store";
 import { useVaultPosition, useAegis } from "@/hooks";
@@ -76,14 +76,20 @@ const totalUSD  = totalDOT * dotPrice + totalUSDT;
   const safeWithUSDT = debt > 0 ? Math.max(0, (collDOT * dotPrice + collUSDT) - debt * (activeCR / 100)) : collUSDT;
 
   async function executeSwap() {
-    if (!wc || !client) return;
+    if (!wc || !client || !swapAmt) return;
     setSwapLoading(true);
     try {
-      const hash = await wc.writeContract({ address: USDT, abi: ERC20_ABI, functionName: "faucet", args: [] });
-      toast.info("Claiming USDT from faucet…", { action: { label: "Blockscout ↗", onClick: () => window.open(`${EXPLORER}/tx/${hash}`) } });
+      const amt = parseEther(swapAmt);
+      const hash = await wc.writeContract({
+        address: USDT, abi: ERC20_ABI, functionName: "swap",
+        value: amt
+      });
+      toast.info(`Swapping ${swapAmt} DOT for USDT…`, { action: { label: "Blockscout ↗", onClick: () => window.open(`${EXPLORER}/tx/${hash}`) } });
       await client.waitForTransactionReceipt({ hash });
-      toast.success("10,000 USDT received! Deposit it as stable collateral.");
-      addLog("TRADE", `Faucet claim → 10,000 USDT received`);
+      
+      const expectedUSDT = (parseFloat(swapAmt) * 1.5).toFixed(2); // Based on mock price of 1.5
+      toast.success(`Swap complete! Received approx ${expectedUSDT} USDT.`);
+      addLog("TRADE", `Swap ${swapAmt} DOT → ${expectedUSDT} USDT`);
       setSwapAmt(""); await refresh();
     } catch (e: any) { toast.error(e.shortMessage || e.message || "Swap failed"); }
     finally { setSwapLoading(false); }

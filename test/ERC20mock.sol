@@ -40,15 +40,20 @@ contract ERC20Mock {
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
-    // ── Faucet ────────────────────────────────────────────────────
+    // ── Faucet & Swap ──────────────────────────────────────────
     uint256 public constant FAUCET_AMOUNT = 10_000 * 1e6; // 10,000 USDT (6 decimals)
     uint256 public constant FAUCET_COOLDOWN = 24 hours;
     mapping(address => uint256) public lastFaucetTime;
+
+    // Mock exchange rate: 1 DOT = X USDT (6 decimals)
+    // e.g. price = 1500000 => 1 DOT = 1.50 USDT
+    uint256 public price = 1_500_000; 
 
     // ── Events (standard ERC-20) ──────────────────────────────────
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner_, address indexed spender, uint256 value);
     event Minted(address indexed to, uint256 amount);
+    event Swapped(address indexed user, uint256 dotAmount, uint256 usdtAmount);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "ERC20Mock: not owner");
@@ -105,17 +110,41 @@ contract ERC20Mock {
     }
 
     // ═════════════════════════════════════════════
-    //  MINT FUNCTIONS
+    //  MINT & SWAP FUNCTIONS
     // ═════════════════════════════════════════════
 
     /**
      * Free 10,000 USDT for anyone — once per 24 hours.
      * Judges and testers use this to get USDT without a faucet.
      */
-    function faucet() external {
+    function faucet() public {
         require(block.timestamp >= lastFaucetTime[msg.sender] + FAUCET_COOLDOWN, "ERC20Mock: cooldown active wait 24h");
         lastFaucetTime[msg.sender] = block.timestamp;
         _mint(msg.sender, FAUCET_AMOUNT);
+    }
+
+    /**
+     * Swap native DOT for mock USDT.
+     * The USDT is minted to the sender based on the 'price' rate.
+     */
+    function swap() external payable {
+        require(msg.value > 0, "ERC20Mock: must send DOT to swap");
+        
+        // usdtAmount = (dotWei * price) / 1e18
+        // since price has 6 decimals, it acts as a multiplier
+        uint256 usdtAmount = (msg.value * price) / 1e18;
+        require(usdtAmount > 0, "ERC20Mock: swap amount too small");
+
+        _mint(msg.sender, usdtAmount);
+        emit Swapped(msg.sender, msg.value, usdtAmount);
+    }
+
+    /**
+     * Update the mock price (1 DOT = X USDT).
+     * @param _price Price in 6 decimals (e.g. 1500000 for $1.50)
+     */
+    function setPrice(uint256 _price) external onlyOwner {
+        price = _price;
     }
 
     /**
