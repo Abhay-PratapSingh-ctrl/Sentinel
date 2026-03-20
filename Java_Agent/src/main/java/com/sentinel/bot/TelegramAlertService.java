@@ -14,32 +14,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-/**
- * TelegramAlertService
- *
- * ─────────────────────────────────────────────────────────────
- * WHAT IT SHOULD DO:
- *   Send real-time alerts to users about their vault positions
- *   and confirm when the Sentinel bot takes automated actions.
- *
- * WHAT IT ACTUALLY DOES:
- *   1. Runs as a Telegram LongPolling bot (listens for messages).
- *   2. Users link their wallet by sending: /link 0xWALLET_ADDRESS
- *   3. Stores a wallet → chatId mapping in memory (ConcurrentHashMap).
- *   4. When the monitoring loop detects risk, this service sends
- *      a formatted Markdown alert to the user's Telegram chat.
- *   5. Sends 4 types of automated alerts:
- *      - ⚠️  WARNING   — HF below 130%, watch your position
- *      - 🚨  DANGER    — HF below 125%, position is being paused
- *      - 🔴  CRITICAL  — HF below 120%, emergency rebalance triggered
- *      - ✅  RESOLVED  — rebalance succeeded, position is safe again
- *   6. NEW: /why command — returns an AI-generated risk explanation
- *      powered by AegisReportService (GPT-4o-mini or template fallback).
- * ─────────────────────────────────────────────────────────────
- */
 @Slf4j
 @Service
 public class TelegramAlertService extends TelegramLongPollingBot {
@@ -50,14 +30,11 @@ public class TelegramAlertService extends TelegramLongPollingBot {
     private final PythOracleService    oracleService;
     private final VolatilityService    volatilityService;
 
-    /**
-     * Maps wallet address (lowercase) → Telegram chat ID.
-     * When a user sends /link 0xABC, we store "0xabc" → chatId.
-     *
-     * In production: persist this to a database (H2/PostgreSQL).
-     * For the hackathon: in-memory is fine.
-     */
+    // wallet address (lowercase) → Telegram chat ID
     private final Map<String, Long> walletToChatId = new ConcurrentHashMap<>();
+
+    // Thread pool for /why analysis — handles multiple users simultaneously
+    private final ExecutorService analysisExecutor = Executors.newFixedThreadPool(10);
 
     public TelegramAlertService(SentinelConfig config,
                                 AegisReportService aegisReportService,
@@ -79,44 +56,30 @@ public class TelegramAlertService extends TelegramLongPollingBot {
 
     // ─────────────────────────────────────────────
     //  INCOMING MESSAGE HANDLER
-    //  Listens for /link, /unlink, /status, /why commands
     // ─────────────────────────────────────────────
 
-    /**
-     * Called every time a user sends a message to the bot.
-     *
-     * Commands:
-     *   /link 0xWALLET   — links wallet to this Telegram chat
-     *   /unlink          — removes the wallet link
-     *   /why             — AI explanation of your current risk level (NEW!)
-     *   /help            — shows available commands
-     */
     @Override
     public void onUpdateReceived(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) return;
 
-        long   chatId  = update.getMessage().getChatId();
-        String text    = update.getMessage().getText().trim();
-        String[] parts = text.split("\\s+");
+        long     chatId = update.getMessage().getChatId();
+        String   text   = update.getMessage().getText().trim();
+        String[] parts  = text.split("\\s+");
 
         switch (parts[0].toLowerCase()) {
             case "/start":
             case "/help":
                 sendMessage(chatId, buildHelpMessage());
                 break;
-
             case "/link":
                 handleLinkCommand(chatId, parts);
                 break;
-
             case "/unlink":
                 handleUnlinkCommand(chatId);
                 break;
-
             case "/why":
                 handleWhyCommand(chatId);
                 break;
-
             default:
                 sendMessage(chatId, "❓ Unknown command. Type /help to see available commands.");
         }
@@ -147,17 +110,16 @@ public class TelegramAlertService extends TelegramLongPollingBot {
         sendMessage(chatId, "🔓 Your wallet has been unlinked. Sentinel will no longer alert you.");
     }
 
-    /**
-     * /why command handler.
-     *
-     * Finds the wallet linked to this chat → fetches live position →
-     * calls AegisReportService to produce a natural-language explanation →
-     * replies with the result.
-     *
-     * If the user hasn't linked a wallet yet, prompts them to do so.
-     */
+    // ─────────────────────────────────────────────
+    //  /why COMMAND — fixed version
+    //  - runs in background thread (non-blocking)
+    //  - handles empty positions gracefully
+    //  - handles RPC / LLM timeouts with fallback
+    //  - supports multiple concurrent users
+    // ─────────────────────────────────────────────
+
     private void handleWhyCommand(long chatId) {
-        // Find which wallet is linked to this chat
+        // Find linked wallet
         String linkedWallet = walletToChatId.entrySet().stream()
                 .filter(e -> e.getValue().equals(chatId))
                 .map(Map.Entry::getKey)
@@ -173,41 +135,109 @@ public class TelegramAlertService extends TelegramLongPollingBot {
             return;
         }
 
-        // Tell the user we're working on it (LLM calls can take a second)
+        // Acknowledge immediately — don't make user wait silently
         sendMessage(chatId, "🔍 _Analysing your position and market conditions..._");
 
+        // Run in background thread — bot stays responsive to other users
+        final String wallet = linkedWallet;
+        analysisExecutor.submit(() -> {
+            try {
+                // Step 1 — fetch vault position (can timeout on slow RPC)
+                VaultPosition position;
+                try {
+                    position = vaultContractService.getPosition(wallet);
+                } catch (Exception e) {
+                    log.error("/why RPC timeout for {}: {}", wallet, e.getMessage());
+                    sendMessage(chatId,
+                            "❌ *Could not fetch vault position.*\n\n"
+                            + "The Polkadot Hub RPC timed out.\n"
+                            + "Please try again in 30 seconds.");
+                    return;
+                }
+
+                // Step 2 — check if wallet has any position at all
+                boolean hasPosition = position != null
+                        && (position.getCollateralDOT() != null
+                                && position.getCollateralDOT().compareTo(BigInteger.ZERO) > 0
+                            || position.getMintedSUSD() != null
+                                && position.getMintedSUSD().compareTo(BigInteger.ZERO) > 0);
+
+                if (!hasPosition) {
+                    sendMessage(chatId,
+                            "📭 *No vault position found.*\n\n"
+                            + "Wallet: `" + wallet + "`\n\n"
+                            + "This wallet has not deposited any collateral yet.\n\n"
+                            + "Visit the Sentinel dApp to:\n"
+                            + "• Deposit DOT as collateral\n"
+                            + "• Mint sUSD stablecoin\n"
+                            + "• Activate the Auto-Guardian");
+                    return;
+                }
+
+                // Step 3 — fetch live DOT price (fallback silently if unavailable)
+                try {
+                    BigDecimal dotPrice = oracleService.getDOTPriceUSD();
+                    position.setDotPriceUSD(dotPrice);
+                } catch (Exception e) {
+                    log.warn("/why Pyth timeout for {} — continuing with cached price", wallet);
+                    // Don't fail the whole report just because price refresh timed out
+                }
+
+                // Step 4 — generate LLM report (fallback to template if LLM fails)
+                String report;
+                try {
+                    report = aegisReportService.generateReport(position);
+                } catch (Exception e) {
+                    log.warn("/why LLM failed for {} — using fallback template: {}", wallet, e.getMessage());
+                    report = buildFallbackReport(position);
+                }
+
+                sendMessage(chatId, report);
+                log.info("/why report sent for wallet: {}", wallet);
+
+            } catch (Exception e) {
+                log.error("/why unexpected error for {}: {}", wallet, e.getMessage());
+                sendMessage(chatId,
+                        "❌ *Analysis failed.*\n\n"
+                        + "An unexpected error occurred. Please try again in a few seconds.");
+            }
+        });
+    }
+
+    /**
+     * Fallback report when LLM / Groq is unavailable.
+     * Shows live on-chain data without AI commentary.
+     */
+    private String buildFallbackReport(VaultPosition position) {
+        String hf     = position.getHealthFactorPercent();
+        String status = "⚠️ Unknown";
+
         try {
-            // Fetch live position
-            VaultPosition position = vaultContractService.getPosition(linkedWallet);
+            double hfVal = Double.parseDouble(hf.replace("%", "").trim());
+            if      (hfVal >= 150) status = "✅ SAFE";
+            else if (hfVal >= 130) status = "⚠️ WARNING";
+            else if (hfVal >= 120) status = "🚨 DANGER";
+            else                   status = "🔴 CRITICAL — liquidation risk";
+        } catch (NumberFormatException ignored) { /* keep Unknown */ }
 
-            // Enrich with live price
-            BigDecimal dotPrice = oracleService.getDOTPriceUSD();
-            position.setDotPriceUSD(dotPrice);
-
-            // Generate report (LLM or template)
-            String report = aegisReportService.generateReport(position);
-            sendMessage(chatId, report);
-
-            log.info("/why report generated for wallet: {}", linkedWallet);
-
-        } catch (Exception e) {
-            log.error("Failed to generate /why report for {}: {}", linkedWallet, e.getMessage());
-            sendMessage(chatId,
-                    "❌ *Could not fetch your position data.*\n\n"
-                    + "Error: " + e.getMessage() + "\n\n"
-                    + "Please try again in a few seconds.");
-        }
+        return "📊 *Sentinel Risk Report*\n\n"
+                + "👤 Wallet: `" + position.getShortAddress() + "`\n"
+                + "💊 Health Factor: *" + hf + "* — " + status + "\n"
+                + "💎 Collateral: " + position.getCollateralUSDFormatted() + "\n"
+                + "💸 Debt: " + position.getMintedSUSDFormatted() + "\n"
+                + "💵 DOT Price: $" + (position.getDotPriceUSD() != null
+                        ? position.getDotPriceUSD().toPlainString() : "N/A") + "\n\n"
+                + "⚡ *Recommended actions:*\n"
+                + "• Keep Health Factor above 150% (170% during high volatility)\n"
+                + "• Add collateral or repay sUSD if HF is below 130%\n\n"
+                + "_⚠️ AI analysis temporarily unavailable — showing live data._\n"
+                + "_Try /why again in 30 seconds for a full AI report._";
     }
 
     // ─────────────────────────────────────────────
     //  ALERT METHODS — called by MonitoringService
     // ─────────────────────────────────────────────
 
-    /**
-     * Sends a ⚠️ WARNING alert.
-     * Triggered when HF drops below 130% but above 125%.
-     * Now includes Aegis buffer status if active.
-     */
     public void sendWarningAlert(VaultPosition position, boolean aegisActive) {
         Long chatId = walletToChatId.get(position.getUserAddress().toLowerCase());
         if (chatId == null) {
@@ -241,18 +271,10 @@ public class TelegramAlertService extends TelegramLongPollingBot {
         log.info("WARNING alert sent to wallet: {}", position.getShortAddress());
     }
 
-    /**
-     * Overload for backward compatibility (called without aegisActive).
-     */
     public void sendWarningAlert(VaultPosition position) {
         sendWarningAlert(position, false);
     }
 
-    /**
-     * Sends a 🚨 DANGER alert when position is paused.
-     * Triggered when HF drops below 125%.
-     * Includes the tx hash so user can verify on-chain.
-     */
     public void sendPausedAlert(VaultPosition position, String txHash) {
         Long chatId = walletToChatId.get(position.getUserAddress().toLowerCase());
         if (chatId == null) return;
@@ -265,7 +287,7 @@ public class TelegramAlertService extends TelegramLongPollingBot {
                 + "💊 Health Factor: *" + position.getHealthFactorPercent() + "* _(critical)_\n"
                 + "💎 Collateral: " + position.getCollateralUSDFormatted() + "\n"
                 + "💸 Debt: " + position.getMintedSUSDFormatted() + "\n\n"
-                + "🔒 *Your position is now paused.* You cannot mint more sUSD or withdraw collateral.\n\n"
+                + "🔒 *Your position is now paused.*\n\n"
                 + "✅ *To resume:*\n"
                 + "Deposit more DOT collateral to bring your Health Factor above 140%.\n\n"
                 + "💡 Send /why to get a full AI risk analysis.\n"
@@ -275,11 +297,6 @@ public class TelegramAlertService extends TelegramLongPollingBot {
         log.warn("PAUSED alert sent to wallet: {}", position.getShortAddress());
     }
 
-    /**
-     * Sends a 🔴 CRITICAL alert when emergency rebalance is triggered.
-     * Now shows the effective Aegis target HF so users understand
-     * why more DOT is being sold than they might expect.
-     */
     public void sendRebalanceStartedAlert(VaultPosition position, String dotToSell, int targetHfPct) {
         Long chatId = walletToChatId.get(position.getUserAddress().toLowerCase());
         if (chatId == null) return;
@@ -295,27 +312,18 @@ public class TelegramAlertService extends TelegramLongPollingBot {
                 + "👤 Wallet: `" + position.getShortAddress() + "`\n"
                 + "💊 Health Factor: *" + position.getHealthFactorPercent() + "* _(liquidation risk)_\n"
                 + "⚙️ Action: Selling *" + dotToSell + " DOT* via Hydration DEX\n"
-                + "🎯 Goal: Repay sUSD debt to restore Health Factor to *" + targetHfPct + "%*"
+                + "🎯 Goal: Restore Health Factor to *" + targetHfPct + "%*"
                 + aegisNote + "\n\n"
                 + "⏳ Transaction is being submitted on-chain...";
 
         sendMessage(chatId, message);
     }
 
-    /**
-     * Overload for backward compatibility.
-     */
     public void sendRebalanceStartedAlert(VaultPosition position, String dotToSell) {
         sendRebalanceStartedAlert(position, dotToSell, 150);
     }
 
-    /**
-     * Sends a ✅ SUCCESS alert after emergency rebalance completes.
-     * Includes the tx hash for the demo video explorer screenshot.
-     */
-    public void sendRebalanceSuccessAlert(VaultPosition before,
-                                          VaultPosition after,
-                                          String txHash) {
+    public void sendRebalanceSuccessAlert(VaultPosition before, VaultPosition after, String txHash) {
         Long chatId = walletToChatId.get(before.getUserAddress().toLowerCase());
         if (chatId == null) return;
 
@@ -339,10 +347,6 @@ public class TelegramAlertService extends TelegramLongPollingBot {
         log.info("REBALANCE SUCCESS alert sent to wallet: {}", before.getShortAddress());
     }
 
-    /**
-     * Sends a failure alert if the rebalance transaction reverts.
-     * Prompts user to take manual action immediately.
-     */
     public void sendRebalanceFailedAlert(VaultPosition position, String error) {
         Long chatId = walletToChatId.get(position.getUserAddress().toLowerCase());
         if (chatId == null) return;
@@ -370,7 +374,6 @@ public class TelegramAlertService extends TelegramLongPollingBot {
         message.setText(text);
         message.setParseMode("Markdown");
         message.disableWebPagePreview();
-
         try {
             execute(message);
         } catch (TelegramApiException e) {
@@ -397,10 +400,6 @@ public class TelegramAlertService extends TelegramLongPollingBot {
                 + "Keep it above 150% (170% during volatile markets) to stay safe.";
     }
 
-    /**
-     * Returns true if a wallet has a linked Telegram chat.
-     * Used by monitoring loop to decide whether to attempt alerts.
-     */
     public boolean isWalletLinked(String walletAddress) {
         return walletToChatId.containsKey(walletAddress.toLowerCase());
     }
