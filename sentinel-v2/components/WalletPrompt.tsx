@@ -1,7 +1,7 @@
 "use client";
 import { useConnect } from "wagmi";
 import { injected, metaMask } from "wagmi/connectors";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "./ui/dialog";
