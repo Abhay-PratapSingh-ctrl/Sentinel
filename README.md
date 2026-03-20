@@ -1,6 +1,6 @@
 # 🛡️ Sentinel — Agentic DeFi Guardian
 
-Sentinel is a next-generation **Agentic DeFi Guardian** built for the Polkadot Hub Hub ecosystem. It combines a high-performance Java agent with a premium Next.js dashboard to provide automated risk management, AI-driven insights, and one-click vault operations.
+Sentinel is a next-generation **Agentic DeFi Guardian** built for the Polkadot Hub Hub ecosystem. It combines a high-performance Java agent with a premium Next.js dashboard to provide real-time risk alerts via Telegram, AI-driven insights, and one-click vault operations.
 
 ## 🚀 Live Access
 - **Dashboard**: [sentinel-v2-gamma.vercel.app](https://sentinel-v2-gamma.vercel.app)
