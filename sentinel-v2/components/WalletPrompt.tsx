@@ -8,22 +8,32 @@ import {
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 
-const WALLETS = [
-  { id: "metamask",  label: "MetaMask",  icon: "🦊", connector: metaMask(),              badge: "Most Popular" },
-  { id: "talisman",  label: "Talisman",  icon: "🛡️", connector: injected({ target: "talisman" as any }), badge: "Polkadot Native" },
-  { id: "injected",  label: "Browser Wallet", icon: "🔑", connector: injected(),         badge: "Any EVM" },
-];
-
 interface Props { open: boolean; onClose: () => void; }
 
 export function WalletModal({ open, onClose }: Props) {
-  const { connect, isPending } = useConnect();
+  const { connect, connectors, isPending } = useConnect();
   const [scanning, setScanning] = useState(false);
 
-  function handleConnect(w: typeof WALLETS[0]) {
+  // Map our UI labels to the actual available connectors
+  const availableWallets = [
+    { id: "metamask", label: "MetaMask", icon: "🦊", badge: "Most Popular", connectorId: "io.metamask" },
+    { id: "talisman", label: "Talisman", icon: "🛡️", badge: "Polkadot Native", connectorId: "xyz.talisman" },
+    { id: "injected", label: "Browser Wallet", icon: "🔑", badge: "Any EVM", connectorId: "injected" },
+  ];
+
+  function handleConnect(connectorId: string) {
+    // Find the actual connector instance from wagmi
+    // We try to match by ID (EIP-6963) or fallback to generic injected
+    const connector = connectors.find(c => c.id === connectorId) || connectors.find(c => c.id === 'injected');
+    
+    if (!connector) {
+      console.error("Connector not found:", connectorId);
+      return;
+    }
+
     setScanning(true);
     setTimeout(() => {
-      connect({ connector: w.connector });
+      connect({ connector });
       setScanning(false);
       onClose();
     }, 600);
@@ -52,11 +62,11 @@ export function WalletModal({ open, onClose }: Props) {
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">
-            {WALLETS.map((w) => (
+            {availableWallets.map((w) => (
               <button
                 key={w.id}
                 disabled={isPending}
-                onClick={() => handleConnect(w)}
+                onClick={() => handleConnect(w.connectorId)}
                 className="flex items-center gap-4 px-4 py-4 rounded-2xl border border-panel-border bg-white/[0.02] hover:border-gold/40 hover:bg-gold/5 transition-all group text-left"
               >
                 <span className="text-3xl w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 group-hover:shadow-gold-sm transition-all">
