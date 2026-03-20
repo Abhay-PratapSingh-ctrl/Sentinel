@@ -30,8 +30,8 @@ export function TabAI() {
   
   // Ping backend on mount to wake up Render (Cold Start fix)
   useEffect(() => {
-    const botUrl = (process.env.NEXT_PUBLIC_BOT_URL || "https://sentineljavaagent.onrender.com").replace(/\/$/, "");
-    fetch(`${botUrl}/actuator/health`).catch(() => {});
+const botUrl = "https://sentineljavaagent.onrender.com";   
+ fetch(`${botUrl}/actuator/health`).catch(() => {});
   }, []);
 
   async function ask(q?: string) {
@@ -51,7 +51,7 @@ export function TabAI() {
 LIVE VAULT STATE: DOT=$${dotPrice.toFixed(4)}, Collateral=$${collUSD.toFixed(2)}, Debt=${debt.toFixed(2)} sUSD, HF=${hf}%, Required CR=${activeCR}%, Vol Score=${vol.toFixed(2)}%.
 Answer in 3–5 sentences. Be direct, technical, and concise. Always reference live data.`;
 
-    const botUrl = (process.env.NEXT_PUBLIC_BOT_URL || "https://sentineljavaagent.onrender.com").replace(/\/$/, "");
+    const botUrl = "https://sentineljavaagent.onrender.com";    
     console.log("Sentinel AI calling:", `${botUrl}/api/ask`);
     try {
       const res = await fetch(`${botUrl}/api/ask`, {
