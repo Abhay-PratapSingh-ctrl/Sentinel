@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import { MockPriceOracle } from "../contracts/src/MockPriceOracle.sol";
+import {MockPriceOracle} from "../contracts/src/MockPriceOracle.sol";
 
 contract RedeployOracle is Script {
     function run() external {

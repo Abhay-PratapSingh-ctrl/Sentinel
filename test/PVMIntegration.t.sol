@@ -14,19 +14,13 @@ contract PVMIntegrationTest is Test {
     function setUp() public {
         oracle = new MockPriceOracle(100_000_000); // $1.00
         vault = new SentinelVault_complete(
-            address(oracle),
-            guardian,
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(oracle)
+            address(oracle), guardian, address(0), address(0), address(0), address(0), address(oracle)
         );
 
         // Setup initial position
         vm.deal(user, 100 ether);
         vm.prank(user);
-        vault.depositCollateral{ value: 10 ether }();
+        vault.depositCollateral{value: 10 ether}();
         vm.prank(user);
         vault.mintStablecoin(5 ether); // $10 collateral / $5 debt = 200% HF
     }
@@ -44,11 +38,7 @@ contract PVMIntegrationTest is Test {
 
         // In Foundry, calling an empty address reverts if not handled.
         // We can mock the call to return a specific value or just let it fail.
-        vm.mockCallRevert(
-            address(0x420),
-            abi.encodeWithSelector(IPVM.call.selector),
-            "PVM Not Found"
-        );
+        vm.mockCallRevert(address(0x420), abi.encodeWithSelector(IPVM.call.selector), "PVM Not Found");
 
         uint256 hf = vault.getHealthFactor(user);
         assertEq(hf, 2e18); // Fallback works
@@ -58,11 +48,7 @@ contract PVMIntegrationTest is Test {
         vault.setPVMPrecompile(address(0x420));
 
         // Mock a successful PVM execution returning 250% HF
-        vm.mockCall(
-            address(0x420),
-            abi.encodeWithSelector(IPVM.call.selector),
-            abi.encode(abi.encode(2.5e18))
-        );
+        vm.mockCall(address(0x420), abi.encodeWithSelector(IPVM.call.selector), abi.encode(abi.encode(2.5e18)));
 
         uint256 hf = vault.getHealthFactor(user);
         assertEq(hf, 2.5e18);

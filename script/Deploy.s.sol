@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import { SentinelUSD } from "../contracts/src/SentinelUSD.sol";
-import { SentinelVault_complete } from "../contracts/src/SentinelVault_Complete.sol";
-import { MockPriceOracle } from "../contracts/src/MockPriceOracle.sol";
+import {SentinelUSD} from "../contracts/src/SentinelUSD.sol";
+import {SentinelVault_complete} from "../contracts/src/SentinelVault_Complete.sol";
+import {MockPriceOracle} from "../contracts/src/MockPriceOracle.sol";
 
 // ─────────────────────────────────────────────
 //  Interfaces (copied so we don't need imports)
@@ -55,17 +55,13 @@ contract DeployScript is Script {
     // (emergencyRebalance DEX swap will be disabled but everything else works)
     address constant PLACEHOLDER_DEX_ROUTER = address(0);
     address constant PLACEHOLDER_WDOT = address(0);
-    address constant USDT_TOKEN_ADDR =
-        0xCba9A2Dc811778773B7959FCCDA34F0132F48DB1; // Mock USDT redeployed with swap
+    address constant USDT_TOKEN_ADDR = 0xCba9A2Dc811778773B7959FCCDA34F0132F48DB1; // Mock USDT redeployed with swap
 
     function run() external {
         // ── Load environment ──────────────────────────────────────
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address guardian = vm.envOr("GUARDIAN_ADDRESS", vm.addr(deployerKey));
-        address dexRouter = vm.envOr(
-            "DEX_ROUTER_ADDRESS",
-            PLACEHOLDER_DEX_ROUTER
-        );
+        address dexRouter = vm.envOr("DEX_ROUTER_ADDRESS", PLACEHOLDER_DEX_ROUTER);
         address wdot = vm.envOr("WDOT_ADDRESS", PLACEHOLDER_WDOT);
         uint256 supplyCap = vm.envOr("SUPPLY_CAP", uint256(0)); // 0 = no cap
 
@@ -118,9 +114,7 @@ contract DeployScript is Script {
         // Grant SentinelVault the exclusive right to mint and burn sUSD.
         // Without this call, mintStablecoin() and liquidate() will REVERT.
         sUSD.setVault(address(vault));
-        console.log(
-            "sUSD.setVault() called - vault is now the sole minter/burner"
-        );
+        console.log("sUSD.setVault() called - vault is now the sole minter/burner");
 
         vm.stopBroadcast();
 
@@ -134,18 +128,12 @@ contract DeployScript is Script {
         console.log("SentinelVault   :", address(vault));
         console.log("");
         console.log("Next steps:");
-        console.log(
-            "1. Copy these addresses into Java_Agent/Applications.properties"
-        );
+        console.log("1. Copy these addresses into Java_Agent/Applications.properties");
         console.log("   sentinel.vault-address=", address(vault));
         console.log("   sentinel.susd-address=", address(sUSD));
-        console.log(
-            "2. Set SENTINEL_PRIVATE_KEY env var to the guardian wallet private key"
-        );
+        console.log("2. Set SENTINEL_PRIVATE_KEY env var to the guardian wallet private key");
         console.log("3. Set TELEGRAM_BOT_TOKEN env var");
-        console.log(
-            "4. Run: mvn clean package -DskipTests && java -jar target/sentinel-bot-1.0.0.jar"
-        );
+        console.log("4. Run: mvn clean package -DskipTests && java -jar target/sentinel-bot-1.0.0.jar");
         console.log("");
         console.log("Explorer: https://polkadot-hub-testnet.blockscout.com");
     }

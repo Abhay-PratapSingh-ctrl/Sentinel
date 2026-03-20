@@ -47,7 +47,7 @@ contract ERC20Mock {
 
     // Mock exchange rate: 1 DOT = X USDT (6 decimals)
     // e.g. price = 1500000 => 1 DOT = 1.50 USDT
-    uint256 public price = 1_500_000; 
+    uint256 public price = 1_500_000;
 
     // ── Events (standard ERC-20) ──────────────────────────────────
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -129,7 +129,7 @@ contract ERC20Mock {
      */
     function swap() external payable {
         require(msg.value > 0, "ERC20Mock: must send DOT to swap");
-        
+
         // usdtAmount = (dotWei * price) / 1e18
         // since price has 6 decimals, it acts as a multiplier
         uint256 usdtAmount = (msg.value * price) / 1e18;
