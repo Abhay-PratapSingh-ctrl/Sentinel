@@ -10,30 +10,51 @@ Sentinel is a next-generation **Agentic DeFi Guardian** built for the Polkadot H
 
 ## 🏗️ Architecture
 
-The Sentinel ecosystem consists of three main components:
+Sentinel is designed as a modular, asynchronous system that bridges highly responsive UI with proactive backend risk management.
 
-### 1. **Sentinel Hub (Frontend)** — `sentinel-v2/`
-- **Tech Stack**: Next.js 14, React, Tailwind CSS, Wagmi/Viensure.
-- **Deployment**: Vercel.
-- **Features**: 
-  - Glassmorphic Pro UI with real-time health factor monitoring.
-  - Multi-wallet support (MetaMask, Talisman, EIP-6963).
-  - AI Risk Analyst integration for real-time strategy reports.
+### System Overview
+```mermaid
+graph TD
+    User((User)) -->|Connect Wallet| Frontend[Sentinel Hub - Next.js]
+    Frontend -->|DeFi Ops: Deposit/Mint| BC[(Polkadot Hub Hub EVM)]
+    Frontend -->|Analyze Risk| Bot[Sentinel Agent - Spring Boot]
+    
+    subgraph "Backend Infrastructure"
+        Bot -->|Monitor Positions| BC
+        Bot -->|Execute Rebalance| BC
+        Bot -->|Fetch Inference| Groq[Groq AI - Llama 3.1]
+    end
+    
+    subgraph "External Alerts"
+        Bot -->|Push Notifications| TG[Telegram @SentinelAegis_bot]
+    end
+    
+    BC -->|Events| Bot
+```
 
-### 2. **Sentinel Java Agent (Bot)** — `Java_Agent/`
-- **Tech Stack**: Java 17, Spring Boot, Web3j, Docker.
-- **Deployment**: Render (Web Service).
-- **Features**:
-  - **Guardian Mode**: Automated health factor monitoring and auto-rebalancing.
-  - **LLM Proxy**: High-speed AI inference via Groq/Llama-3.1 to analyze on-chain data.
-  - **Telegram Alerts**: Real-time notifications for liquidations and position updates. Join [**@SentinelAegis_bot**](https://t.me/SentinelAegis_bot) to start receiving alerts.
+### Technical Components
 
-### 3. **Smart Contracts** — `src/` (Foundry)
-- **Tech Stack**: Solidity, Foundry.
-- **Features**: 
-  - Collateralized debt positions (CDP).
-  - sUSD stablecoin minting.
-  - Rebalancer logic for automated collateral management.
+#### 1. **Sentinel Hub (Frontend)** — `sentinel-v2/`
+- **Purpose**: User command center for vault management and risk oversight.
+- **Key Modules**:
+  - `TabVault`: Direct interaction with smart contracts for collateral management.
+  - `TabAI`: Real-time chat interface that communicates with the Java Agent's LLM proxy.
+  - `Wagmi/Chain Config`: Optimized for Polkadot Hub Hub Testnet with Talisman (EIP-6963) compatibility.
+
+#### 2. **Sentinel Java Agent (Bot)** — `Java_Agent/`
+- **Purpose**: Proactive "Guardian" that manages risk and handles complex AI data processing.
+- **Workflow**:
+  - **Monitoring Loop**: Polls user vault positions every 60s via Web3j.
+  - **Auto-Rebalance**: If Health Factor drops below the safety threshold (e.g., 1.2), the agent triggers a rebalancing transaction using its stored Guardian private key.
+  - **LLM Proxy**: Transforms raw on-chain data into technical English prompts for Groq, then serves the AI analysis back to the frontend to ensure low-latency, technical accuracy.
+  - **Telegram Integration**: Uses the Telegram Bot API to push critical alerts directly to users.
+
+#### 3. **Smart Contracts** — `src/` (Foundry)
+- **Purpose**: Trustless execution layer for all financial value.
+- **Contracts**:
+  - `SentinelVault`: Manages DOT collateral and sUSD debt.
+  - `sUSDToken`: EIP-20 stablecoin backed by collateral.
+  - `Rebalancer`: Authorized contract that allows the Guardian Bot to adjust collateral levels.
 
 ---
 
