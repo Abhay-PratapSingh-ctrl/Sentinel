@@ -26,7 +26,7 @@ The Sentinel ecosystem consists of three main components:
 - **Features**:
   - **Guardian Mode**: Automated health factor monitoring and auto-rebalancing.
   - **LLM Proxy**: High-speed AI inference via Groq/Llama-3.1 to analyze on-chain data.
-  - **Telegram Alerts**: Real-time notifications for liquidations and position updates.
+  - **Telegram Alerts**: Real-time notifications for liquidations and position updates. Join [**@SentinelAegis_bot**](https://t.me/SentinelAegis_bot) to start receiving alerts.
 
 ### 3. **Smart Contracts** — `src/` (Foundry)
 - **Tech Stack**: Solidity, Foundry.
