@@ -21,7 +21,6 @@ export function TabPortfolio() {
   const { refresh } = useVaultPosition();
   const { activeCR, maxMint } = useAegis();
 
-  const [bals, setBals] = useState({ dot: 0, usdt: 0, susd: 0 });
   const [swapAmt, setSwapAmt] = useState("");
   const [swapLoading, setSwapLoading] = useState(false);
   const [cooldown, setCooldown] = useState<string | null>(null);
@@ -36,10 +35,6 @@ export function TabPortfolio() {
   useEffect(() => {
     if (!client || !address) return;
     (async () => {
-      const dotBal  = await client.getBalance({ address });
-      const susdBal = await client.readContract({ address: SUSD, abi: ERC20_ABI, functionName: "balanceOf", args: [address] }) as bigint;
-      const usdtBal = await client.readContract({ address: USDT, abi: ERC20_ABI, functionName: "balanceOf", args: [address] }) as bigint;
-      setBals({ dot: parseFloat(formatEther(dotBal)), usdt: parseFloat(formatUnits(usdtBal, 6)), susd: parseFloat(formatEther(susdBal)) });
       // cooldown
       try {
         const last = await client.readContract({ address: USDT, abi: ERC20_ABI, functionName: "lastFaucetTime", args: [address] }) as bigint;
@@ -55,10 +50,10 @@ export function TabPortfolio() {
   }, [client, address, position]);
 
   const p = position;
- const totalDOT  = bals.dot + (p?.collDOT ?? 0);
-const totalUSDT = bals.usdt + (p?.collUSDT ?? 0);
-// Only count collateral value — sUSD is borrowed debt, not net worth
-const totalUSD  = totalDOT * dotPrice + totalUSDT;
+  const totalDOT  = (p?.walBal ?? 0) + (p?.collDOT ?? 0);
+  const totalUSDT = (p?.walUSDTBal ?? 0) + (p?.collUSDT ?? 0);
+  // Only count collateral value — sUSD is borrowed debt, not net worth
+  const totalUSD  = totalDOT * dotPrice + totalUSDT;
   const netPos   = (p?.collUSD ?? 0) - (p?.minted ?? 0);
   const hfVal    = p && p.minted > 0 ? (p.collUSD / p.minted) * 100 : 100;
   const score    = Math.min(100, Math.round((hfVal / 200) * 100));
@@ -132,8 +127,8 @@ const totalUSD  = totalDOT * dotPrice + totalUSDT;
       <div className="grid grid-cols-3 gap-3">
         {[
           { icon: "💎", label: "DOT", val: `${totalDOT.toFixed(3)}`, usd: (totalDOT * dotPrice).toFixed(2), color: "text-gold", bg: "from-gold/8", sub: "Wallet + Deposited" },
-         { icon: "🛡️", label: "USDT", val: `${(p?.collUSDT ?? 0).toFixed(2)}`, usd: (p?.collUSDT ?? 0).toFixed(2), color: "text-cyan", bg: "from-cyan/8", sub: "Deposited in Vault" },
-          { icon: "🪙", label: "sUSD", val: `${bals.susd.toFixed(2)}`, usd: bals.susd.toFixed(2), color: "text-neon", bg: "from-neon/8", sub: "Minted Stablecoin" },
+          { icon: "🛡️", label: "USDT", val: `${totalUSDT.toFixed(2)}`, usd: totalUSDT.toFixed(2), color: "text-cyan", bg: "from-cyan/8", sub: "Wallet + Deposited" },
+          { icon: "🪙", label: "sUSD", val: `${(p?.susdBal ?? 0).toFixed(2)}`, usd: (p?.susdBal ?? 0).toFixed(2), color: "text-neon", bg: "from-neon/8", sub: "Minted Stablecoin" },
         ].map(({ icon, label, val, usd, color, bg, sub }) => (
           <Card key={label} className={`bg-gradient-to-b ${bg} to-transparent`}>
             <CardContent className="pt-5 text-center">
@@ -249,7 +244,7 @@ const totalUSD  = totalDOT * dotPrice + totalUSDT;
               <span className="text-2xl">💎</span>
               <div>
                 <div className="font-bold text-sm">DOT</div>
-                <div className="text-[0.65rem] text-muted">Balance: {bals.dot.toFixed(3)}</div>
+                <div className="text-[0.65rem] text-muted">Balance: {(p?.walBal ?? 0).toFixed(3)}</div>
               </div>
             </div>
             <Input type="number" placeholder="0.00" value={swapAmt} onChange={(e) => setSwapAmt(e.target.value)}
@@ -264,7 +259,7 @@ const totalUSD  = totalDOT * dotPrice + totalUSDT;
               <span className="text-2xl">🛡️</span>
               <div>
                 <div className="font-bold text-sm text-cyan">USDT</div>
-                <div className="text-[0.65rem] text-muted">Balance: {bals.usdt.toFixed(2)}</div>
+                <div className="text-[0.65rem] text-muted">Balance: {(p?.walUSDTBal ?? 0).toFixed(2)}</div>
               </div>
             </div>
             <div className="text-right">
