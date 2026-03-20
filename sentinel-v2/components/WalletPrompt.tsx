@@ -21,13 +21,20 @@ export function WalletModal({ open, onClose }: Props) {
     { id: "injected", label: "Browser Wallet", icon: "🔑", badge: "Any EVM", connectorId: "injected" },
   ];
 
-  function handleConnect(connectorId: string) {
+  function handleConnect(connectorId: string, label: string) {
     // Find the actual connector instance from wagmi
-    // We try to match by ID (EIP-6963) or fallback to generic injected
-    const connector = connectors.find(c => c.id === connectorId) || connectors.find(c => c.id === 'injected');
+    // Match by ID first, then fallback to name matching (for better compatibility)
+    const connector = connectors.find(c => c.id === connectorId) 
+                   || connectors.find(c => c.name.toLowerCase().includes(label.toLowerCase()))
+                   || connectors.find(c => c.id === 'injected');
     
     if (!connector) {
-      console.error("Connector not found:", connectorId);
+      console.warn("Connector not found in config:", label, connectorId);
+      // If we can't find the specific one, try ANY injected as a last resort
+      const injectedFallback = connectors.find(c => c.type === 'injected');
+      if (injectedFallback) {
+        connect({ connector: injectedFallback });
+      }
       return;
     }
 
@@ -66,7 +73,7 @@ export function WalletModal({ open, onClose }: Props) {
               <button
                 key={w.id}
                 disabled={isPending}
-                onClick={() => handleConnect(w.connectorId)}
+                onClick={() => handleConnect(w.connectorId, w.label)}
                 className="flex items-center gap-4 px-4 py-4 rounded-2xl border border-panel-border bg-white/[0.02] hover:border-gold/40 hover:bg-gold/5 transition-all group text-left"
               >
                 <span className="text-3xl w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 group-hover:shadow-gold-sm transition-all">
