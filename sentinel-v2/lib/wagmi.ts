@@ -11,7 +11,7 @@ export const wagmiConfig = createConfig({
   }),
   connectors: [
     metaMask(),
-    injected({ target: "talisman" }),
+    injected({ target: "talisman" as any }),
     injected(),
   ],
   transports: {

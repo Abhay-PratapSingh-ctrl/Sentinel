@@ -10,7 +10,7 @@ import { Badge } from "./ui/badge";
 
 const WALLETS = [
   { id: "metamask",  label: "MetaMask",  icon: "🦊", connector: metaMask(),              badge: "Most Popular" },
-  { id: "talisman",  label: "Talisman",  icon: "🛡️", connector: injected({ target: "talisman" }), badge: "Polkadot Native" },
+  { id: "talisman",  label: "Talisman",  icon: "🛡️", connector: injected({ target: "talisman" as any }), badge: "Polkadot Native" },
   { id: "injected",  label: "Browser Wallet", icon: "🔑", connector: injected(),         badge: "Any EVM" },
 ];
 
