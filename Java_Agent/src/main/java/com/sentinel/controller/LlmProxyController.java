@@ -36,11 +36,13 @@ public class LlmProxyController {
     private static final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final MediaType JSON_MEDIA = MediaType.parse("application/json; charset=utf-8");
 
+    @SuppressWarnings("unchecked")
     @PostMapping("/ask")
-    public ResponseEntity<String> askSentinel(@RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<Map<String, Object>> askSentinel(@RequestBody Map<String, Object> requestBody) {
+        log.info("LLM Proxy Request received: {}", requestBody.get("messages"));
         String apiKey = config.getGroqApiKey();
         if (apiKey == null || apiKey.isBlank()) {
-            return ResponseEntity.status(500).body("{\"content\": [{\"text\": \"LLM Error: Groq API key not configured on backend\"}]}");
+            return ResponseEntity.status(500).body(Map.of("content", List.of(Map.of("text", "LLM Error: Groq API key not configured on backend"))));
         }
 
         try {
@@ -80,9 +82,8 @@ public class LlmProxyController {
                 String body = response.body() != null ? response.body().string() : "{}";
                 if (!response.isSuccessful()) {
                     log.error("Groq API error: {} - {}", response.code(), body);
-                    String errorText = "LLM Error: Groq API error: " + response.code() + " - " + body;
-                    Map<String, Object> errorResp = Map.of("content", List.of(Map.of("text", errorText)));
-                    return ResponseEntity.status(response.code()).body(objectMapper.writeValueAsString(errorResp));
+                    String errorText = "LLM Error: Groq API error: " + response.code();
+                    return ResponseEntity.status(response.code()).body(Map.of("content", List.of(Map.of("text", errorText))));
                 }
 
                 // Groq response structure is OpenAI-compatible: choices[0].message.content
@@ -94,22 +95,16 @@ public class LlmProxyController {
                     if (message != null) {
                         String text = (String) message.get("content");
                         // Wrap in Anthropic-like format for frontend compatibility
-                        Map<String, Object> finalResp = Map.of("content", List.of(Map.of("text", text)));
-                        return ResponseEntity.ok(objectMapper.writeValueAsString(finalResp));
+                        return ResponseEntity.ok(Map.of("content", List.of(Map.of("text", text))));
                     }
                 }
 
-                return ResponseEntity.ok(body);
+                return ResponseEntity.ok(groqResp);
             }
         } catch (IOException e) {
             log.error("LLM Proxy error", e);
             String errorText = "LLM Error: " + e.getMessage();
-            Map<String, Object> errorResp = Map.of("content", List.of(Map.of("text", errorText)));
-            try {
-                return ResponseEntity.status(500).body(objectMapper.writeValueAsString(errorResp));
-            } catch (IOException ex) {
-                return ResponseEntity.status(500).body("{\"content\": [{\"text\": \"LLM Error: JSON serialization failed\"}]}");
-            }
+            return ResponseEntity.status(500).body(Map.of("content", List.of(Map.of("text", errorText))));
         }
     }
 }

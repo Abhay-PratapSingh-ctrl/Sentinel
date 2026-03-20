@@ -45,8 +45,10 @@ export function TabAI() {
 LIVE VAULT STATE: DOT=$${dotPrice.toFixed(4)}, Collateral=$${collUSD.toFixed(2)}, Debt=${debt.toFixed(2)} sUSD, HF=${hf}%, Required CR=${activeCR}%, Vol Score=${vol.toFixed(2)}%.
 Answer in 3–5 sentences. Be direct, technical, and concise. Always reference live data.`;
 
+    const botUrl = (process.env.NEXT_PUBLIC_BOT_URL || "https://sentineljavaagent.onrender.com").replace(/\/$/, "");
+    console.log("Sentinel AI calling:", `${botUrl}/api/ask`);
     try {
-      const res = await fetch("https://sentineljavaagent.onrender.com/api/ask", {
+      const res = await fetch(`${botUrl}/api/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,7 +63,7 @@ Answer in 3–5 sentences. Be direct, technical, and concise. Always reference l
       setMsgs((m) => [...m, { role: "assistant", content: answer }]);
       addLog("LLM", "Risk report generated.");
     } catch {
-      setMsgs((m) => [...m, { role: "assistant", content: "⚠️ LLM proxy unavailable. Ensure localhost:8881 is running." }]);
+      setMsgs((m) => [...m, { role: "assistant", content: "⚠️ LLM analyst is currently offline. Please try again later." }]);
     }
     setLoading(false);
   }
@@ -151,7 +153,7 @@ Answer in 3–5 sentences. Be direct, technical, and concise. Always reference l
             </Button>
           </div>
           <div className="text-[0.6rem] text-muted mt-2 font-mono">
-            Context: live Pyth · Aegis vol score · vault position · Groq backend at localhost:8881
+            Context: live Pyth · Aegis vol score · vault position · Sentinel Agent
           </div>
         </CardContent>
       </Card>
