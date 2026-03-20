@@ -27,6 +27,12 @@ export function TabAI() {
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" }); }, [msgs]);
+  
+  // Ping backend on mount to wake up Render (Cold Start fix)
+  useEffect(() => {
+    const botUrl = (process.env.NEXT_PUBLIC_BOT_URL || "https://sentineljavaagent.onrender.com").replace(/\/$/, "");
+    fetch(`${botUrl}/actuator/health`).catch(() => {});
+  }, []);
 
   async function ask(q?: string) {
     const question = q || input.trim();

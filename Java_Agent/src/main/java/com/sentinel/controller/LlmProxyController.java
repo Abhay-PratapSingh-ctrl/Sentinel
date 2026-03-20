@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*") // For local dev dashboard access
 @RequiredArgsConstructor
 public class LlmProxyController {
 
