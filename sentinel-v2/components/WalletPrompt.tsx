@@ -14,6 +14,12 @@ export function WalletModal({ open, onClose }: Props) {
   const { connect, connectors, isPending } = useConnect();
   const [scanning, setScanning] = useState(false);
 
+  useEffect(() => {
+    if (open) {
+      console.log("🔍 [Sentinel] Available Connectors:", connectors.map(c => ({ id: c.id, name: c.name, type: c.type })));
+    }
+  }, [open, connectors]);
+
   // Map our UI labels to the actual available connectors
   const availableWallets = [
     { id: "metamask", label: "MetaMask", icon: "🦊", badge: "Most Popular", connectorId: "io.metamask" },
